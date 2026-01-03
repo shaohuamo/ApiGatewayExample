@@ -6,9 +6,8 @@ Step4:Import Postman json file into Postman(reference step7)
 
 Step5:Download [docker-compose.yml](https://github.com/shaohuamo/ApiGatewayExample/blob/master/TestMicroservice.API/docker-compose.yml) from ApiGatewayExample/TestMicroservice.API
 
-Step6:Locate the path where you stored the .yml file and run command like this : docker-compose up
-  (reference step7)
-
+Step6:Locate the path where you stored the .yml file and run command like this : `docker-compose up`  (reference step7)
+  
 Step7:Please Reference TestCase.xlsx
 
   
