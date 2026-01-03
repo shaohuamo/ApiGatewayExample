@@ -1,3 +1,9 @@
+Description
+
+This Microservice Project utilizes technologies including API Gateway (Ocelot), Service Registry Discovery (Consul), RabbitMQ, Swagger, Database (EF Core and MySQL), Cache (Redis) ,Automapper, Denpendency Inversion,SOLID Principle,Clean Architecture
+
+Testing procedures
+
 Step1:Install [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) and [Postman](https://www.postman.com/downloads/)
 
 Step2:Download [Postman json file](https://github.com/shaohuamo/ApiGatewayExample/blob/master/ApiGatewayExample.postman_collection.json)
