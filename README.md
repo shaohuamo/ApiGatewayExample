@@ -8,7 +8,7 @@ Step4:Download [docker-compose.yml](https://github.com/shaohuamo/ApiGatewayExamp
 
 Step5:Locate the path where you stored the .yml file and run command like this : `docker-compose up`  (refer to step6)
   
-Step6:Download [TestCase.xlsx](https://github.com/shaohuamo/ApiGatewayExample/blob/master/TestCase.xlsx)
+Step6:Download [TestCase.xlsx](https://github.com/shaohuamo/ApiGatewayExample/blob/master/TestCase.xlsx), click button "view raw" after click link
 
   
 
