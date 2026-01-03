@@ -1,0 +1,56 @@
+{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/gateway/test",
+      "DownstreamPathTemplate": "/api/test",
+
+      "UpstreamScheme": "http",
+      "DownstreamScheme": "http",
+
+      //"DownstreamHostAndPorts": [
+      //  {
+      //    "Host": "localhost",
+      //    "Port": 8080
+      //  }
+      //],
+      /* https://localhost:7103/gateway/test to http://localhost:5010/api/Orders */
+
+      "UpstreamHttpMethod": [
+        "Get"
+      ],
+
+      //lookup correspond hostname by this ServiceName in consul
+      "ServiceName": "testservice",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "RateLimitOptions": {
+        "Limit": 3,
+        "Period": "1m",
+        "HttpStatusCode": 429,
+        "EnableRateLimiting": true,
+
+        "ClientWhitelist": [
+          //vaule of header "Client-Id" in  request
+          "postman",
+          "Client2"
+        ],
+        "ClientIdHeader": "Client-Id" //Client-Id is header of request
+      },
+      //response cache
+      //"FileCacheOptions": {
+      //  "TtlSeconds": 30
+      //}
+    }
+  ], // required section
+  "GlobalConfiguration": { // required 
+    "BaseUrl": "http://apigateway:9080", //apigateway is host name of apigateway's container——http://localhost:5085
+    "ServiceDiscoveryProvider": {
+      "Host": "consul", // Consul container's host name——localhost
+      "Port": 8500, // Consul API port
+      "Type": "Consul", // type of service discovery
+      "PollingInterval": 10000, // roundrobin internal
+      "ConfigurationKey": "Ocelot_A"
+    }
+  }
+}

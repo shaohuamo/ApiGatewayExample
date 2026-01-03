@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ProductsMicroService.API</name>
+    </assembly>
+    <members>
+        <member name="T:ProductsMicroService.API.Controllers.ProductsController">
+            <summary>
+            Products Controller
+            </summary>
+        </member>
+        <member name="M:ProductsMicroService.API.Controllers.ProductsController.#ctor(ProductsMicroservice.Core.ServiceContracts.IProductsUpdaterService,ProductsMicroservice.Core.ServiceContracts.IProductsGetterService,ProductsMicroservice.Core.ServiceContracts.IProductsAdderService,ProductsMicroservice.Core.ServiceContracts.IProductsDeleterService)">
+            <summary>
+            constructor
+            </summary>
+            <param name="productsUpdaterService"></param>
+            <param name="productsGetterService"></param>
+            <param name="productsAdderService"></param>
+            <param name="productsDeleterService"></param>
+        </member>
+        <member name="M:ProductsMicroService.API.Controllers.ProductsController.GetAllProducts">
+            <summary>
+            get all products
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ProductsMicroService.API.Controllers.ProductsController.GetProductByProductId(System.Guid)">
+            <summary>
+            get products by productId
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ProductsMicroService.API.Controllers.ProductsController.Post(ProductsMicroservice.Core.DTO.ProductAddRequest)">
+            <summary>
+            add a new product
+            </summary>
+            <param name="productAddRequest"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ProductsMicroService.API.Controllers.ProductsController.Put(ProductsMicroservice.Core.DTO.ProductUpdateRequest)">
+            <summary>
+            update a product
+            </summary>
+            <param name="productUpdateRequest"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ProductsMicroService.API.Controllers.ProductsController.Delete(System.Guid)">
+            <summary>
+            delete a product by productId
+            </summary>
+            <param name="productId"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ProductsMicroService.API.Middleware.ExceptionHandlingMiddleware">
+            <summary>
+            Custom Exception Handle Middleware
+            </summary>
+        </member>
+        <member name="M:ProductsMicroService.API.Middleware.ExceptionHandlingMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILogger{ProductsMicroService.API.Middleware.ExceptionHandlingMiddleware})">
+            <summary>
+            constructor
+            </summary>
+            <param name="next">next middleware</param>
+            <param name="logger"></param>
+        </member>
+        <member name="M:ProductsMicroService.API.Middleware.ExceptionHandlingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Middleware Logical 
+            </summary>
+            <param name="httpContext"></param>
+        </member>
+        <member name="T:ProductsMicroService.API.Middleware.ExceptionHandlingMiddlewareExtensions">
+            <summary>
+            ExceptionHandlingMiddleware Helper class
+            </summary>
+        </member>
+        <member name="M:ProductsMicroService.API.Middleware.ExceptionHandlingMiddlewareExtensions.UseExceptionHandlingMiddleware(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            Add ExceptionHandlingMiddleware to middleware pipeline
+            </summary>
+            <param name="builder">applicationBuilder</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
