@@ -1,6 +1,6 @@
 Description
 
-This Microservice Project utilizes technologies including API Gateway (Ocelot), Service Registry Discovery (Consul), RabbitMQ, Swagger, Database (EF Core and MySQL), Cache (Redis) ,Automapper, Denpendency Inversion,SOLID Principle,Clean Architecture
+This Microservice Project utilizes technologies including API Gateway (Ocelot), Service Registry Discovery (Consul), RabbitMQ, Swagger, Database (EF Core and MySQL), Cache (Redis) ,Automapper, Denpendency Inversion,SOLID Principle,Clean Architecture,Unit Test
 
 Testing procedures
 
