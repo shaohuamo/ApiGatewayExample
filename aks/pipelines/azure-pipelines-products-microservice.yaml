@@ -1,0 +1,79 @@
+# Docker
+# Build and push an image to Azure Container Registry, then deploy to AKS
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+  branches:
+    include:
+    - feature-aks-migration
+  paths:
+    include:
+    - src/backend/Services/Products/**
+    - src/backend/BuildingBlocks/CommonService/**
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '7cfddf36-bfa1-464d-ba6d-63151db94dfd'
+  imageRepository: 'productsmicroservice'
+  containerRegistry: 'microservicesdemoregistry.azurecr.io'
+  # Explicit path avoids picking up Dockerfiles from other services (Gateway, etc.)
+  dockerfilePath: 'src/backend/Services/Products/ProductsMicroService.API/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        # Build context must be the repo root: the Dockerfile COPYs files using
+        # paths relative to the solution root (e.g. src/backend/BuildingBlocks/...)
+        buildContext: $(Build.SourcesDirectory)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+
+- stage: Deploy
+  displayName: Deploy to AKS
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to AKS cluster
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'aks-production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: KubernetesManifest@1
+            displayName: Deploy Products microservice to Kubernetes
+            inputs:
+              action: deploy
+              connectionType: azureResourceManager
+              azureSubscriptionConnection: $(azureSubscriptionConnection)
+              azureResourceGroup: $(aksResourceGroup)
+              kubernetesCluster: $(aksClusterName)
+              namespace: 'microservices'
+              manifests: |
+                aks/manifests/products-deployment.yaml
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
