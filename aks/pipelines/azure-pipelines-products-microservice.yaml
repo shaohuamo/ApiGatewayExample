@@ -48,6 +48,44 @@ stages:
         tags: |
           $(tag)
 
+- stage: Test
+  displayName: Run unit tests
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Test
+    displayName: Unit Tests
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: UseDotNet@2
+      displayName: Use .NET 9 SDK
+      inputs:
+        packageType: sdk
+        version: '9.x'
+
+    - task: DotNetCoreCLI@2
+      displayName: Run unit tests
+      inputs:
+        command: test
+        projects: 'tests/ProductsServiceUnitTests/ProductsServiceUnitTests.csproj'
+        arguments: '--configuration Release --logger trx --results-directory $(Agent.TempDirectory)/TestResults --collect:"XPlat Code Coverage" --results-directory $(Agent.TempDirectory)/CoverageResults'
+        publishTestResults: false
+
+    - task: PublishTestResults@2
+      displayName: Publish test results
+      condition: always()
+      inputs:
+        testResultsFormat: VSTest
+        testResultsFiles: '$(Agent.TempDirectory)/TestResults/*.trx'
+        failTaskOnFailedTests: true
+
+    - task: PublishCodeCoverageResults@2
+      displayName: Publish code coverage
+      condition: always()
+      inputs:
+        summaryFileLocation: '$(Agent.TempDirectory)/CoverageResults/**/coverage.cobertura.xml'
+
 # - stage: Deploy
 #   displayName: Deploy to AKS
 #   dependsOn: Build
