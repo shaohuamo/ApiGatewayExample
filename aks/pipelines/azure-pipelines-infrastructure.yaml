@@ -173,21 +173,25 @@ stages:
 
                 # ── Loki ──────────────────────────────────────────────────────
                 # Release: loki  → Service: loki:3100
-                - task: HelmDeploy@0
+                - task: AzureCLI@2
                   displayName: Deploy Loki
                   continueOnError: true
                   inputs:
-                    connectionType: Kubernetes Service Connection
-                    kubernetesServiceConnection: $(k8sServiceConnection)
-                    namespace: $(namespace)
-                    command: upgrade
-                    chartType: Name
-                    chartName: grafana/loki
-                    releaseName: loki
-                    valueFile: aks/helm-values/dev/loki-values.yaml
-                    install: true
-                    waitForExecution: true
-                    arguments: --timeout 180s
+                    azureSubscription: microservicesdemo-resource-group-connection
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az aks get-credentials \
+                        --resource-group $(aksResourceGroup) \
+                        --name $(aksClusterName) \
+                        --admin \
+                        --overwrite-existing
+                      helm upgrade loki grafana/loki \
+                        --namespace $(namespace) \
+                        --install \
+                        --values aks/helm-values/dev/loki-values.yaml \
+                        --wait \
+                        --timeout 180s
 
                 # ── kube-prometheus-stack ─────────────────────────────────────
                 # Release: monitoring
@@ -197,7 +201,7 @@ stages:
                 #
                 # CRDs are cluster-scoped; the namespace service account cannot create them.
                 # A separate AzureCLI step fetches admin credentials and applies CRDs first,
-                # then HelmDeploy uses --skip-crds to avoid re-attempting CRD installation.
+                # then Helm runs with --skip-crds to avoid re-attempting CRD installation.
                 - task: AzureCLI@2
                   displayName: Install kube-prometheus-stack CRDs (cluster-admin)
                   continueOnError: true
@@ -211,25 +215,32 @@ stages:
                         --name $(aksClusterName) \
                         --admin \
                         --overwrite-existing
+
+                      # Apply CRDs with server-side apply to avoid annotation size limits.
                       helm show crds prometheus-community/kube-prometheus-stack \
                         | kubectl apply --server-side --force-conflicts -f -
 
-                - task: HelmDeploy@0
+                - task: AzureCLI@2
                   displayName: Deploy kube-prometheus-stack (Prometheus + Grafana + Alertmanager)
                   continueOnError: true
                   inputs:
-                    connectionType: Kubernetes Service Connection
-                    kubernetesServiceConnection: $(k8sServiceConnection)
-                    namespace: $(namespace)
-                    command: upgrade
-                    chartType: Name
-                    chartName: prometheus-community/kube-prometheus-stack
-                    releaseName: monitoring
-                    valueFile: aks/helm-values/dev/kube-prometheus-stack-values.yaml
-                    overrideValues: alertmanager.config.receivers[0].slack_configs[0].api_url=$(alertmanager-slack-webhook)
-                    install: true
-                    waitForExecution: true
-                    arguments: --skip-crds --timeout 300s
+                    azureSubscription: microservicesdemo-resource-group-connection
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az aks get-credentials \
+                        --resource-group $(aksResourceGroup) \
+                        --name $(aksClusterName) \
+                        --admin \
+                        --overwrite-existing
+                      helm upgrade monitoring prometheus-community/kube-prometheus-stack \
+                        --namespace $(namespace) \
+                        --install \
+                        --values aks/helm-values/dev/kube-prometheus-stack-values.yaml \
+                        --set-string alertmanager.config.receivers[0].slack_configs[0].api_url="$(alertmanager-slack-webhook)" \
+                        --wait \
+                        --skip-crds \
+                        --timeout 300s
 
                 # ── Jaeger ────────────────────────────────────────────────────
                 # Release: jaeger  → Service: jaeger:4317 / :16686
@@ -278,17 +289,22 @@ stages:
                     helm repo update
                   displayName: Add ingress-nginx Helm repository
 
-                - task: HelmDeploy@0
+                - task: AzureCLI@2
                   displayName: Deploy NGINX Ingress Controller
                   continueOnError: true
                   inputs:
-                    connectionType: Kubernetes Service Connection
-                    kubernetesServiceConnection: $(k8sServiceConnection)
-                    namespace: ingress-nginx
-                    command: upgrade
-                    chartType: Name
-                    chartName: ingress-nginx/ingress-nginx
-                    releaseName: ingress-nginx
-                    install: true
-                    waitForExecution: true
-                    arguments: --create-namespace --timeout 120s
+                    azureSubscription: microservicesdemo-resource-group-connection
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az aks get-credentials \
+                        --resource-group $(aksResourceGroup) \
+                        --name $(aksClusterName) \
+                        --admin \
+                        --overwrite-existing
+                      helm upgrade ingress-nginx ingress-nginx/ingress-nginx \
+                        --namespace ingress-nginx \
+                        --install \
+                        --create-namespace \
+                        --wait \
+                        --timeout 120s
