@@ -1,0 +1,211 @@
+# Infrastructure deployment pipeline
+# Deploys all shared infrastructure components to AKS using Helm.
+#
+# Trigger: changes to any helm-values/dev file, or this pipeline itself.
+# Variable group 'infrastructure-key-vault' is linked to Azure Key Vault
+#   'microservicesdemo-kv' via the ARM service connection
+#   'microservicesdemo-resource-group-connection'.
+#
+# K8s service name mapping (referenced by business service manifests):
+#   postgresql:5432                              (Bitnami PostgreSQL)
+#   redis-master:6379                            (Bitnami Redis standalone)
+#   rabbitmq:5672                                (Bitnami RabbitMQ)
+#   otel-collector:4317                          (OpenTelemetry Collector)
+#   jaeger:4317 / :16686                       (Jaeger, fullnameOverride=jaeger)
+#   loki:3100                                    (Grafana Loki)
+#   monitoring-kube-prometheus-prometheus:9090   (kube-prometheus-stack)
+#   monitoring-kube-prometheus-alertmanager:9093
+#   monitoring-grafana:80
+
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - aks/helm-values/dev/**
+      - aks/pipelines/azure-pipelines-infrastructure.yaml
+
+resources:
+  - repo: self
+
+variables:
+  - group: infrastructure-key-vault     # Linked to Key Vault microservicesdemo-kv
+                                         # Secrets: postgres-password, rabbitmq-password,
+                                         #   redis-connection-string, postgres-exporter-password,
+                                         #   alertmanager-slack-webhook
+  - name: k8sServiceConnection
+    value: dev-microservicesdemo-aks-cluster-dev-1778160743494
+  - name: namespace
+    value: dev
+  - name: vmImageName
+    value: ubuntu-latest
+
+stages:
+  - stage: DeployInfrastructure
+    displayName: Deploy Infrastructure to Dev
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+    jobs:
+      - deployment: DeployInfrastructureToDev
+        displayName: Deploy Infrastructure (Dev)
+        pool:
+          vmImage: $(vmImageName)
+        environment: dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout source code
+
+                # ── Add Helm repositories ─────────────────────────────────────
+                - script: |
+                    helm repo add bitnami           https://charts.bitnami.com/bitnami
+                    helm repo add open-telemetry    https://open-telemetry.github.io/opentelemetry-helm-charts
+                    helm repo add jaegertracing     https://jaegertracing.github.io/helm-charts
+                    helm repo add grafana           https://grafana.github.io/helm-charts
+                    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                    helm repo update
+                  displayName: Add and update Helm repositories
+
+                # ── Ensure namespace exists ───────────────────────────────────
+                - task: Kubernetes@1
+                  displayName: Ensure dev namespace exists
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    command: apply
+                    useConfigurationFile: true
+                    configurationType: inline
+                    inline: |
+                      apiVersion: v1
+                      kind: Namespace
+                      metadata:
+                        name: $(namespace)
+
+                # ── PostgreSQL ────────────────────────────────────────────────
+                # Release: postgresql  → Service: postgresql:5432
+                - task: HelmDeploy@0
+                  displayName: Deploy PostgreSQL
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: $(namespace)
+                    command: upgrade
+                    chartType: Name
+                    chartName: bitnami/postgresql
+                    releaseName: postgresql
+                    valueFile: aks/helm-values/dev/postgresql-values.yaml
+                    overrideValues: auth.postgresPassword=$(postgres-password),auth.metricsPassword=$(postgres-exporter-password)
+                    install: true
+                    waitForExecution: true
+                    arguments: --timeout 120s
+
+                # ── Redis ─────────────────────────────────────────────────────
+                # Release: redis  → Service: redis-master:6379
+                - task: HelmDeploy@0
+                  displayName: Deploy Redis
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: $(namespace)
+                    command: upgrade
+                    chartType: Name
+                    chartName: bitnami/redis
+                    releaseName: redis
+                    valueFile: aks/helm-values/dev/redis-values.yaml
+                    install: true
+                    waitForExecution: true
+                    arguments: --timeout 120s
+
+                # ── RabbitMQ ──────────────────────────────────────────────────
+                # Release: rabbitmq  → Service: rabbitmq:5672
+                - task: HelmDeploy@0
+                  displayName: Deploy RabbitMQ
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: $(namespace)
+                    command: upgrade
+                    chartType: Name
+                    chartName: bitnami/rabbitmq
+                    releaseName: rabbitmq
+                    valueFile: aks/helm-values/dev/rabbitmq-values.yaml
+                    overrideValues: auth.password=$(rabbitmq-password)
+                    install: true
+                    waitForExecution: true
+                    arguments: --timeout 120s
+
+                # ── Loki ──────────────────────────────────────────────────────
+                # Release: loki  → Service: loki:3100
+                - task: HelmDeploy@0
+                  displayName: Deploy Loki
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: $(namespace)
+                    command: upgrade
+                    chartType: Name
+                    chartName: grafana/loki
+                    releaseName: loki
+                    valueFile: aks/helm-values/dev/loki-values.yaml
+                    install: true
+                    waitForExecution: true
+                    arguments: --timeout 180s
+
+                # ── kube-prometheus-stack ─────────────────────────────────────
+                # Release: monitoring
+                #   → monitoring-kube-prometheus-prometheus:9090
+                #   → monitoring-kube-prometheus-alertmanager:9093
+                #   → monitoring-grafana:80
+                - task: HelmDeploy@0
+                  displayName: Deploy kube-prometheus-stack (Prometheus + Grafana + Alertmanager)
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: $(namespace)
+                    command: upgrade
+                    chartType: Name
+                    chartName: prometheus-community/kube-prometheus-stack
+                    releaseName: monitoring
+                    valueFile: aks/helm-values/dev/kube-prometheus-stack-values.yaml
+                    overrideValues: alertmanager.config.receivers[0].slack_configs[0].api_url=$(alertmanager-slack-webhook)
+                    install: true
+                    waitForExecution: true
+                    arguments: --timeout 300s
+
+                # ── Jaeger ────────────────────────────────────────────────────
+                # Release: jaeger  → Service: jaeger:4317 / :16686
+                # Deployed after kube-prometheus-stack so Prometheus URL is ready.
+                - task: HelmDeploy@0
+                  displayName: Deploy Jaeger
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: $(namespace)
+                    command: upgrade
+                    chartType: Name
+                    chartName: jaegertracing/jaeger
+                    releaseName: jaeger
+                    valueFile: aks/helm-values/dev/jaeger-values.yaml
+                    install: true
+                    waitForExecution: true
+                    arguments: --timeout 120s
+
+                # ── OpenTelemetry Collector ───────────────────────────────────
+                # Release: otel-collector  → Service: otel-collector:4317
+                # Deployed last — requires Jaeger, Loki and Prometheus to be ready.
+                - task: HelmDeploy@0
+                  displayName: Deploy OpenTelemetry Collector
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: $(namespace)
+                    command: upgrade
+                    chartType: Name
+                    chartName: open-telemetry/opentelemetry-collector
+                    releaseName: otel-collector
+                    valueFile: aks/helm-values/dev/otel-collector-values.yaml
+                    install: true
+                    waitForExecution: true
+                    arguments: --timeout 120s

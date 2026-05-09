@@ -1,0 +1,39 @@
+# Bitnami Redis chart values — dev environment
+# Chart: bitnami/redis
+#
+# No secrets required: Redis auth is disabled to match docker-compose dev setup.
+# Redis connection string in Key Vault is: redis-master:6379 (no password).
+#
+# With fullnameOverride=redis and architecture=standalone, Bitnami creates:
+#   Service: redis-master:6379  (matches Redis__ConnectionString in products-secrets)
+#   Metrics: redis-metrics:9121 (scraped by Prometheus additionalScrapeConfigs)
+
+architecture: standalone
+
+auth:
+  enabled: false
+
+fullnameOverride: redis
+
+master:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: false
+
+# Built-in redis_exporter sidecar.
+# Exposes metrics at redis-metrics:9121.
+metrics:
+  enabled: true
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi

@@ -21,8 +21,11 @@ builder.Services.AddControllers(options =>
     options.SuppressAsyncSuffixInActionNames = false;
 });
 
-//Register Consul service discovery
-builder.Services.AddConsulDiscoveryClient();
+//Register Consul service discovery (only when deployed with Docker; K8s uses its own service discovery)
+if (builder.Configuration.GetValue<bool>("UseConsul", false))
+{
+    builder.Services.AddConsulDiscoveryClient();
+}
 
 //Add Swagger services
 if (builder.Environment.IsDevelopment())

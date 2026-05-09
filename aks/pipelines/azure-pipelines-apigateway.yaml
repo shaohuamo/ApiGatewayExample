@@ -1,0 +1,207 @@
+# Docker
+# Build and push an image to Azure Container Registry, then deploy to AKS
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+  branches:
+    include:
+      - dev
+      - qa
+      - uat
+      - staging
+      - prod
+  paths:
+    include:
+    - src/backend/Gateway/ApiGateway/**
+
+resources:
+- repo: self
+
+variables:
+  # Reference global variable group for Docker registry and image configuration
+  # This group is accessible to Build stage
+  - group: apigateway-global
+
+  # Explicit path to the API Gateway Dockerfile
+  - dockerfilePath: 'src/backend/Gateway/ApiGateway/Dockerfile'
+  - tag: '$(Build.BuildId)'
+
+  # Agent VM image name
+  - vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        # Build context must be the repo root: the Dockerfile COPYs files using
+        # paths relative to the solution root (e.g. src/backend/BuildingBlocks/...)
+        buildContext: $(Build.SourcesDirectory)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+
+- stage: DeployToDev
+  displayName: Deploy to Dev
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+  variables:
+  - group: apigateway-dev
+
+  jobs:
+  - deployment: DeploymentToDev
+    displayName: Deployment to Dev Environment
+    pool:
+      vmImage: $(vmImageName)
+    environment: dev
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            displayName: Checkout source code
+
+          - task: KubernetesManifest@1
+            displayName: Deploy API Gateway to dev namespace in kubernetes
+            inputs:
+              action: deploy
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
+              namespace: $(kubernetes-namespace)
+              manifests: aks/manifests/dev/backend/apigateway-dev.yaml
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+- stage: DeployToQA
+  displayName: Deploy to QA
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
+  variables:
+  - group: apigateway-qa
+
+  jobs:
+  - deployment: DeploymentToQA
+    displayName: Deployment to QA Environment
+    pool:
+      vmImage: $(vmImageName)
+    environment: qa
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            displayName: Checkout source code
+
+          - task: KubernetesManifest@1
+            displayName: Deploy API Gateway to qa namespace in kubernetes
+            inputs:
+              action: deploy
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
+              namespace: $(kubernetes-namespace)
+              manifests: aks/manifests/qa/backend/apigateway-qa.yaml
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+- stage: DeployToUAT
+  displayName: Deploy to UAT
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/uat'))
+  variables:
+  - group: apigateway-uat
+
+  jobs:
+  - deployment: DeploymentToUAT
+    displayName: Deployment to UAT Environment
+    pool:
+      vmImage: $(vmImageName)
+    environment: uat
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            displayName: Checkout source code
+
+          - task: KubernetesManifest@1
+            displayName: Deploy API Gateway to uat namespace in kubernetes
+            inputs:
+              action: deploy
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
+              namespace: $(kubernetes-namespace)
+              manifests: aks/manifests/uat/backend/apigateway-uat.yaml
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+- stage: DeployToStaging
+  displayName: Deploy to Staging
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/staging'))
+  variables:
+  - group: apigateway-staging
+
+  jobs:
+  - deployment: DeploymentToStaging
+    displayName: Deployment to Staging Environment
+    pool:
+      vmImage: $(vmImageName)
+    environment: staging
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            displayName: Checkout source code
+
+          - task: KubernetesManifest@1
+            displayName: Deploy API Gateway to staging namespace in kubernetes
+            inputs:
+              action: deploy
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
+              namespace: $(kubernetes-namespace)
+              manifests: aks/manifests/staging/backend/apigateway-staging.yaml
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+- stage: DeployToProduction
+  displayName: Deploy to Production
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/prod'))
+  variables:
+  - group: apigateway-prod
+
+  jobs:
+  - deployment: DeployToProduction
+    displayName: Deployment to Production Environment
+    pool:
+      vmImage: $(vmImageName)
+    environment: prod
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            displayName: Checkout source code
+
+          - task: KubernetesManifest@1
+            displayName: Deploy API Gateway to prod namespace in kubernetes
+            inputs:
+              action: deploy
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
+              namespace: $(kubernetes-namespace)
+              manifests: aks/manifests/prod/backend/apigateway-prod.yaml
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)

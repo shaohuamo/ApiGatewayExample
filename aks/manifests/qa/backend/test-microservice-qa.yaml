@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-microservice-deployment
+  labels:
+    app: test-microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-microservice
+  template:
+    metadata:
+      labels:
+        app: test-microservice
+    spec:
+      containers:
+      - name: test-microservice
+        image: microservicesdemoregistry.azurecr.io/test-microservice:$(tag)
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        - name: App_Name
+          value: App_A
+        - name: Consul__Host
+          value: consul
+        - name: Consul__Port
+          value: 8500
+        - name: Consul__Discovery__ServiceName
+          value: testservice
+        - name: Consul__Discovery__Hostname
+          value: test-microservice-deployment
+        - name: Consul__Discovery__Port
+          value: 8080
+        - name: RabbitMQ__HostName
+          valueFrom:
+            secretKeyRef:
+              name: test-microservice-secrets
+              key: rabbitmq-host
+        - name: RabbitMQ__UserName
+          valueFrom:
+            secretKeyRef:
+              name: test-microservice-secrets
+              key: rabbitmq-user
+        - name: RabbitMQ__Password
+          valueFrom:
+            secretKeyRef:
+              name: test-microservice-secrets
+              key: rabbitmq-password
+        - name: RabbitMQ__Port
+          value: 5672
+        - name: RabbitMQ__MaxRetryAttempts
+          value: 10
+        - name: RabbitMQ__InitialDelaySeconds
+          value: 2
+        - name: RabbitMQ__MaxDelaySeconds
+          value: 30
+        - name: RabbitMQ__NetworkRecoveryIntervalSeconds
+          value: 10
+        - name: RabbitMQ_Products_Exchange
+          value: "products.exchange"
+        - name: RabbitMQ_Products_RoutingKey
+          value: "products.add"
+        - name: RabbitMQ_Products_Queue
+          value: "products.add.queue"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4317"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.name=test.api,deployment.environment=qa"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-microservice-service
+  labels:
+    app: test-microservice
+spec:
+  selector:
+    app: test-microservice
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP

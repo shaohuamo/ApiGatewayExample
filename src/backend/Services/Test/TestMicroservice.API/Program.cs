@@ -40,7 +40,11 @@ builder.Services.AddOpenTelemetry()
 // Add services to the container.
 builder.Services.AddControllers();
 
-builder.Services.AddConsulDiscoveryClient();
+//Register Consul service discovery (only when deployed with Docker; K8s uses its own service discovery)
+if (builder.Configuration.GetValue<bool>("UseConsul", false))
+{
+    builder.Services.AddConsulDiscoveryClient();
+}
 
 builder.Services.AddSingleton<IRabbitMQConnectionProvider, RabbitMQConnectionProvider>();
 builder.Services.AddSingleton<IRabbitMQProductAddConsumer, RabbitMQProductAddConsumer>();
