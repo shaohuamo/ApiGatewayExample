@@ -10,6 +10,12 @@
 #   The 'exporter' role is created by 02_monitoring.sql initdb script;
 #   auth.metricsPassword must match the password set in that script.
 
+# Required to prevent nil pointer in postgresql.v1.metricsPasswordKey template helper
+# when metrics.enabled=true and passwords are supplied via --set rather than an existing secret.
+global:
+  auth:
+    existingSecret: ""
+
 auth:
   # postgresPassword: injected via pipeline --set
   # metricsPassword: injected via pipeline --set
