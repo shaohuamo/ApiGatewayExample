@@ -1,0 +1,62 @@
+# Cluster add-ons pipeline
+# Deploys cluster-scoped ingress-nginx resources to AKS using the official static manifest.
+
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - aks/pipelines/azure-pipelines-cluster-addons.yaml
+
+resources:
+  - repo: self
+
+variables:
+  - name: vmImageName
+    value: ubuntu-latest
+  - name: azureSubscription
+    value: microservicesdemo-resource-group-connection
+  - name: aksResourceGroup
+    value: microservicesdemo-resource-group
+  - name: aksClusterName
+    value: microservicesdemo-aks-cluster
+  - name: ingressNginxManifestUrl
+    value: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/cloud/deploy.yaml
+
+stages:
+  - stage: DeployIngressNginx
+    displayName: Deploy NGINX Ingress Controller
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+    jobs:
+      - deployment: DeployIngressNginx
+        displayName: Deploy ingress-nginx to AKS
+        pool:
+          vmImage: $(vmImageName)
+        environment: dev-cluster-addons
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
+
+                - task: AzureCLI@2
+                  displayName: Apply ingress-nginx static manifest
+                  inputs:
+                    azureSubscription: $(azureSubscription)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+
+                      az aks get-credentials \
+                        --resource-group $(aksResourceGroup) \
+                        --name $(aksClusterName) \
+                        --admin \
+                        --overwrite-existing
+
+                      kubectl apply -f $(ingressNginxManifestUrl)
+                      kubectl wait \
+                        --namespace ingress-nginx \
+                        --for=condition=available deployment/ingress-nginx-controller \
+                        --timeout=300s
