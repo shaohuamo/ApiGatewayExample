@@ -81,7 +81,9 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/dev/backend/apigateway-dev.yaml
+              manifests: |
+                aks/manifests/dev/backend/apigateway-dev.yaml
+                aks/manifests/dev/backend/ingress-dev.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -112,7 +114,9 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/qa/backend/apigateway-qa.yaml
+              manifests: |
+                aks/manifests/qa/backend/apigateway-qa.yaml
+                aks/manifests/qa/backend/ingress-qa.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -143,7 +147,9 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/uat/backend/apigateway-uat.yaml
+              manifests: |
+                aks/manifests/uat/backend/apigateway-uat.yaml
+                aks/manifests/uat/backend/ingress-uat.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -174,7 +180,9 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/staging/backend/apigateway-staging.yaml
+              manifests: |
+                aks/manifests/staging/backend/apigateway-staging.yaml
+                aks/manifests/staging/backend/ingress-staging.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -205,6 +213,8 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/prod/backend/apigateway-prod.yaml
+              manifests: |
+                aks/manifests/prod/backend/apigateway-prod.yaml
+                aks/manifests/prod/backend/ingress-prod.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)

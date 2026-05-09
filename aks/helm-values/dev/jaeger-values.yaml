@@ -15,6 +15,9 @@
 
 fullnameOverride: jaeger
 
+# Note: docker-compose uses jaegertracing/all-in-one:1.54 (Jaeger v1).
+# This Helm chart deploys Jaeger v2 (jaegertracing/jaeger) — a different architecture;
+# there is no equivalent v1 tag. Chart default version is used.
 jaeger:
   replicas: 1
   resources:

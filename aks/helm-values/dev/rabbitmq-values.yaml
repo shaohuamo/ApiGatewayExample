@@ -8,11 +8,19 @@
 #   Service: rabbitmq:5672   (matches RabbitMQ__HostName in products-secrets)
 #   Metrics: rabbitmq:15692  (built-in Prometheus plugin, scraped by Prometheus)
 
+# Pull Bitnami images from ACR pull-through cache to avoid Docker Hub rate limits.
+# ACR cache rule: dockerhub/* → docker.io/* (configured by infrastructure pipeline).
+global:
+  imageRegistry: microservicesdemoregistry.azurecr.io/dockerhub
+
 auth:
   username: guest
   # password: injected via pipeline --set
 
 fullnameOverride: rabbitmq
+
+image:
+  tag: "4.2"
 
 replicaCount: 1
 
