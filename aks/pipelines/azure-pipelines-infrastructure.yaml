@@ -39,7 +39,8 @@ resources:
 variables:
   - group: infrastructure-key-vault     # Linked to Key Vault microservicesdemo-kv
                                          # Secrets: postgres-password, rabbitmq-password,
-                                         #   alertmanager-slack-webhook
+                                         #   alertmanager-slack-webhook, postgres-exporter-password,
+                                         #   redis-connection-string
   - name: k8sServiceConnection
     value: dev-microservicesdemo-aks-cluster-dev-1778160743494
   - name: azureSubscription
@@ -144,7 +145,7 @@ stages:
                         --dry-run=client -o yaml | kubectl apply -f -
 
                       kubectl -n $(namespace) create secret generic postgres-exporter-secret \
-                        --from-literal=DATA_SOURCE_NAME='postgresql://exporter:exporterpass@postgres:5432/productsdatabase?sslmode=disable' \
+                        --from-literal=DATA_SOURCE_NAME='postgresql://exporter:$(postgres-exporter-password)@postgres:5432/productsdatabase?sslmode=disable' \
                         --dry-run=client -o yaml | kubectl apply -f -
 
                       kubectl -n $(namespace) create secret generic rabbitmq-infra-secret \
@@ -162,7 +163,7 @@ stages:
                         --from-literal=rabbitmq-host='rabbitmq' \
                         --from-literal=rabbitmq-user='guest' \
                         --from-literal=rabbitmq-password='$(rabbitmq-password)' \
-                        --from-literal=redis-connection-string='redis:6379' \
+                        --from-literal=redis-connection-string='$(redis-connection-string)' \
                         --dry-run=client -o yaml | kubectl apply -f -
 
                       kubectl -n $(namespace) create secret generic test-microservice-secrets \
