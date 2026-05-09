@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: microservices-ingress-uat
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - apigateway.uat.example.com
+        - admin.uat.example.com
+      secretName: microservices-tls-uat
+  rules:
+    # API Gateway - entry point for all backend API traffic
+    - host: apigateway.uat.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: apigateway-service
+                port:
+                  number: 8080
+
+    # Admin Web - frontend application
+    - host: admin.uat.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-web-service
+                port:
+                  number: 3000
+
+    # NOTE: products-microservice and test-microservice are intentionally NOT exposed
+    # externally. All backend API traffic must go through the API Gateway.

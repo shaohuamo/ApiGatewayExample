@@ -8,6 +8,11 @@
 #   Service: redis-master:6379  (matches Redis__ConnectionString in products-secrets)
 #   Metrics: redis-metrics:9121 (scraped by Prometheus additionalScrapeConfigs)
 
+# Pull Bitnami images from ACR pull-through cache to avoid Docker Hub rate limits.
+# ACR cache rule: dockerhub/* → docker.io/* (configured by infrastructure pipeline).
+global:
+  imageRegistry: microservicesdemoregistry.azurecr.io/dockerhub
+
 architecture: standalone
 
 auth:
@@ -16,6 +21,7 @@ auth:
 fullnameOverride: redis
 
 master:
+  replicaCount: 1
   resources:
     requests:
       cpu: 50m

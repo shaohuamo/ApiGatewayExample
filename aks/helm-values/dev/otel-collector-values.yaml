@@ -10,7 +10,14 @@
 
 fullnameOverride: otel-collector
 
+# Required since opentelemetry-collector chart v0.97+ — image.repository must be set explicitly.
+# contrib image is required for loki exporter and spanmetrics connector.
+image:
+  repository: otel/opentelemetry-collector-contrib
+  tag: "0.100.0"
+
 mode: deployment
+replicaCount: 1
 
 config:
   receivers:

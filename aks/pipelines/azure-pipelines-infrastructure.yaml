@@ -11,11 +11,12 @@
 #   redis-master:6379                            (Bitnami Redis standalone)
 #   rabbitmq:5672                                (Bitnami RabbitMQ)
 #   otel-collector:4317                          (OpenTelemetry Collector)
-#   jaeger:4317 / :16686                       (Jaeger, fullnameOverride=jaeger)
+#   jaeger:4317 / :16686                         (Jaeger, fullnameOverride=jaeger)
 #   loki:3100                                    (Grafana Loki)
 #   monitoring-kube-prometheus-prometheus:9090   (kube-prometheus-stack)
 #   monitoring-kube-prometheus-alertmanager:9093
 #   monitoring-grafana:80
+#   ingress-nginx-controller:80/:443             (NGINX Ingress Controller, namespace: ingress-nginx)
 
 trigger:
   branches:
@@ -40,6 +41,13 @@ variables:
     value: dev
   - name: vmImageName
     value: ubuntu-latest
+  # AKS cluster identity — used by the CRD installation step (requires admin credentials)
+  - name: aksResourceGroup
+    value: microservicesdemo-resource-group
+  - name: aksClusterName
+    value: microservicesdemo-aks-cluster
+  - name: acrName
+    value: microservicesdemoregistry
 
 stages:
   - stage: DeployInfrastructure
@@ -82,7 +90,31 @@ stages:
                       kind: Namespace
                       metadata:
                         name: $(namespace)
+                # ── Attach ACR to AKS + configure Docker Hub pull-through cache ───────
+                # Bitnami images are pulled from docker.io; without a cache AKS nodes
+                # hit Docker Hub unauthenticated pull rate limits (ImagePullBackOff).
+                # ACR pull-through transparently caches docker.io images on first pull.
+                # AKS uses its managed identity to authenticate to ACR — no imagePullSecrets needed.
+                - task: AzureCLI@2
+                  displayName: Attach ACR to AKS and configure Docker Hub cache rule
+                  inputs:
+                    azureSubscription: microservicesdemo-resource-group-connection
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      # Attach ACR to AKS (idempotent — safe to re-run)
+                      az aks update \
+                        --resource-group $(aksResourceGroup) \
+                        --name $(aksClusterName) \
+                        --attach-acr $(acrName)
 
+                      # Create pull-through cache rule for Docker Hub (idempotent)
+                      az acr cache create \
+                        --registry $(acrName) \
+                        --name dockerhub \
+                        --source-repo "docker.io/*" \
+                        --target-repo "dockerhub/*" \
+                        2>/dev/null || echo "Cache rule already exists, skipping."
                 # ── PostgreSQL ────────────────────────────────────────────────
                 # Release: postgresql  → Service: postgresql:5432
                 - task: HelmDeploy@0
@@ -162,6 +194,26 @@ stages:
                 #   → monitoring-kube-prometheus-prometheus:9090
                 #   → monitoring-kube-prometheus-alertmanager:9093
                 #   → monitoring-grafana:80
+                #
+                # CRDs are cluster-scoped; the namespace service account cannot create them.
+                # A separate AzureCLI step fetches admin credentials and applies CRDs first,
+                # then HelmDeploy uses --skip-crds to avoid re-attempting CRD installation.
+                - task: AzureCLI@2
+                  displayName: Install kube-prometheus-stack CRDs (cluster-admin)
+                  continueOnError: true
+                  inputs:
+                    azureSubscription: microservicesdemo-resource-group-connection
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az aks get-credentials \
+                        --resource-group $(aksResourceGroup) \
+                        --name $(aksClusterName) \
+                        --admin \
+                        --overwrite-existing
+                      helm show crds prometheus-community/kube-prometheus-stack \
+                        | kubectl apply --server-side --force-conflicts -f -
+
                 - task: HelmDeploy@0
                   displayName: Deploy kube-prometheus-stack (Prometheus + Grafana + Alertmanager)
                   continueOnError: true
@@ -177,7 +229,7 @@ stages:
                     overrideValues: alertmanager.config.receivers[0].slack_configs[0].api_url=$(alertmanager-slack-webhook)
                     install: true
                     waitForExecution: true
-                    arguments: --timeout 300s
+                    arguments: --skip-crds --timeout 300s
 
                 # ── Jaeger ────────────────────────────────────────────────────
                 # Release: jaeger  → Service: jaeger:4317 / :16686
@@ -216,3 +268,27 @@ stages:
                     install: true
                     waitForExecution: true
                     arguments: --timeout 120s
+
+                # ── NGINX Ingress Controller ──────────────────────────────────
+                # Deployed into its own namespace (ingress-nginx) — cluster-wide shared component.
+                # Provisions an Azure LoadBalancer with a single external IP; all HTTP/HTTPS
+                # traffic is then routed to services via Ingress resources defined per-service.
+                - script: |
+                    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+                    helm repo update
+                  displayName: Add ingress-nginx Helm repository
+
+                - task: HelmDeploy@0
+                  displayName: Deploy NGINX Ingress Controller
+                  continueOnError: true
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    namespace: ingress-nginx
+                    command: upgrade
+                    chartType: Name
+                    chartName: ingress-nginx/ingress-nginx
+                    releaseName: ingress-nginx
+                    install: true
+                    waitForExecution: true
+                    arguments: --create-namespace --timeout 120s

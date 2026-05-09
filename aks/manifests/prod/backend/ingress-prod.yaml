@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: microservices-ingress-prod
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - apigateway.example.com
+        - admin.example.com
+      secretName: microservices-tls-prod
+  rules:
+    # API Gateway - entry point for all backend API traffic
+    - host: apigateway.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: apigateway-service
+                port:
+                  number: 8080
+
+    # Admin Web - frontend application
+    - host: admin.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-web-service
+                port:
+                  number: 3000
+
+    # NOTE: products-microservice and test-microservice are intentionally NOT exposed
+    # externally. All backend API traffic must go through the API Gateway.

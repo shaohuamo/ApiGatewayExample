@@ -14,6 +14,9 @@
 # ── Prometheus ───────────────────────────────────────────────────────────────
 prometheus:
   prometheusSpec:
+    replicas: 1
+    image:
+      tag: "v3.1.0"
     # Enable OTLP receiver (equivalent to --web.enable-otlp-receiver and
     # --enable-feature=exemplar-storage,otlp-receiver in docker-compose).
     enableFeatures:
@@ -106,6 +109,9 @@ alertmanager:
         equal: [alertname, queue]
 
   alertmanagerSpec:
+    replicas: 1
+    image:
+      tag: "v0.27.0"
     resources:
       requests:
         cpu: 50m
@@ -116,6 +122,9 @@ alertmanager:
 
 # ── Grafana ───────────────────────────────────────────────────────────────────
 grafana:
+  replicas: 1
+  image:
+    tag: "10.3.3"
   resources:
     requests:
       cpu: 100m
