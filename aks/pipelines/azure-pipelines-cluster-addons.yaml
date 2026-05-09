@@ -33,7 +33,7 @@ stages:
         displayName: Deploy ingress-nginx to AKS
         pool:
           vmImage: $(vmImageName)
-        environment: dev-cluster-addons
+        environment: dev
         strategy:
           runOnce:
             deploy:
