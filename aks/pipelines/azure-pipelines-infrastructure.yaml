@@ -73,7 +73,7 @@ stages:
                   displayName: Ensure dev namespace exists
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceConnection: $(k8sServiceConnection)
+                    kubernetesServiceEndpoint: $(k8sServiceConnection)
                     command: apply
                     useConfigurationFile: true
                     configurationType: inline
