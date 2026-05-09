@@ -12,12 +12,7 @@
 
 # Required to prevent nil pointer in postgresql.v1.metricsPasswordKey template helper
 # when metrics.enabled=true and passwords are supplied via --set rather than an existing secret.
-# Also sets global image registry to ACR pull-through cache to avoid Docker Hub rate limits.
-# allowInsecureImages: required when using ACR-redirected images (bypasses Bitnami image verification).
 global:
-  imageRegistry: microservicesdemoregistry.azurecr.io/dockerhub
-  security:
-    allowInsecureImages: true
   auth:
     existingSecret: ""
 

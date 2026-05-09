@@ -33,7 +33,7 @@ resources:
 variables:
   - group: infrastructure-key-vault     # Linked to Key Vault microservicesdemo-kv
                                          # Secrets: postgres-password, rabbitmq-password,
-                                         #   redis-connection-string, postgres-exporter-password,
+                                         #   redis-connection-string,
                                          #   alertmanager-slack-webhook
   - name: k8sServiceConnection
     value: dev-microservicesdemo-aks-cluster-dev-1778160743494
@@ -46,8 +46,6 @@ variables:
     value: microservicesdemo-resource-group
   - name: aksClusterName
     value: microservicesdemo-aks-cluster
-  - name: acrName
-    value: microservicesdemoregistry
 
 stages:
   - stage: DeployInfrastructure
@@ -90,31 +88,6 @@ stages:
                       kind: Namespace
                       metadata:
                         name: $(namespace)
-                # ── Attach ACR to AKS + configure Docker Hub pull-through cache ───────
-                # Bitnami images are pulled from docker.io; without a cache AKS nodes
-                # hit Docker Hub unauthenticated pull rate limits (ImagePullBackOff).
-                # ACR pull-through transparently caches docker.io images on first pull.
-                # AKS uses its managed identity to authenticate to ACR — no imagePullSecrets needed.
-                - task: AzureCLI@2
-                  displayName: Attach ACR to AKS and configure Docker Hub cache rule
-                  inputs:
-                    azureSubscription: microservicesdemo-resource-group-connection
-                    scriptType: bash
-                    scriptLocation: inlineScript
-                    inlineScript: |
-                      # Attach ACR to AKS (idempotent — safe to re-run)
-                      az aks update \
-                        --resource-group $(aksResourceGroup) \
-                        --name $(aksClusterName) \
-                        --attach-acr $(acrName)
-
-                      # Create pull-through cache rule for Docker Hub (idempotent)
-                      az acr cache create \
-                        --registry $(acrName) \
-                        --name dockerhub \
-                        --source-repo "docker.io/*" \
-                        --target-repo "dockerhub/*" \
-                        2>/dev/null || echo "Cache rule already exists, skipping."
                 # ── PostgreSQL ────────────────────────────────────────────────
                 # Release: postgresql  → Service: postgresql:5432
                 - task: HelmDeploy@0
@@ -129,7 +102,7 @@ stages:
                     chartName: bitnami/postgresql
                     releaseName: postgresql
                     valueFile: aks/helm-values/dev/postgresql-values.yaml
-                    overrideValues: auth.postgresPassword=$(postgres-password),auth.metricsPassword=$(postgres-exporter-password)
+                    overrideValues: auth.postgresPassword=$(postgres-password)
                     install: true
                     waitForExecution: true
                     arguments: --timeout 120s
