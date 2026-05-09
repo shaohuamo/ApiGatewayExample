@@ -101,7 +101,7 @@ stages:
 
                       kubectl -n $(namespace) create configmap postgres-init-scripts \
                         --from-file=configs/postgres/init \
-                        --dry-run=client -o yaml | kubectl apply -f -
+                        --dry-run=client -o yaml | kubectl apply --server-side -f -
 
                       kubectl -n $(namespace) create configmap postgres-exporter-queries \
                         --from-file=queries.yaml=configs/postgres-exporter/queries.yaml \
@@ -121,7 +121,7 @@ stages:
 
                       kubectl -n $(namespace) create configmap prometheus-rules \
                         --from-file=configs/prometheus/rules \
-                        --dry-run=client -o yaml | kubectl apply -f -
+                        --dry-run=client -o yaml | kubectl apply --server-side -f -
 
                       kubectl -n $(namespace) create configmap grafana-datasources \
                         --from-file=datasource.yaml=configs/grafana/datasource.yml \
@@ -129,7 +129,7 @@ stages:
 
                       kubectl -n $(namespace) create configmap grafana-dashboards \
                         --from-file=configs/grafana/dashboards \
-                        --dry-run=client -o yaml | kubectl apply -f -
+                        --dry-run=client -o yaml | kubectl apply --server-side -f -
 
                       kubectl -n $(namespace) create configmap promtail-config \
                         --from-file=config.yml=aks/manifests/dev/infrastructure/assets/promtail-config.yml \
