@@ -97,9 +97,6 @@ stages:
   displayName: Deploy to Dev
   dependsOn: Test
   condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
-  variables:
-  - group: products-microservice-dev
-
   jobs:
   - deployment: DeploymentToDev
     displayName: Deployment to Dev Environment
@@ -118,8 +115,8 @@ stages:
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
-              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
-              namespace: $(kubernetes-namespace)
+              kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
+              namespace: dev
               manifests: aks/manifests/dev/backend/products-microservice-dev.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
@@ -128,9 +125,6 @@ stages:
   displayName: Deploy to QA
   dependsOn: Test
   condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
-  variables:
-  - group: products-microservice-qa
-
   jobs:
   - deployment: DeploymentToQA
     displayName: Deployment to QA Environment
@@ -149,8 +143,8 @@ stages:
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
-              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
-              namespace: $(kubernetes-namespace)
+              kubernetesServiceConnection: qa-microservicesdemo-aks-cluster-qa-1778160953610
+              namespace: qa
               manifests: aks/manifests/qa/backend/products-microservice-qa.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
@@ -159,9 +153,6 @@ stages:
   displayName: Deploy to UAT
   dependsOn: Test
   condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/uat'))
-  variables:
-  - group: products-microservice-uat
-
   jobs:
   - deployment: DeploymentToUAT
     displayName: Deployment to UAT Environment
@@ -180,8 +171,8 @@ stages:
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
-              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
-              namespace: $(kubernetes-namespace)
+              kubernetesServiceConnection: uat-microservicesdemo-aks-cluster-uat-1778161095509
+              namespace: uat
               manifests: aks/manifests/uat/backend/products-microservice-uat.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
@@ -190,9 +181,6 @@ stages:
   displayName: Deploy to Staging
   dependsOn: Test
   condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/staging'))
-  variables:
-  - group: products-microservice-staging
-
   jobs:
   - deployment: DeploymentToStaging
     displayName: Deployment to Staging Environment
@@ -211,8 +199,8 @@ stages:
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
-              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
-              namespace: $(kubernetes-namespace)
+              kubernetesServiceConnection: staging-microservicesdemo-aks-cluster-staging-1778161154539
+              namespace: staging
               manifests: aks/manifests/staging/backend/products-microservice-staging.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
@@ -221,9 +209,6 @@ stages:
   displayName: Deploy to Production
   dependsOn: Test
   condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/prod'))
-  variables:
-  - group: products-microservice-prod
-
   jobs:
   - deployment: DeployToProduction
     displayName: Deployment to Production Environment
@@ -242,8 +227,8 @@ stages:
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
-              kubernetesServiceConnection: $(kubernetesServiceConnectionName)
-              namespace: $(kubernetes-namespace)
+              kubernetesServiceConnection: prod-microservicesdemo-aks-cluster-prod-1778161221255
+              namespace: prod
               manifests: aks/manifests/prod/backend/products-microservice-prod.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
