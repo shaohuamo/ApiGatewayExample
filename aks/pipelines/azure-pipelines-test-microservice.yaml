@@ -24,11 +24,14 @@ variables:
   - group: test-microservice-global
 
   # Explicit path avoids picking up Dockerfiles from other services (Gateway, etc.)
-  - dockerfilePath: 'src/backend/Services/Test/TestMicroservice.API/Dockerfile'
-  - tag: '$(Build.BuildId)'
+  - name: dockerfilePath
+    value: 'src/backend/Services/Test/TestMicroservice.API/Dockerfile'
+  - name: tag
+    value: '$(Build.BuildId)'
 
   # Agent VM image name
-  - vmImageName: 'ubuntu-latest'
+  - name: vmImageName
+    value: 'ubuntu-latest'
 
 stages:
 - stage: Build
