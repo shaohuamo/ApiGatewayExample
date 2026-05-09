@@ -10,8 +10,11 @@
 
 # Pull Bitnami images from ACR pull-through cache to avoid Docker Hub rate limits.
 # ACR cache rule: dockerhub/* → docker.io/* (configured by infrastructure pipeline).
+# allowInsecureImages: required when using ACR-redirected images (bypasses Bitnami image verification).
 global:
   imageRegistry: microservicesdemoregistry.azurecr.io/dockerhub
+  security:
+    allowInsecureImages: true
 
 auth:
   username: guest

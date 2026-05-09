@@ -12,12 +12,6 @@ deploymentMode: SingleBinary
 
 fullnameOverride: loki
 
-# Use namespace-scoped Role/RoleBinding instead of ClusterRole/ClusterRoleBinding.
-# Required when the pipeline service account only has namespace-level permissions.
-rbac:
-  namespaceRbac:
-    enabled: true
-
 loki:
   image:
     tag: "2.9.3"

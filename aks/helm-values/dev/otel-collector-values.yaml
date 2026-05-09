@@ -73,6 +73,12 @@ config:
       verbosity: normal
 
   service:
+    # Fix: chart injects ${MY_POD_IP}:8888 AND the default binds :8888, causing
+    # "address already in use" crash. Explicitly pinning to 0.0.0.0:8888 ensures
+    # only one listener is created.
+    telemetry:
+      metrics:
+        address: 0.0.0.0:8888
     pipelines:
       traces:
         receivers: [otlp]
