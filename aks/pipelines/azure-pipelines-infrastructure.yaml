@@ -181,6 +181,7 @@ stages:
                     kubernetesServiceConnection: $(k8sServiceConnection)
                     namespace: $(namespace)
                     manifests: aks/manifests/dev/infrastructure/10-data-services.yaml
+                    rolloutStatusTimeout: 300
 
                 - task: KubernetesManifest@1
                   displayName: Deploy observability services
@@ -192,3 +193,4 @@ stages:
                     manifests: |
                       aks/manifests/dev/infrastructure/20-observability.yaml
                       aks/manifests/dev/infrastructure/21-promtail.yaml
+                    rolloutStatusTimeout: 300
