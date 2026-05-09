@@ -35,16 +35,6 @@ prometheus:
           - targets:
               - rabbitmq:15692
 
-      - job_name: postgres
-        static_configs:
-          - targets:
-              - postgresql-metrics:9187
-
-      - job_name: redis
-        static_configs:
-          - targets:
-              - redis-metrics:9121
-
     storageSpec:
       emptyDir:
         medium: Memory
@@ -123,6 +113,15 @@ alertmanager:
 # ── Grafana ───────────────────────────────────────────────────────────────────
 grafana:
   replicas: 1
+  # Keep Grafana as a single-container pod in dev.
+  # Disabling the sidecars also disables auto-imported dashboards; datasources
+  # are provisioned explicitly below instead.
+  defaultDashboardsEnabled: false
+  sidecar:
+    dashboards:
+      enabled: false
+    datasources:
+      enabled: false
   image:
     tag: "10.3.3"
   resources:
@@ -140,10 +139,29 @@ grafana:
     auth:
       disable_login_form: true
 
-  # Prometheus datasource is provisioned automatically by kube-prometheus-stack.
-  # Add Loki and Jaeger datasources matching UIDs from configs/grafana/datasource.yml
-  # so that existing dashboard cross-links (trace↔log↔metric) continue to work.
+  # Provision datasources explicitly so Grafana can stay single-container.
   additionalDataSources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      uid: prometheus
+      url: http://monitoring-kube-prometheus-prometheus:9090
+      isDefault: true
+      editable: true
+      jsonData:
+        httpMethod: POST
+        timeInterval: 15s
+
+    - name: Alertmanager
+      type: alertmanager
+      access: proxy
+      uid: alertmanager
+      url: http://monitoring-kube-prometheus-alertmanager:9093
+      editable: true
+      jsonData:
+        implementation: prometheus
+        handleGrafanaManagedAlerts: false
+
     - name: Loki
       type: loki
       access: proxy
