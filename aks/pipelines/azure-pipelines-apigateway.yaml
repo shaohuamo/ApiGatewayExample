@@ -12,19 +12,18 @@ trigger:
       - prod
   paths:
     include:
-    - src/backend/Services/Products/**
-    - src/backend/BuildingBlocks/CommonService/**
+    - src/backend/Gateway/ApiGateway/**
 
 resources:
 - repo: self
 
 variables:
   # Reference global variable group for Docker registry and image configuration
-  # This group is accessible to Build and Test stages
-  - group: products-microservice-global
-  
-  # Explicit path avoids picking up Dockerfiles from other services (Gateway, etc.)
-  - dockerfilePath: 'src/backend/Services/Products/ProductsMicroService.API/Dockerfile'
+  # This group is accessible to Build stage
+  - group: apigateway-global
+
+  # Explicit path to the API Gateway Dockerfile
+  - dockerfilePath: 'src/backend/Gateway/ApiGateway/Dockerfile'
   - tag: '$(Build.BuildId)'
 
   # Agent VM image name
@@ -52,50 +51,12 @@ stages:
         tags: |
           $(tag)
 
-- stage: Test
-  displayName: Run unit tests
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-  - job: Test
-    displayName: Unit Tests
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: UseDotNet@2
-      displayName: Use .NET 9 SDK
-      inputs:
-        packageType: sdk
-        version: '9.x'
-
-    - task: DotNetCoreCLI@2
-      displayName: Run unit tests
-      inputs:
-        command: test
-        projects: 'tests/ProductsServiceUnitTests/ProductsServiceUnitTests.csproj'
-        arguments: '--configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory $(Agent.TempDirectory)/TestResults'
-        publishTestResults: false
-
-    - task: PublishTestResults@2
-      displayName: Publish test results
-      condition: always()
-      inputs:
-        testResultsFormat: VSTest
-        testResultsFiles: '$(Agent.TempDirectory)/TestResults/*.trx'
-        failTaskOnFailedTests: true
-
-    - task: PublishCodeCoverageResults@2
-      displayName: Publish code coverage
-      condition: always()
-      inputs:
-        summaryFileLocation: '$(Agent.TempDirectory)/TestResults/**/coverage.cobertura.xml'
-
 - stage: DeployToDev
   displayName: Deploy to Dev
-  dependsOn: Test
+  dependsOn: Build
   condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
   variables:
-  - group: products-microservice-dev
+  - group: apigateway-dev
 
   jobs:
   - deployment: DeploymentToDev
@@ -111,22 +72,22 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
-            displayName: Deploy Products microservice to dev namespace in kubernetes
+            displayName: Deploy API Gateway to dev namespace in kubernetes
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/dev/backend/products-microservice-dev.yaml
+              manifests: aks/manifests/dev/backend/apigateway-dev.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
 - stage: DeployToQA
   displayName: Deploy to QA
-  dependsOn: Test
-  condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
   variables:
-  - group: products-microservice-qa
+  - group: apigateway-qa
 
   jobs:
   - deployment: DeploymentToQA
@@ -142,22 +103,22 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
-            displayName: Deploy Products microservice to qa namespace in kubernetes
+            displayName: Deploy API Gateway to qa namespace in kubernetes
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/qa/backend/products-microservice-qa.yaml
+              manifests: aks/manifests/qa/backend/apigateway-qa.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
 - stage: DeployToUAT
   displayName: Deploy to UAT
-  dependsOn: Test
-  condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/uat'))
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/uat'))
   variables:
-  - group: products-microservice-uat
+  - group: apigateway-uat
 
   jobs:
   - deployment: DeploymentToUAT
@@ -173,22 +134,22 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
-            displayName: Deploy Products microservice to uat namespace in kubernetes
+            displayName: Deploy API Gateway to uat namespace in kubernetes
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/uat/backend/products-microservice-uat.yaml
+              manifests: aks/manifests/uat/backend/apigateway-uat.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
 - stage: DeployToStaging
   displayName: Deploy to Staging
-  dependsOn: Test
-  condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/staging'))
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/staging'))
   variables:
-  - group: products-microservice-staging
+  - group: apigateway-staging
 
   jobs:
   - deployment: DeploymentToStaging
@@ -204,22 +165,22 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
-            displayName: Deploy Products microservice to staging namespace in kubernetes
+            displayName: Deploy API Gateway to staging namespace in kubernetes
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/staging/backend/products-microservice-staging.yaml
+              manifests: aks/manifests/staging/backend/apigateway-staging.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
 - stage: DeployToProduction
   displayName: Deploy to Production
-  dependsOn: Test
-  condition: and(succeeded('Test'), eq(variables['Build.SourceBranch'], 'refs/heads/prod'))
+  dependsOn: Build
+  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/prod'))
   variables:
-  - group: products-microservice-prod
+  - group: apigateway-prod
 
   jobs:
   - deployment: DeployToProduction
@@ -235,12 +196,12 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
-            displayName: Deploy Products microservice to prod namespace in kubernetes
+            displayName: Deploy API Gateway to prod namespace in kubernetes
             inputs:
               action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: $(kubernetesServiceConnectionName)
               namespace: $(kubernetes-namespace)
-              manifests: aks/manifests/prod/backend/products-microservice-prod.yaml
+              manifests: aks/manifests/prod/backend/apigateway-prod.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)

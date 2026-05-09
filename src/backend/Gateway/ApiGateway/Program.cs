@@ -9,7 +9,18 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+var useConsul = builder.Configuration.GetValue<bool>("UseConsul", false);
+
+// Load ocelot config: Consul mode (Docker) uses ocelot.json stored in Consul;
+// K8s mode uses a static file with hardcoded K8s Service DNS hosts
+if (!useConsul)
+{
+    builder.Configuration.AddJsonFile("ocelot.k8s.json", optional: false, reloadOnChange: true);
+}
+else
+{
+    builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+}
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("Ocelot.ApiGateway"))
@@ -30,10 +41,17 @@ builder.Services.AddOpenTelemetry()
         .SetExemplarFilter(ExemplarFilterType.TraceBased)
         .AddOtlpExporter());
 
-builder.Services
-    .AddOcelot(builder.Configuration)
-    .AddConsul<MyConsulServiceBuilder>()
-    .AddConfigStoredInConsul();//store ocelot.json in consul server
+if (useConsul)
+{
+    builder.Services
+        .AddOcelot(builder.Configuration)
+        .AddConsul<MyConsulServiceBuilder>()
+        .AddConfigStoredInConsul(); // store ocelot.json in consul server
+}
+else
+{
+    builder.Services.AddOcelot(builder.Configuration);
+}
 
 var app = builder.Build();
 await app.UseOcelot();

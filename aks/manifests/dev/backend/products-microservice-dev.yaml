@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-microservice-deployment
+  labels:
+    app: products-microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products-microservice
+  template:
+    metadata:
+      labels:
+        app: products-microservice
+    spec:
+      containers:
+      - name: products-microservice
+        image: microservicesdemoregistry.azurecr.io/products-microservice:$(tag)
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: POSTGRES__HOST
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: postgres-host
+        - name: POSTGRES__PORT
+          value: 5432
+        - name: POSTGRES__DATABASE
+          value: productsdatabase
+        - name: POSTGRES__USER
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: postgres-user
+        - name: POSTGRES__PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: postgres-password
+        - name: POSTGRES__MaxRetryCount
+          value: 5
+        - name: POSTGRES__MaxRetryDelaySeconds
+          value: 10
+        - name: RabbitMQ__HostName
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: rabbitmq-host
+        - name: RabbitMQ__UserName
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: rabbitmq-user
+        - name: RabbitMQ__Password
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: rabbitmq-password
+        - name: RabbitMQ__Port
+          value: 5672
+        - name: RabbitMQ__MaxRetryAttempts
+          value: 10
+        - name: RabbitMQ__InitialDelaySeconds
+          value: 2
+        - name: RabbitMQ__MaxDelaySeconds
+          value: 30
+        - name: RabbitMQ__NetworkRecoveryIntervalSeconds
+          value: 10
+        - name: RabbitMQ_Products_Exchange
+          value: "products.exchange"
+        - name: RabbitMQ_Products_RoutingKey
+          value: "products.add"
+        - name: Redis__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: redis-connection-string
+        - name: Redis__InstanceName
+          value: "ProductMicroservice_"
+        - name: Redis__ConnectRetry
+          value: 5
+        - name: Redis__ConnectTimeout
+          value: 5000
+        - name: Redis__SyncTimeout
+          value: 5000
+        - name: Redis__MaxReconnectDelay
+          value: 5000
+        - name: Redis__InitialReconnectDelay
+          value: 1000
+        - name: Redis__AbortOnConnectFail
+          value: false
+        - name: Redis__DelayedDeleteMs
+          value: 2000
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4317"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "deployment.environment=dev"
+        - name: TestMicroserviceName
+          value: "test-microservice-service"
+        - name: TestMicroservicePort
+          value: "8080"
+        - name: CacheOptions__DefaultExpirationMinutes
+          value: 120
+        - name: CacheOptions__NegativeCacheExpirationMinutes
+          value: 10
+        - name: Consul__Host
+          value: consul
+        - name: Consul__Port
+          value: 8500
+        - name: Consul__Discovery__ServiceName
+          value: productservice
+        - name: Consul__Discovery__Hostname
+          value: products-microservice
+        - name: Consul__Discovery__Port
+          value: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-microservice-service
+  labels:
+    app: products-microservice
+spec:
+  selector:
+    app: products-microservice
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP

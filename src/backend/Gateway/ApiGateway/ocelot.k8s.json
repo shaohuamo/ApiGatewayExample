@@ -1,0 +1,76 @@
+{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/gateway/products",
+      "DownstreamPathTemplate": "/api/products",
+
+      "UpstreamScheme": "http",
+      "DownstreamScheme": "http",
+
+      "UpstreamHttpMethod": [
+        "Get",
+        "Post",
+        "Put"
+      ],
+
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "products-microservice-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/products/{everything}",
+      "DownstreamPathTemplate": "/api/products/{everything}",
+
+      "UpstreamScheme": "http",
+      "DownstreamScheme": "http",
+
+      "UpstreamHttpMethod": [
+        "Get",
+        "Delete"
+      ],
+
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "products-microservice-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/test",
+      "DownstreamPathTemplate": "/api/test",
+
+      "UpstreamScheme": "http",
+      "DownstreamScheme": "http",
+
+      "UpstreamHttpMethod": [
+        "Get"
+      ],
+
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "test-microservice-service",
+          "Port": 8080
+        }
+      ],
+
+      "RateLimitOptions": {
+        "Limit": 3,
+        "Period": "1m",
+        "HttpStatusCode": 429,
+        "EnableRateLimiting": true,
+        "ClientWhitelist": [
+          "postman",
+          "Client2"
+        ],
+        "ClientIdHeader": "Client-Id"
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://apigateway-service:8080"
+  }
+}

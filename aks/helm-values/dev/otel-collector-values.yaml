@@ -1,0 +1,103 @@
+# OpenTelemetry Collector chart values — dev environment
+# Chart: open-telemetry/opentelemetry-collector
+#
+# K8s service name differences vs docker-compose:
+#   jaeger:4317              → jaeger:4317               (Jaeger Helm release, fullnameOverride=jaeger)
+#   prometheus:9090          → monitoring-kube-prometheus-prometheus:9090  (kube-prometheus-stack release "monitoring")
+#
+# With fullnameOverride=otel-collector, the K8s service is: otel-collector:4317
+# This matches OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 in business service manifests.
+
+fullnameOverride: otel-collector
+
+mode: deployment
+
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+  connectors:
+    spanmetrics:
+      histogram:
+        explicit:
+          buckets: [5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1000ms]
+
+  processors:
+    batch:
+      send_batch_size: 1000
+      timeout: 10s
+
+    filter/noise:
+      error_mode: ignore
+      logs:
+        exclude:
+          match_type: regexp
+          bodies:
+            - ".*heartbeat.*"
+            - ".*connection_closed.*"
+            - ".*Health check.*"
+
+    resource:
+      attributes:
+        - action: insert
+          key: loki.resource.labels
+          value: service.name
+
+  exporters:
+    otlp/jaeger:
+      endpoint: jaeger:4317
+      tls:
+        insecure: true
+
+    otlphttp/prometheus:
+      endpoint: http://monitoring-kube-prometheus-prometheus:9090/api/v1/otlp
+      tls:
+        insecure: true
+
+    loki:
+      endpoint: http://loki:3100/loki/api/v1/push
+
+    debug:
+      verbosity: normal
+
+  service:
+    pipelines:
+      traces:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [otlp/jaeger, debug, spanmetrics]
+
+      metrics:
+        receivers: [otlp, spanmetrics]
+        processors: [batch]
+        exporters: [otlphttp/prometheus, debug]
+
+      logs:
+        receivers: [otlp]
+        processors: [filter/noise, resource, batch]
+        exporters: [loki, debug]
+
+ports:
+  otlp:
+    enabled: true
+    containerPort: 4317
+    servicePort: 4317
+    protocol: TCP
+  otlp-http:
+    enabled: true
+    containerPort: 4318
+    servicePort: 4318
+    protocol: TCP
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

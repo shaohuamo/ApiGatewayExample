@@ -222,6 +222,7 @@ services:
      - TestMicroservicePort=8080
      - CacheOptions__DefaultExpirationMinutes=120
      - CacheOptions__NegativeCacheExpirationMinutes=10
+     - UseConsul=true
      - Consul__Host=consul
      - Consul__Port=8500
      - Consul__Discovery__ServiceName=productservice
@@ -245,6 +246,7 @@ services:
     container_name: apiGateway-container
     hostname: apigateway
     environment:
+    - UseConsul=true
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
     - OTEL_RESOURCE_ATTRIBUTES=service.name=apigateway,deployment.environment=production 
     ports:
@@ -265,6 +267,7 @@ services:
     environment:
      - ASPNETCORE_ENVIRONMENT=Production
      - App_Name=App_A
+     - UseConsul=true
      - Consul__Host=consul
      - Consul__Port=8500
      - Consul__Discovery__ServiceName=testservice

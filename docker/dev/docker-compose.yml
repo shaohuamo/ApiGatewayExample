@@ -225,6 +225,7 @@ services:
      - TestMicroservicePort=8080
      - CacheOptions__DefaultExpirationMinutes=120
      - CacheOptions__NegativeCacheExpirationMinutes=10
+     - UseConsul=true
      - Consul__Host=consul
      - Consul__Port=8500
      - Consul__Discovery__ServiceName=productservice
@@ -251,6 +252,7 @@ services:
     container_name: apiGateway-container
     hostname: apigateway
     environment:
+    - UseConsul=true
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
     - OTEL_RESOURCE_ATTRIBUTES=service.name=apigateway,deployment.environment=development 
     ports:
@@ -272,7 +274,9 @@ services:
     container_name: testMicroservice-container-1
     hostname: testapi1
     environment:
+     - ASPNETCORE_ENVIRONMENT=Development
      - App_Name=App_A
+     - UseConsul=true
      - Consul__Host=consul
      - Consul__Port=8500
      - Consul__Discovery__ServiceName=testservice
@@ -328,6 +332,9 @@ services:
       dockerfile: Dockerfile
     container_name: admin-web-container
     hostname: admin-web
+    environment:
+      - NEXT_PUBLIC_API_GATEWAY_URL=http://apigateway:9080
+      - OTEL_COLLECTOR_URL=http://otel-collector:4318
     ports:
       - 3000:3000
     networks:
