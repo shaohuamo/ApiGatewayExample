@@ -23,11 +23,14 @@ variables:
   - group: apigateway-global
 
   # Explicit path to the API Gateway Dockerfile
-  - dockerfilePath: 'src/backend/Gateway/ApiGateway/Dockerfile'
-  - tag: '$(Build.BuildId)'
+  - name: dockerfilePath
+    value: 'src/backend/Gateway/ApiGateway/Dockerfile'
+  - name: tag
+    value: '$(Build.BuildId)'
 
   # Agent VM image name
-  - vmImageName: 'ubuntu-latest'
+  - name: vmImageName
+    value: 'ubuntu-latest'
 
 stages:
 - stage: Build
