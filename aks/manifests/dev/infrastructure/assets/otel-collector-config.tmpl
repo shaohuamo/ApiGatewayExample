@@ -1,0 +1,71 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+connectors:
+  spanmetrics:
+    histogram:
+      explicit:
+        buckets: [5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1000ms]
+
+processors:
+  batch:
+    send_batch_size: 1000
+    timeout: 10s
+
+  filter/noise:
+    error_mode: ignore
+    logs:
+      exclude:
+        match_type: regexp
+        bodies:
+          - .*heartbeat.*
+          - .*connection_closed.*
+          - .*Health check.*
+
+  resource:
+    attributes:
+      - action: insert
+        key: loki.resource.labels
+        value: service.name
+
+exporters:
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+  otlphttp/prometheus:
+    endpoint: http://prometheus:9090/api/v1/otlp
+    tls:
+      insecure: true
+
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+  debug:
+    verbosity: detailed
+
+service:
+  telemetry:
+    metrics:
+      address: 0.0.0.0:8888
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger, debug, spanmetrics]
+
+    metrics:
+      receivers: [otlp, spanmetrics]
+      processors: [batch]
+      exporters: [otlphttp/prometheus, debug]
+
+    logs:
+      receivers: [otlp]
+      processors: [filter/noise, resource, batch]
+      exporters: [loki, debug]

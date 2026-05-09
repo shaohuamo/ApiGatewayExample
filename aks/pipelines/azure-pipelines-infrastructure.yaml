@@ -1,22 +1,27 @@
 # Infrastructure deployment pipeline
-# Deploys all shared infrastructure components to AKS using Helm.
+# Deploys shared dev infrastructure to AKS using raw Kubernetes manifests.
 #
-# Trigger: changes to any helm-values/dev file, or this pipeline itself.
-# Variable group 'infrastructure-key-vault' is linked to Azure Key Vault
-#   'microservicesdemo-kv' via the ARM service connection
-#   'microservicesdemo-resource-group-connection'.
+# Design:
+# - align runtime images and service names with docker/deploy/docker-compose.yml
+# - use native manifests like the business service pipelines
+# - generate configmaps and secrets from repo config files and Key Vault-backed variables
 #
 # K8s service name mapping (referenced by business service manifests):
-#   postgresql:5432                              (Bitnami PostgreSQL)
-#   redis-master:6379                            (Bitnami Redis standalone)
-#   rabbitmq:5672                                (Bitnami RabbitMQ)
-#   otel-collector:4317                          (OpenTelemetry Collector)
-#   jaeger:4317 / :16686                         (Jaeger, fullnameOverride=jaeger)
-#   loki:3100                                    (Grafana Loki)
-#   monitoring-kube-prometheus-prometheus:9090   (kube-prometheus-stack)
-#   monitoring-kube-prometheus-alertmanager:9093
-#   monitoring-grafana:80
-#   ingress-nginx-controller:80/:443             (NGINX Ingress Controller, namespace: ingress-nginx)
+#   postgres:5432
+#   redis:6379
+#   rabbitmq:5672
+#   postgres-exporter:9187
+#   redis-exporter:9121
+#   prometheus:9090
+#   alertmanager:9093
+#   grafana:3000
+#   jaeger:4317 / :16686
+#   loki:3100
+#   otel-collector:4317 / :4318 / :8888
+#
+# Notes:
+# - ingress-nginx is managed separately by aks/pipelines/azure-pipelines-cluster-addons.yaml
+# - this pipeline also reconciles the dev application connection secrets so service-name changes stay in sync
 
 trigger:
   branches:
@@ -24,8 +29,9 @@ trigger:
       - dev
   paths:
     include:
-      - aks/helm-values/dev/**
+      - aks/manifests/dev/infrastructure/**
       - aks/pipelines/azure-pipelines-infrastructure.yaml
+      - configs/**
 
 resources:
   - repo: self
@@ -33,15 +39,15 @@ resources:
 variables:
   - group: infrastructure-key-vault     # Linked to Key Vault microservicesdemo-kv
                                          # Secrets: postgres-password, rabbitmq-password,
-                                         #   redis-connection-string,
                                          #   alertmanager-slack-webhook
   - name: k8sServiceConnection
     value: dev-microservicesdemo-aks-cluster-dev-1778160743494
+  - name: azureSubscription
+    value: microservicesdemo-resource-group-connection
   - name: namespace
     value: dev
   - name: vmImageName
     value: ubuntu-latest
-  # AKS cluster identity — used by the CRD installation step (requires admin credentials)
   - name: aksResourceGroup
     value: microservicesdemo-resource-group
   - name: aksClusterName
@@ -64,220 +70,125 @@ stages:
                 - checkout: self
                   displayName: Checkout source code
 
-                # ── Add Helm repositories ─────────────────────────────────────
-                - script: |
-                    helm repo add bitnami           https://charts.bitnami.com/bitnami
-                    helm repo add open-telemetry    https://open-telemetry.github.io/opentelemetry-helm-charts
-                    helm repo add jaegertracing     https://jaegertracing.github.io/helm-charts
-                    helm repo add grafana           https://grafana.github.io/helm-charts
-                    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-                    helm repo update
-                  displayName: Add and update Helm repositories
-
-                # ── Ensure namespace exists ───────────────────────────────────
-                - task: Kubernetes@1
-                  displayName: Ensure dev namespace exists
+                - task: KubernetesManifest@1
+                  displayName: Apply dev namespace manifest
                   inputs:
-                    connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: $(k8sServiceConnection)
-                    command: apply
-                    useConfigurationFile: true
-                    configurationType: inline
-                    inline: |
-                      apiVersion: v1
-                      kind: Namespace
-                      metadata:
-                        name: $(namespace)
-                # ── PostgreSQL ────────────────────────────────────────────────
-                # Release: postgresql  → Service: postgresql:5432
-                - task: HelmDeploy@0
-                  displayName: Deploy PostgreSQL
-                  continueOnError: true
-                  inputs:
-                    connectionType: Kubernetes Service Connection
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: $(k8sServiceConnection)
                     namespace: $(namespace)
-                    command: upgrade
-                    chartType: Name
-                    chartName: bitnami/postgresql
-                    releaseName: postgresql
-                    valueFile: aks/helm-values/dev/postgresql-values.yaml
-                    overrideValues: auth.postgresPassword=$(postgres-password)
-                    install: true
-                    waitForExecution: true
-                    arguments: --timeout 120s
+                    manifests: aks/manifests/dev/infrastructure/00-namespace.yaml
 
-                # ── Redis ─────────────────────────────────────────────────────
-                # Release: redis  → Service: redis-master:6379
-                - task: HelmDeploy@0
-                  displayName: Deploy Redis
-                  continueOnError: true
-                  inputs:
-                    connectionType: Kubernetes Service Connection
-                    kubernetesServiceConnection: $(k8sServiceConnection)
-                    namespace: $(namespace)
-                    command: upgrade
-                    chartType: Name
-                    chartName: bitnami/redis
-                    releaseName: redis
-                    valueFile: aks/helm-values/dev/redis-values.yaml
-                    install: true
-                    waitForExecution: true
-                    arguments: --timeout 120s
-
-                # ── RabbitMQ ──────────────────────────────────────────────────
-                # Release: rabbitmq  → Service: rabbitmq:5672
-                - task: HelmDeploy@0
-                  displayName: Deploy RabbitMQ
-                  continueOnError: true
-                  inputs:
-                    connectionType: Kubernetes Service Connection
-                    kubernetesServiceConnection: $(k8sServiceConnection)
-                    namespace: $(namespace)
-                    command: upgrade
-                    chartType: Name
-                    chartName: bitnami/rabbitmq
-                    releaseName: rabbitmq
-                    valueFile: aks/helm-values/dev/rabbitmq-values.yaml
-                    overrideValues: auth.password=$(rabbitmq-password)
-                    install: true
-                    waitForExecution: true
-                    arguments: --timeout 120s
-
-                # ── Loki ──────────────────────────────────────────────────────
-                # Release: loki  → Service: loki:3100
                 - task: AzureCLI@2
-                  displayName: Deploy Loki
-                  continueOnError: true
+                  displayName: Create or update infrastructure configmaps and secrets
                   inputs:
-                    azureSubscription: microservicesdemo-resource-group-connection
+                    azureSubscription: $(azureSubscription)
                     scriptType: bash
                     scriptLocation: inlineScript
                     inlineScript: |
+                      set -euo pipefail
+
                       az aks get-credentials \
                         --resource-group $(aksResourceGroup) \
                         --name $(aksClusterName) \
-                        --admin \
-                        --overwrite-existing
-                      helm upgrade loki grafana/loki \
-                        --namespace $(namespace) \
-                        --install \
-                        --values aks/helm-values/dev/loki-values.yaml \
-                        --wait \
-                        --timeout 180s
-
-                # ── kube-prometheus-stack ─────────────────────────────────────
-                # Release: monitoring
-                #   → monitoring-kube-prometheus-prometheus:9090
-                #   → monitoring-kube-prometheus-alertmanager:9093
-                #   → monitoring-grafana:80
-                #
-                # CRDs are cluster-scoped; the namespace service account cannot create them.
-                # A separate AzureCLI step fetches admin credentials and applies CRDs first,
-                # then Helm runs with --skip-crds to avoid re-attempting CRD installation.
-                - task: AzureCLI@2
-                  displayName: Install kube-prometheus-stack CRDs (cluster-admin)
-                  continueOnError: true
-                  inputs:
-                    azureSubscription: microservicesdemo-resource-group-connection
-                    scriptType: bash
-                    scriptLocation: inlineScript
-                    inlineScript: |
-                      az aks get-credentials \
-                        --resource-group $(aksResourceGroup) \
-                        --name $(aksClusterName) \
-                        --admin \
                         --overwrite-existing
 
-                      # Apply CRDs with server-side apply to avoid annotation size limits.
-                      helm show crds prometheus-community/kube-prometheus-stack \
-                        | kubectl apply --server-side --force-conflicts -f -
+                      kubectl apply -f aks/manifests/dev/infrastructure/00-namespace.yaml
 
-                - task: AzureCLI@2
-                  displayName: Deploy kube-prometheus-stack (Prometheus + Grafana + Alertmanager)
-                  continueOnError: true
-                  inputs:
-                    azureSubscription: microservicesdemo-resource-group-connection
-                    scriptType: bash
-                    scriptLocation: inlineScript
-                    inlineScript: |
-                      az aks get-credentials \
-                        --resource-group $(aksResourceGroup) \
-                        --name $(aksClusterName) \
-                        --admin \
-                        --overwrite-existing
-                      helm upgrade monitoring prometheus-community/kube-prometheus-stack \
-                        --namespace $(namespace) \
-                        --install \
-                        --values aks/helm-values/dev/kube-prometheus-stack-values.yaml \
-                        --set-string alertmanager.config.receivers[0].slack_configs[0].api_url="$(alertmanager-slack-webhook)" \
-                        --wait \
-                        --skip-crds \
-                        --timeout 300s
+                      kubectl -n $(namespace) create configmap postgres-config \
+                        --from-file=postgresql.conf=configs/postgres/conf/postgresql.conf \
+                        --dry-run=client -o yaml | kubectl apply -f -
 
-                # ── Jaeger ────────────────────────────────────────────────────
-                # Release: jaeger  → Service: jaeger:4317 / :16686
-                # Deployed after kube-prometheus-stack so Prometheus URL is ready.
-                - task: HelmDeploy@0
-                  displayName: Deploy Jaeger
-                  continueOnError: true
+                      kubectl -n $(namespace) create configmap postgres-init-scripts \
+                        --from-file=configs/postgres/init \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap postgres-exporter-queries \
+                        --from-file=queries.yaml=configs/postgres-exporter/queries.yaml \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap rabbitmq-enabled-plugins \
+                        --from-file=enabled_plugins=configs/rabbitmq/enabled_plugins \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap otel-collector-config \
+                        --from-file=config.yaml=aks/manifests/dev/infrastructure/assets/otel-collector-config.tmpl \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap prometheus-config \
+                        --from-file=prometheus.yml=aks/manifests/dev/infrastructure/assets/prometheus.yml \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap prometheus-rules \
+                        --from-file=configs/prometheus/rules \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap grafana-datasources \
+                        --from-file=datasource.yaml=configs/grafana/datasource.yml \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap grafana-dashboards \
+                        --from-file=configs/grafana/dashboards \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create configmap promtail-config \
+                        --from-file=config.yml=aks/manifests/dev/infrastructure/assets/promtail-config.yml \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      escaped_webhook=$(printf '%s' '$(alertmanager-slack-webhook)' | sed 's/[&]/\\&/g')
+                      sed "s|__SLACK_WEBHOOK__|$escaped_webhook|g" \
+                        aks/manifests/dev/infrastructure/assets/alertmanager.yml.tmpl > alertmanager.yml
+
+                      kubectl -n $(namespace) create secret generic postgres-infra-secret \
+                        --from-literal=postgres-password='$(postgres-password)' \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create secret generic postgres-exporter-secret \
+                        --from-literal=DATA_SOURCE_NAME='postgresql://exporter:exporterpass@postgres:5432/productsdatabase?sslmode=disable' \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create secret generic rabbitmq-infra-secret \
+                        --from-literal=rabbitmq-password='$(rabbitmq-password)' \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create secret generic alertmanager-config \
+                        --from-file=alertmanager.yml=alertmanager.yml \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create secret generic products-secrets \
+                        --from-literal=postgres-host='postgres' \
+                        --from-literal=postgres-user='postgres' \
+                        --from-literal=postgres-password='$(postgres-password)' \
+                        --from-literal=rabbitmq-host='rabbitmq' \
+                        --from-literal=rabbitmq-user='guest' \
+                        --from-literal=rabbitmq-password='$(rabbitmq-password)' \
+                        --from-literal=redis-connection-string='redis:6379' \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      kubectl -n $(namespace) create secret generic test-microservice-secrets \
+                        --from-literal=rabbitmq-host='rabbitmq' \
+                        --from-literal=rabbitmq-user='guest' \
+                        --from-literal=rabbitmq-password='$(rabbitmq-password)' \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                      rm -f alertmanager.yml
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy data services
                   inputs:
-                    connectionType: Kubernetes Service Connection
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: $(k8sServiceConnection)
                     namespace: $(namespace)
-                    command: upgrade
-                    chartType: Name
-                    chartName: jaegertracing/jaeger
-                    releaseName: jaeger
-                    valueFile: aks/helm-values/dev/jaeger-values.yaml
-                    install: true
-                    waitForExecution: true
-                    arguments: --timeout 120s
+                    manifests: aks/manifests/dev/infrastructure/10-data-services.yaml
 
-                # ── OpenTelemetry Collector ───────────────────────────────────
-                # Release: otel-collector  → Service: otel-collector:4317
-                # Deployed last — requires Jaeger, Loki and Prometheus to be ready.
-                - task: HelmDeploy@0
-                  displayName: Deploy OpenTelemetry Collector
-                  continueOnError: true
+                - task: KubernetesManifest@1
+                  displayName: Deploy observability services
                   inputs:
-                    connectionType: Kubernetes Service Connection
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: $(k8sServiceConnection)
                     namespace: $(namespace)
-                    command: upgrade
-                    chartType: Name
-                    chartName: open-telemetry/opentelemetry-collector
-                    releaseName: otel-collector
-                    valueFile: aks/helm-values/dev/otel-collector-values.yaml
-                    install: true
-                    waitForExecution: true
-                    arguments: --timeout 120s
-
-                # ── NGINX Ingress Controller ──────────────────────────────────
-                # Deployed into its own namespace (ingress-nginx) — cluster-wide shared component.
-                # Provisions an Azure LoadBalancer with a single external IP; all HTTP/HTTPS
-                # traffic is then routed to services via Ingress resources defined per-service.
-                - script: |
-                    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-                    helm repo update
-                  displayName: Add ingress-nginx Helm repository
-
-                - task: AzureCLI@2
-                  displayName: Deploy NGINX Ingress Controller
-                  continueOnError: true
-                  inputs:
-                    azureSubscription: microservicesdemo-resource-group-connection
-                    scriptType: bash
-                    scriptLocation: inlineScript
-                    inlineScript: |
-                      az aks get-credentials \
-                        --resource-group $(aksResourceGroup) \
-                        --name $(aksClusterName) \
-                        --admin \
-                        --overwrite-existing
-                      helm upgrade ingress-nginx ingress-nginx/ingress-nginx \
-                        --namespace ingress-nginx \
-                        --install \
-                        --create-namespace \
-                        --wait \
-                        --timeout 120s
+                    manifests: |
+                      aks/manifests/dev/infrastructure/20-observability.yaml
+                      aks/manifests/dev/infrastructure/21-promtail.yaml
