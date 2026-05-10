@@ -49,6 +49,9 @@ builder.Services.AddHttpLogging(options =>
     options.LoggingFields = HttpLoggingFields.RequestProperties | HttpLoggingFields.ResponsePropertiesAndHeaders;
 });
 
+// Add health checks for Kubernetes probes
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -68,6 +71,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpLogging();
+
+// Map health check endpoint for Kubernetes readiness/liveness probes
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 

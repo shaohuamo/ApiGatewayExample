@@ -53,9 +53,16 @@ builder.Services.AddHostedService<RabbitMQProductAddHostedService>();
 builder.Services.Configure<RabbitMQOptions>(
     builder.Configuration.GetSection("RabbitMQ"));
 
+// Add health checks for Kubernetes probes
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.TraceContextMiddleware();
+
+// Map health check endpoint for Kubernetes readiness/liveness probes
+app.MapHealthChecks("/health");
+
 app.MapControllers();
 
 app.Run();
