@@ -82,19 +82,19 @@ spec:
         - name: Redis__InstanceName
           value: "ProductMicroservice_"
         - name: Redis__ConnectRetry
-          value: 5
+          value: "5"
         - name: Redis__ConnectTimeout
-          value: 5000
+          value: "5000"
         - name: Redis__SyncTimeout
-          value: 5000
+          value: "5000"
         - name: Redis__MaxReconnectDelay
-          value: 5000
+          value: "5000"
         - name: Redis__InitialReconnectDelay
-          value: 1000
+          value: "1000"
         - name: Redis__AbortOnConnectFail
-          value: false
+          value: "false"
         - name: Redis__DelayedDeleteMs
-          value: 2000
+          value: "2000"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector:4317"
         - name: OTEL_RESOURCE_ATTRIBUTES
@@ -104,9 +104,9 @@ spec:
         - name: TestMicroservicePort
           value: "8080"
         - name: CacheOptions__DefaultExpirationMinutes
-          value: 120
+          value: "120"
         - name: CacheOptions__NegativeCacheExpirationMinutes
-          value: 10
+          value: "10"
         readinessProbe:
           httpGet:
             path: /health

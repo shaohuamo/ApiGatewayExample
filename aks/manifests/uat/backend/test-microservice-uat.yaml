@@ -40,15 +40,15 @@ spec:
               name: test-microservice-secrets
               key: rabbitmq-password
         - name: RabbitMQ__Port
-          value: 5672
+          value: "5672"
         - name: RabbitMQ__MaxRetryAttempts
-          value: 10
+          value: "10"
         - name: RabbitMQ__InitialDelaySeconds
-          value: 2
+          value: "2"
         - name: RabbitMQ__MaxDelaySeconds
-          value: 30
+          value: "30"
         - name: RabbitMQ__NetworkRecoveryIntervalSeconds
-          value: 10
+          value: "10"
         - name: RabbitMQ_Products_Exchange
           value: "products.exchange"
         - name: RabbitMQ_Products_RoutingKey
