@@ -53,7 +53,11 @@ else
     builder.Services.AddOcelot(builder.Configuration);
 }
 
+// Add health checks for Kubernetes probes
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
+app.MapHealthChecks("/health");
 await app.UseOcelot();
 
 app.Run();
