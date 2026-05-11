@@ -56,22 +56,31 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <section className="surface-panel relative overflow-hidden rounded-[2rem] px-5 py-6 sm:px-7 sm:py-8 lg:px-10 lg:py-10">
-        <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(243,180,107,0.18),transparent_58%)] lg:block" />
-        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <section className="surface-panel rounded-[1.75rem] px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
-            <div className="label-chip">Products Control Room</div>
-            <h1 className="font-display mt-5 text-4xl font-semibold leading-none text-[var(--text)] sm:text-5xl lg:text-[clamp(3.5rem,6vw,5.5rem)]">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="label-chip">Products Workspace</div>
+            </div>
+            <h1 className="font-display mt-5 text-4xl font-semibold leading-none text-[var(--text)] sm:text-5xl lg:text-[4.6rem]">
               Products
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--muted)] sm:text-base">
-              Manage your product catalog with a faster operational view of pricing, stock depth, and inventory value.
-            </p>
           </div>
-          <button onClick={handleAdd} className="editorial-button self-start lg:self-auto">
-            <span className="text-lg leading-none">+</span>
-            <span>Add Product</span>
-          </button>
+          <div className="flex w-full flex-col gap-3 sm:w-auto lg:min-w-[240px]">
+            <div className="surface-panel-soft rounded-[1.2rem] px-4 py-4">
+              <div className="kicker">Active Catalog</div>
+              <div className="mt-3 flex items-end gap-3">
+                <span className="font-display text-4xl font-semibold text-[var(--text)]">
+                  {totalProducts.toString().padStart(2, "0")}
+                </span>
+                <span className="pb-1 text-sm text-[var(--muted)]">products in view</span>
+              </div>
+            </div>
+            <button onClick={handleAdd} className="editorial-button self-start sm:self-stretch">
+              <span className="text-lg leading-none">+</span>
+              <span>Add Product</span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -137,16 +146,18 @@ export default function ProductsPage() {
 
       {products && products.length > 0 && (
         <section className="surface-panel overflow-hidden rounded-[1.8rem]">
-          <div className="flex flex-col gap-3 border-b border-[var(--border)] px-5 py-5 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4 border-b border-[var(--border)] px-5 py-5 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="kicker">Catalog Matrix</div>
               <h2 className="font-display mt-2 text-2xl font-semibold text-[var(--text)] sm:text-3xl">
                 Active product inventory
               </h2>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-[var(--muted)]">
-              Prices, stock levels, and destructive actions stay available here without leaving the control surface.
-            </p>
+            <div className="flex flex-wrap gap-2">
+              <span className="soft-badge">{totalProducts} products</span>
+              <span className="soft-badge">{totalUnits.toLocaleString()} units tracked</span>
+              <span className="soft-badge">{formatCurrency(totalInventoryValue)} total value</span>
+            </div>
           </div>
           <div className="table-scroll">
             <table className="data-table w-full text-sm">
@@ -163,7 +174,7 @@ export default function ProductsPage() {
                 <tr key={product.productId}>
                   <td>
                     <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.03)] text-[var(--accent-strong)]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-[var(--accent-strong)]">
                         <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
                           <path d="M4 7.5 12 3l8 4.5M4 7.5v9L12 21m-8-13.5L12 12m8-4.5L12 12m0 9v-9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -183,13 +194,13 @@ export default function ProductsPage() {
                   <td className="text-right">
                     <button
                       onClick={() => handleEdit(product)}
-                      className="mr-2 rounded-full border border-[var(--border-strong)] px-3 py-2 text-sm font-medium text-[var(--text)] hover:bg-[rgba(255,255,255,0.05)]"
+                      className="mr-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--surface)]"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteProduct(product)}
-                      className="rounded-full border border-[rgba(232,137,110,0.3)] px-3 py-2 text-sm font-medium text-[var(--danger)] hover:bg-[rgba(232,137,110,0.08)]"
+                      className="rounded-xl border border-[rgba(232,137,110,0.24)] bg-white px-3 py-2 text-sm font-medium text-[var(--danger)] hover:bg-[rgba(248,113,113,0.06)]"
                     >
                       Delete
                     </button>

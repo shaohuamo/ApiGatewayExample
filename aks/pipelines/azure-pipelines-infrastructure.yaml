@@ -20,7 +20,7 @@
 #   otel-collector:4317 / :4318 / :8888
 #
 # Notes:
-# - ingress-nginx is managed separately by aks/pipelines/azure-pipelines-cluster-addons.yaml
+# - AKS application routing is managed separately by aks/pipelines/azure-pipelines-cluster-addons.yaml
 # - this pipeline also reconciles the dev application connection secrets so service-name changes stay in sync
 
 trigger:

@@ -14,23 +14,13 @@ const navItems = [
       </svg>
     ),
   },
-  {
-    href: "/health",
-    label: "Health",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-        <path d="M12 4v16M4 12h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <rect x="5" y="5" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1.6" />
-      </svg>
-    ),
-  },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="relative z-10 border-b border-[var(--border)] bg-[color:var(--bg-panel)]/95 backdrop-blur-xl lg:min-h-screen lg:w-80 lg:border-b-0 lg:border-r">
+    <aside className="relative z-10 border-b border-[var(--border)] bg-[#8FC7E8] lg:min-h-screen lg:w-80 lg:border-b-0 lg:border-r">
       <div className="flex h-full flex-col px-4 py-4 sm:px-6 lg:px-6 lg:py-8">
         <div className="surface-panel-soft rounded-[1.75rem] p-4 sm:p-5">
           <div className="kicker mb-4">Control Surface</div>
@@ -45,9 +35,6 @@ export function Sidebar() {
                 <div className="font-display text-[1.15rem] font-semibold text-[var(--text)] group-hover:text-[var(--accent-strong)]">
                   Microservices Admin
                 </div>
-                <p className="mt-1 text-sm text-[var(--muted)]">
-                  Gateway-ready product operations
-                </p>
               </div>
             </div>
           </Link>
@@ -82,12 +69,7 @@ export function Sidebar() {
           </nav>
         </div>
 
-        <div className="mt-6 hidden rounded-[1.5rem] border border-[var(--border)] bg-[rgba(255,255,255,0.025)] p-5 text-sm text-[var(--muted)] lg:block">
-          <div className="kicker mb-3">Signal</div>
-          <p className="leading-6">
-            Product inventory, availability, and service health are surfaced from the same operational mesh.
-          </p>
-        </div>
+
       </div>
     </aside>
   );
