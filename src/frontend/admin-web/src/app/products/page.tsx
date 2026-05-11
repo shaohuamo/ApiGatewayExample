@@ -166,7 +166,7 @@ export default function ProductsPage() {
                 <th>Product Name</th>
                 <th className="text-right">Unit Price</th>
                 <th className="text-right">Qty In Stock</th>
-                <th className="text-right">Actions</th>
+                <th className="table-actions-heading">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -191,7 +191,7 @@ export default function ProductsPage() {
                   <td className="text-right text-[var(--text)]">
                     {product.quantityInStock ?? "-"}
                   </td>
-                  <td className="text-right">
+                  <td className="table-actions-cell">
                     <div className="table-action-group">
                       <button
                         onClick={() => handleEdit(product)}

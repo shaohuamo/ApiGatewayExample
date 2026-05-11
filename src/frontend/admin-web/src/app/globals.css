@@ -285,6 +285,11 @@ select {
   text-align: right;
 }
 
+.data-table thead th.table-actions-heading {
+  width: 12.5rem;
+  text-align: center;
+}
+
 .data-table tbody td {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(96, 148, 255, 0.08);
@@ -309,9 +314,13 @@ select {
 
 .table-action-group {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.65rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.table-actions-cell {
+  width: 16rem;
 }
 
 .table-action-button {
