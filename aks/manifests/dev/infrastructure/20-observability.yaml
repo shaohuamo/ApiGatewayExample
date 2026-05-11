@@ -68,7 +68,7 @@ spec:
             periodSeconds: 15
           resources:
             requests:
-              cpu: 100m
+              cpu: 10m
               memory: 256Mi
             limits:
               cpu: 500m
@@ -156,7 +156,7 @@ spec:
             periodSeconds: 15
           resources:
             requests:
-              cpu: 200m
+              cpu: 10m
               memory: 512Mi
             limits:
               cpu: 500m
@@ -236,7 +236,7 @@ spec:
             periodSeconds: 15
           resources:
             requests:
-              cpu: 50m
+              cpu: 10m
               memory: 128Mi
             limits:
               cpu: 100m
@@ -311,7 +311,7 @@ spec:
             periodSeconds: 15
           resources:
             requests:
-              cpu: 100m
+              cpu: 10m
               memory: 256Mi
             limits:
               cpu: 200m
@@ -400,7 +400,7 @@ spec:
             periodSeconds: 15
           resources:
             requests:
-              cpu: 100m
+              cpu: 10m
               memory: 256Mi
             limits:
               cpu: 500m
@@ -470,7 +470,7 @@ spec:
             periodSeconds: 15
           resources:
             requests:
-              cpu: 50m
+              cpu: 10m
               memory: 128Mi
             limits:
               cpu: 200m
