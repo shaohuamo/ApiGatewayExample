@@ -20,9 +20,9 @@ spec:
         ports:
         - containerPort: 3000
         env:
-        - name: NEXT_PUBLIC_API_GATEWAY_URL
+        - name: API_GATEWAY_INTERNAL_URL
           value: "http://apigateway-service:8080"
-        - name: OTEL_COLLECTOR_URL
+        - name: OTEL_COLLECTOR_INTERNAL_URL
           value: "http://otel-collector:4318"
         readinessProbe:
           httpGet:

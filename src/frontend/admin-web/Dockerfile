@@ -14,8 +14,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_PUBLIC_API_GATEWAY_URL=http://apigateway:8080
-ENV OTEL_COLLECTOR_URL=http://otel-collector:4318
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
