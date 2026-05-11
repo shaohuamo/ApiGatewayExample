@@ -50,13 +50,33 @@ stages:
                       APP_ROUTING_ENABLED=$(az aks show \
                         --resource-group $(aksResourceGroup) \
                         --name $(aksClusterName) \
-                        --query "addonProfiles.applicationRouting.enabled" \
-                        --output tsv)
+                        --query "ingressProfile.webAppRouting.enabled" \
+                        --output tsv 2>/dev/null || true)
+
+                      if [ -z "$APP_ROUTING_ENABLED" ] || [ "$APP_ROUTING_ENABLED" = "null" ]; then
+                        APP_ROUTING_ENABLED=$(az aks show \
+                          --resource-group $(aksResourceGroup) \
+                          --name $(aksClusterName) \
+                          --query "addonProfiles.applicationRouting.enabled" \
+                          --output tsv 2>/dev/null || true)
+                      fi
 
                       if [ "$APP_ROUTING_ENABLED" != "true" ]; then
-                        az aks approuting enable \
+                        ENABLE_OUTPUT=$(az aks approuting enable \
                           --resource-group $(aksResourceGroup) \
-                          --name $(aksClusterName)
+                          --name $(aksClusterName) 2>&1) || {
+                            if echo "$ENABLE_OUTPUT" | grep -qi "already enabled"; then
+                              echo "App Routing already enabled; continuing."
+                              echo "$ENABLE_OUTPUT"
+                            else
+                              echo "$ENABLE_OUTPUT"
+                              exit 1
+                            fi
+                          }
+
+                        if [ -n "${ENABLE_OUTPUT:-}" ]; then
+                          echo "$ENABLE_OUTPUT"
+                        fi
                       fi
 
                       az aks get-credentials \

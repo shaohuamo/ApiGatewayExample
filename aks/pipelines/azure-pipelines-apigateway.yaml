@@ -80,7 +80,6 @@ stages:
               namespace: dev
               manifests: |
                 aks/manifests/dev/backend/apigateway-dev.yaml
-                aks/manifests/dev/backend/ingress-dev.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -110,7 +109,6 @@ stages:
               namespace: qa
               manifests: |
                 aks/manifests/qa/backend/apigateway-qa.yaml
-                aks/manifests/qa/backend/ingress-qa.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -140,7 +138,6 @@ stages:
               namespace: uat
               manifests: |
                 aks/manifests/uat/backend/apigateway-uat.yaml
-                aks/manifests/uat/backend/ingress-uat.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -170,7 +167,6 @@ stages:
               namespace: staging
               manifests: |
                 aks/manifests/staging/backend/apigateway-staging.yaml
-                aks/manifests/staging/backend/ingress-staging.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -200,6 +196,5 @@ stages:
               namespace: prod
               manifests: |
                 aks/manifests/prod/backend/apigateway-prod.yaml
-                aks/manifests/prod/backend/ingress-prod.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
