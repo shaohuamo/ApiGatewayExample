@@ -7,6 +7,9 @@
   --surface: #f4f8ff;
   --surface-strong: #eaf2ff;
   --surface-contrast: #ffffff;
+  --table-header-bg: #fff8ea;
+  --table-row-alt: rgba(143, 199, 232, 0.08);
+  --table-row-hover: rgba(143, 199, 232, 0.16);
   --border: rgba(148, 184, 255, 0.18);
   --border-strong: rgba(96, 148, 255, 0.26);
   --accent: #3b82f6;
@@ -180,6 +183,7 @@ select {
 .editorial-button:focus-visible,
 .editorial-button-ghost:focus-visible,
 .editorial-button-danger:focus-visible,
+.table-action-button:focus-visible,
 .editorial-field:focus-visible {
   outline: none;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.22);
@@ -187,7 +191,8 @@ select {
 
 .editorial-button:disabled,
 .editorial-button-ghost:disabled,
-.editorial-button-danger:disabled {
+.editorial-button-danger:disabled,
+.table-action-button:disabled {
   cursor: not-allowed;
   opacity: 0.58;
   transform: none;
@@ -273,13 +278,17 @@ select {
   text-transform: uppercase;
   color: var(--muted);
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--table-header-bg);
 }
 
 .data-table tbody td {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(96, 148, 255, 0.08);
   vertical-align: middle;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: var(--table-row-alt);
 }
 
 .data-table tbody tr:last-child td {
@@ -291,7 +300,48 @@ select {
 }
 
 .data-table tbody tr:hover {
-  background: var(--surface);
+  background: var(--table-row-hover);
+}
+
+.table-action-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.table-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.35rem;
+  border-radius: 9999px;
+  padding: 0.68rem 1rem;
+  border: 1px solid rgba(96, 148, 255, 0.22);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--text);
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.table-action-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96, 148, 255, 0.32);
+  background: rgba(234, 242, 255, 0.92);
+  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.08);
+}
+
+.table-action-button-danger {
+  border-color: rgba(232, 137, 110, 0.28);
+  color: var(--danger);
+}
+
+.table-action-button-danger:hover {
+  border-color: rgba(232, 137, 110, 0.36);
+  background: rgba(248, 113, 113, 0.08);
+  box-shadow: 0 10px 18px rgba(248, 113, 113, 0.1);
 }
 
 .skeleton-block {

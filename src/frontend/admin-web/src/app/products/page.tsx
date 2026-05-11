@@ -192,18 +192,20 @@ export default function ProductsPage() {
                     {product.quantityInStock ?? "-"}
                   </td>
                   <td className="text-right">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="mr-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--surface)]"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteProduct(product)}
-                      className="rounded-xl border border-[rgba(232,137,110,0.24)] bg-white px-3 py-2 text-sm font-medium text-[var(--danger)] hover:bg-[rgba(248,113,113,0.06)]"
-                    >
-                      Delete
-                    </button>
+                    <div className="table-action-group">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="table-action-button"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteProduct(product)}
+                        className="table-action-button table-action-button-danger"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
