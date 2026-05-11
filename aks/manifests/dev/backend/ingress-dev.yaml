@@ -3,15 +3,15 @@ kind: Ingress
 metadata:
   name: microservices-ingress-dev
   namespace: dev
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+  # annotations:
+  #   cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - apigateway.dev.example.com
-        - admin.dev.example.com
-      secretName: microservices-tls
+  ingressClassName: webapprouting.kubernetes.azure.com
+  # tls:
+  #   - hosts:
+  #       - apigateway.dev.example.com
+  #       - admin.dev.example.com
+  #     secretName: microservices-tls
   rules:
     # API Gateway - entry point for all backend API traffic
     - host: apigateway.dev.example.com

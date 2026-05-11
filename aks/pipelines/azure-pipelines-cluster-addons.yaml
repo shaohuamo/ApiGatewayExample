@@ -1,5 +1,5 @@
 # Cluster add-ons pipeline
-# Deploys cluster-scoped ingress-nginx resources to AKS using the official static manifest.
+# Enables the AKS application routing add-on and verifies the managed NGINX controller.
 
 trigger:
   branches:
@@ -21,16 +21,14 @@ variables:
     value: microservicesdemo-resource-group
   - name: aksClusterName
     value: microservicesdemo-aks-cluster
-  - name: ingressNginxManifestUrl
-    value: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/cloud/deploy.yaml
 
 stages:
-  - stage: DeployIngressNginx
-    displayName: Deploy NGINX Ingress Controller
+  - stage: EnableApplicationRouting
+    displayName: Enable AKS Application Routing
     condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
     jobs:
-      - deployment: DeployIngressNginx
-        displayName: Deploy ingress-nginx to AKS
+      - deployment: EnableApplicationRouting
+        displayName: Enable managed NGINX ingress add-on on AKS
         pool:
           vmImage: $(vmImageName)
         environment: dev
@@ -41,7 +39,7 @@ stages:
                 - checkout: none
 
                 - task: AzureCLI@2
-                  displayName: Apply ingress-nginx static manifest
+                  displayName: Enable application routing add-on
                   inputs:
                     azureSubscription: $(azureSubscription)
                     scriptType: bash
@@ -49,14 +47,29 @@ stages:
                     inlineScript: |
                       set -euo pipefail
 
+                      APP_ROUTING_ENABLED=$(az aks show \
+                        --resource-group $(aksResourceGroup) \
+                        --name $(aksClusterName) \
+                        --query "addonProfiles.applicationRouting.enabled" \
+                        --output tsv)
+
+                      if [ "$APP_ROUTING_ENABLED" != "true" ]; then
+                        az aks approuting enable \
+                          --resource-group $(aksResourceGroup) \
+                          --name $(aksClusterName)
+                      fi
+
                       az aks get-credentials \
                         --resource-group $(aksResourceGroup) \
                         --name $(aksClusterName) \
                         --admin \
                         --overwrite-existing
 
-                      kubectl apply -f $(ingressNginxManifestUrl)
-                      kubectl wait \
-                        --namespace ingress-nginx \
-                        --for=condition=available deployment/ingress-nginx-controller \
-                        --timeout=300s
+                      kubectl patch nginxingresscontroller default \
+                        --type merge \
+                        -p '{"spec":{"scaling":{"minReplicas":1,"maxReplicas":2,"threshold":"balanced"}}}'
+
+                      kubectl get ingressclass webapprouting.kubernetes.azure.com
+                      kubectl get service \
+                        --namespace app-routing-system \
+                        nginx
