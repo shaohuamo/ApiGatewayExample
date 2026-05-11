@@ -40,8 +40,8 @@ export default function RootLayout({
         <QueryProvider>
           <div className="app-shell relative min-h-screen lg:flex">
             <Sidebar />
-            <main className="relative z-10 flex-1 overflow-auto">
-              <div className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+            <main className="relative z-10 flex-1 overflow-auto bg-[var(--bg-elevated)]">
+              <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pb-14 lg:pt-8">
                 {children}
               </div>
             </main>

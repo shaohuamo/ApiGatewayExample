@@ -82,12 +82,15 @@ export function ProductFormDialog({
       />
       <div className="dialog-card relative w-full max-w-2xl rounded-[2rem] p-6 sm:p-8">
         <div className="flex flex-col gap-3 border-b border-[var(--border)] pb-5">
-          <div className="kicker">Product Editor</div>
+          <div className="flex items-center gap-3">
+            <div className="label-chip">Product Editor</div>
+            <span className="soft-badge">{isEditing ? "Update record" : "Create record"}</span>
+          </div>
           <h2 className="font-display text-3xl font-semibold text-[var(--text)]">
             {isEditing ? "Edit Product" : "Add Product"}
           </h2>
           <p className="text-sm leading-6 text-[var(--muted)] sm:text-base">
-            Adjust product identity, pricing, and stock counts from a single control surface.
+            Keep product details, pricing, and stock in one clean form without leaving the catalog view.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">

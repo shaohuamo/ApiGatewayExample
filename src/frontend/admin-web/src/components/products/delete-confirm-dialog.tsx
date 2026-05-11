@@ -35,8 +35,11 @@ export function DeleteConfirmDialog({
         onClick={() => onOpenChange(false)}
       />
       <div className="dialog-card relative w-full max-w-lg rounded-[2rem] p-6 sm:p-8">
-        <div className="kicker text-[var(--danger)]">Destructive Action</div>
-        <h2 className="font-display mt-3 text-3xl font-semibold text-[var(--text)]">Delete Product</h2>
+        <div className="flex items-center gap-3">
+          <div className="label-chip">Delete Product</div>
+          <span className="soft-badge">Destructive action</span>
+        </div>
+        <h2 className="font-display mt-4 text-3xl font-semibold text-[var(--text)]">Remove this product?</h2>
         <p className="mt-4 text-sm leading-7 text-[var(--muted)] sm:text-base">
           Are you sure you want to delete{" "}
           <strong>{product.productName}</strong>? This action cannot be undone.
