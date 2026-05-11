@@ -320,6 +320,9 @@ services:
     image: lambdazb/admin-web:${ADMINWEB_IMAGE_TAG:-latest}
     container_name: admin-web-container
     hostname: admin-web
+    environment:
+      - API_GATEWAY_INTERNAL_URL=http://apigateway:8080
+      - OTEL_COLLECTOR_INTERNAL_URL=http://otel-collector:4318
     ports:
       - 3000:3000
     networks:

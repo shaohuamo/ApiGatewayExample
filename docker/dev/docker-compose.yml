@@ -333,8 +333,8 @@ services:
     container_name: admin-web-container
     hostname: admin-web
     environment:
-      - NEXT_PUBLIC_API_GATEWAY_URL=http://apigateway:9080
-      - OTEL_COLLECTOR_URL=http://otel-collector:4318
+      - API_GATEWAY_INTERNAL_URL=http://apigateway:8080
+      - OTEL_COLLECTOR_INTERNAL_URL=http://otel-collector:4318
     ports:
       - 3000:3000
     networks:
