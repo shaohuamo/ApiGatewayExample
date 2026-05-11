@@ -281,6 +281,10 @@ select {
   background: var(--table-header-bg);
 }
 
+.data-table thead th.text-right {
+  text-align: right;
+}
+
 .data-table tbody td {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(96, 148, 255, 0.08);
