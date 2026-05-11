@@ -1,0 +1,157 @@
+# Ingress deployment pipeline
+# Deploys environment-specific ingress resources after the AKS App Routing add-on is available.
+
+trigger:
+  branches:
+    include:
+      - dev
+      - qa
+      - uat
+      - staging
+      - prod
+  paths:
+    include:
+      - aks/manifests/dev/backend/ingress-dev.yaml
+      - aks/manifests/qa/backend/ingress-qa.yaml
+      - aks/manifests/uat/backend/ingress-uat.yaml
+      - aks/manifests/staging/backend/ingress-staging.yaml
+      - aks/manifests/prod/backend/ingress-prod.yaml
+      - aks/pipelines/azure-pipelines-ingress.yaml
+
+resources:
+  - repo: self
+
+variables:
+  - name: vmImageName
+    value: ubuntu-latest
+
+stages:
+  - stage: DeployToDev
+    displayName: Deploy ingress to Dev
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+    jobs:
+      - deployment: DeployIngressToDev
+        displayName: Deploy ingress to dev environment
+        pool:
+          vmImage: $(vmImageName)
+        environment: dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout source code
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy ingress to dev namespace in kubernetes
+                  inputs:
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
+                    kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
+                    namespace: dev
+                    manifests: |
+                      aks/manifests/dev/backend/ingress-dev.yaml
+
+  - stage: DeployToQA
+    displayName: Deploy ingress to QA
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/qa')
+    jobs:
+      - deployment: DeployIngressToQA
+        displayName: Deploy ingress to qa environment
+        pool:
+          vmImage: $(vmImageName)
+        environment: qa
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout source code
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy ingress to qa namespace in kubernetes
+                  inputs:
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
+                    kubernetesServiceConnection: qa-microservicesdemo-aks-cluster-qa-1778160953610
+                    namespace: qa
+                    manifests: |
+                      aks/manifests/qa/backend/ingress-qa.yaml
+
+  - stage: DeployToUAT
+    displayName: Deploy ingress to UAT
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/uat')
+    jobs:
+      - deployment: DeployIngressToUAT
+        displayName: Deploy ingress to uat environment
+        pool:
+          vmImage: $(vmImageName)
+        environment: uat
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout source code
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy ingress to uat namespace in kubernetes
+                  inputs:
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
+                    kubernetesServiceConnection: uat-microservicesdemo-aks-cluster-uat-1778161095509
+                    namespace: uat
+                    manifests: |
+                      aks/manifests/uat/backend/ingress-uat.yaml
+
+  - stage: DeployToStaging
+    displayName: Deploy ingress to Staging
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/staging')
+    jobs:
+      - deployment: DeployIngressToStaging
+        displayName: Deploy ingress to staging environment
+        pool:
+          vmImage: $(vmImageName)
+        environment: staging
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout source code
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy ingress to staging namespace in kubernetes
+                  inputs:
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
+                    kubernetesServiceConnection: staging-microservicesdemo-aks-cluster-staging-1778161154539
+                    namespace: staging
+                    manifests: |
+                      aks/manifests/staging/backend/ingress-staging.yaml
+
+  - stage: DeployToProduction
+    displayName: Deploy ingress to Production
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/prod')
+    jobs:
+      - deployment: DeployIngressToProduction
+        displayName: Deploy ingress to production environment
+        pool:
+          vmImage: $(vmImageName)
+        environment: prod
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout source code
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy ingress to prod namespace in kubernetes
+                  inputs:
+                    action: deploy
+                    connectionType: kubernetesServiceConnection
+                    kubernetesServiceConnection: prod-microservicesdemo-aks-cluster-prod-1778161221255
+                    namespace: prod
+                    manifests: |
+                      aks/manifests/prod/backend/ingress-prod.yaml
