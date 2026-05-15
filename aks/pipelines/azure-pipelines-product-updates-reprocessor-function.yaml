@@ -60,6 +60,7 @@ stages:
         projects: '$(functionProjectPath)'
         arguments: '--configuration $(buildConfiguration) --output $(publishOutputPath)'
         zipAfterPublish: false
+        modifyOutputPath: false
 
     - task: ArchiveFiles@2
       displayName: Archive Azure Function package
