@@ -1,5 +1,5 @@
 # Azure Function
-# Build a .NET isolated Azure Functions package, then deploy it to Azure Function Apps
+# Build a .NET isolated Azure Functions package, then deploy it to a Windows Consumption Azure Function App
 
 trigger:
   branches:
@@ -105,7 +105,6 @@ stages:
             displayName: Deploy Azure Function to dev
             inputs:
               azureSubscription: $(azureSubscription)
-              appType: functionAppLinux
-              isFlexConsumption: true
+              appType: functionApp
               appName: $(functionAppName)
               package: '$(Pipeline.Workspace)/$(functionPackageName)/product-updates-reprocessor-function.zip'
