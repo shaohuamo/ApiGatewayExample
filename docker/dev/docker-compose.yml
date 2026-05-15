@@ -210,6 +210,10 @@ services:
      - RabbitMQ__NetworkRecoveryIntervalSeconds=10
      - RabbitMQ_Products_Exchange=products.exchange
      - RabbitMQ_Products_RoutingKey=products.add
+     - ServiceBus__ConnectionString=${SERVICEBUS_CONNECTION_STRING}
+     - ServiceBus__ProductsUpdatesTopic=products.updates
+     - ServiceBus__ProductsUpdatesSubscription=products.updates.test
+     - ServiceBus__ProductsUpdatesReprocessTopic=products.updates.Reprocess
      - Redis__ConnectionString=redis:6379
      - Redis__InstanceName=ProductMicroservice_
      - Redis__ConnectRetry=5
@@ -293,6 +297,14 @@ services:
      - RabbitMQ_Products_Exchange=products.exchange
      - RabbitMQ_Products_RoutingKey=products.add
      - RabbitMQ_Products_Queue=products.add.queue
+     - ServiceBus__ConnectionString=${SERVICEBUS_CONNECTION_STRING}
+     - ServiceBus__ProductsUpdatesTopic=products.updates
+     - ServiceBus__ProductsUpdatesSubscription=products.updates.test
+     - ServiceBus__ProductsUpdatesReprocessTopic=products.updates.Reprocess
+     - Redis__ConnectionString=redis:6379
+     - Redis__InstanceName=TestMicroservice_
+     - MessageIdempotency__KeyPrefix=processed-message
+     - MessageIdempotency__ProcessedMessageTtlMinutes=1440
      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
      - OTEL_RESOURCE_ATTRIBUTES=service.name=test.api,deployment.environment=development 
     ports:
@@ -301,6 +313,8 @@ services:
      - app-network
     depends_on:
      rabbitmq: #service name
+      condition: service_healthy
+     redis:
       condition: service_healthy
      consul:
       condition: service_healthy

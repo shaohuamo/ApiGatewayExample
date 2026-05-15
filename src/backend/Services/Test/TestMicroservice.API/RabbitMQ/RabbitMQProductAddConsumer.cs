@@ -2,6 +2,7 @@
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
+using CommonService.Idempotency;
 using CommonService.RabbitMQ;
 using OpenTelemetry.Context.Propagation;
 using System.Diagnostics;
@@ -13,21 +14,25 @@ namespace TestMicroservice.API.RabbitMQ
 {
     public class RabbitMQProductAddConsumer: IRabbitMQProductAddConsumer
     {
+        private const string ConsumerName = "test-rabbitmq-product-add";
+
         private readonly IConfiguration _configuration;
         private readonly ILogger<RabbitMQProductAddConsumer> _logger;
         private readonly string _queueName;
         private IConnection? _connection;
         private IChannel? _channel;
         private readonly IRabbitMQConnectionProvider _connectionProvider;
+        private readonly IProcessedMessageStore _processedMessageStore;
 
 
         public RabbitMQProductAddConsumer(IConfiguration configuration, ILogger<RabbitMQProductAddConsumer> logger,
-            IRabbitMQConnectionProvider connectionProvider)
+            IRabbitMQConnectionProvider connectionProvider, IProcessedMessageStore processedMessageStore)
         {
             _configuration = configuration;
             _logger = logger;
             _queueName = _configuration["RabbitMQ_Products_Queue"]!;
             _connectionProvider = connectionProvider;
+            _processedMessageStore = processedMessageStore;
         }
 
         public async Task ConsumeAsync()
@@ -136,6 +141,42 @@ namespace TestMicroservice.API.RabbitMQ
                 //050-010:get message data
                 var body = ea.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
+                string? messageId = ea.BasicProperties?.MessageId;
+
+                if (string.IsNullOrWhiteSpace(messageId))
+                {
+                    stopwatch.Stop();
+
+                    _logger.LogWarning("RabbitMQ message is missing MessageId");
+
+                    activity?.SetStatus(ActivityStatusCode.Error, "Missing MessageId");
+
+                    DiagnosticsConfig.RabbitMqConsumeCounter.Add(1,
+                        new KeyValuePair<string, object?>("status", "invalid"));
+
+                    await _channel!.BasicNackAsync(ea.DeliveryTag, false, false);
+                    return;
+                }
+
+                activity?.SetTag("messaging.message_id", messageId);
+
+                if (await _processedMessageStore.HasProcessedAsync(ConsumerName, messageId))
+                {
+                    stopwatch.Stop();
+
+                    _logger.LogInformation(
+                        "Skipping duplicate RabbitMQ message {MessageId}",
+                        messageId);
+
+                    DiagnosticsConfig.RabbitMqConsumeCounter.Add(1,
+                        new KeyValuePair<string, object?>("status", "duplicate"));
+
+                    activity?.SetTag("messaging.duplicate", true);
+                    activity?.SetStatus(ActivityStatusCode.Ok);
+
+                    await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                    return;
+                }
 
                 var productAddMessage = JsonSerializer.Deserialize<ProductAddMessage>(message);
 
@@ -153,6 +194,7 @@ namespace TestMicroservice.API.RabbitMQ
 
                     // reject bad message (optional: dead-letter)
                     await _channel!.BasicNackAsync(ea.DeliveryTag, false, false);
+                    return;
                 }
 
                 //050-030:Extract user_id from baggage (set by upstream service)
@@ -189,6 +231,8 @@ namespace TestMicroservice.API.RabbitMQ
                 }
 
                 activity?.SetStatus(ActivityStatusCode.Ok);
+
+                await _processedMessageStore.MarkProcessedAsync(ConsumerName, messageId);
 
                 //050-050:ack message after successful processing to remove it from the queue
                 await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false);

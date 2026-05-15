@@ -5,6 +5,8 @@ using Moq;
 using ProductsMicroservice.Core.Domain.Entities;
 using ProductsMicroservice.Core.Domain.RepositoryContracts;
 using ProductsMicroservice.Core.DTO;
+using ProductsMicroservice.Core.MessageQueue.Abstractions;
+using ProductsMicroservice.Core.MessageQueue.Messages;
 using ProductsMicroservice.Core.Services;
 
 namespace ProductsMicroservice.Tests;
@@ -13,6 +15,7 @@ public class ProductsUpdaterServiceTests
 {
     private readonly Mock<IProductsRepository> _repoMock = new();
     private readonly Mock<IMapper> _mapperMock = new();
+    private readonly Mock<IProductUpdateMessagePublisher> _productUpdatePublisherMock = new();
     private readonly Mock<ILogger<ProductsUpdaterService>> _loggerMock = new();
 
     private readonly ProductsUpdaterService _service;
@@ -22,6 +25,7 @@ public class ProductsUpdaterServiceTests
         _service = new ProductsUpdaterService(
             _repoMock.Object,
             _mapperMock.Object,
+            _productUpdatePublisherMock.Object,
             _loggerMock.Object
         );
     }
@@ -46,7 +50,7 @@ public class ProductsUpdaterServiceTests
         var request = CreateRequest();
 
         var product = new Product { ProductId = request.ProductId };
-        var updatedProduct = new Product { ProductId = request.ProductId };
+        var updatedProduct = new Product { ProductId = request.ProductId, Version = 7 };
         var response = new ProductResponse();
 
         _mapperMock.Setup(x => x.Map<Product>(request))
@@ -64,6 +68,14 @@ public class ProductsUpdaterServiceTests
 
         _mapperMock.Verify(x => x.Map<Product>(request), Times.Once);
         _repoMock.Verify(x => x.UpdateProductAsync(product), Times.Once);
+        _productUpdatePublisherMock.Verify(x => x.PublishAsync(
+            It.Is<ProductUpdatedMessage>(message =>
+                message.ProductId == updatedProduct.ProductId &&
+                message.ProductName == updatedProduct.ProductName &&
+                message.UnitPrice == updatedProduct.UnitPrice &&
+                message.QuantityInStock == updatedProduct.QuantityInStock &&
+                message.Version == updatedProduct.Version),
+            It.IsAny<CancellationToken>()), Times.Once);
         _mapperMock.Verify(x => x.Map<ProductResponse>(updatedProduct), Times.Once);
     }
 
@@ -88,6 +100,9 @@ public class ProductsUpdaterServiceTests
 
         result.Should().BeNull();
 
+        _productUpdatePublisherMock.Verify(x => x.PublishAsync(
+            It.IsAny<ProductUpdatedMessage>(),
+            It.IsAny<CancellationToken>()), Times.Never);
         _mapperMock.Verify(x => x.Map<ProductResponse>(It.IsAny<Product>()), Times.Never);
     }
 
@@ -112,6 +127,10 @@ public class ProductsUpdaterServiceTests
 
         await act.Should().ThrowAsync<Exception>()
             .WithMessage("DB error");
+
+        _productUpdatePublisherMock.Verify(x => x.PublishAsync(
+            It.IsAny<ProductUpdatedMessage>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion

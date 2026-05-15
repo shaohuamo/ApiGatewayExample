@@ -31,6 +31,8 @@ public class RabbitMQProductAddProductAddPublisher : IProductMessagePublisher
 
         await using var channel = await connection.CreateChannelAsync();
 
+        string messageId = CreateMessageId(message);
+
         string messageJson = JsonSerializer.Serialize(message);
         byte[] messageBodyInBytes = Encoding.UTF8.GetBytes(messageJson);
 
@@ -39,10 +41,18 @@ public class RabbitMQProductAddProductAddPublisher : IProductMessagePublisher
         await channel.ExchangeDeclareAsync(exchange: _exchangeName, type: ExchangeType.Direct, durable: true);
 
         //Publish message
-        using Activity? activity = await PublishMessageAsync(routingKey, channel, messageBodyInBytes);
+        using Activity? activity = await PublishMessageAsync(
+            routingKey,
+            channel,
+            messageBodyInBytes,
+            messageId);
     }
 
-    private async Task<Activity?> PublishMessageAsync(string routingKey, IChannel channel, byte[] messageBodyInBytes)
+    private async Task<Activity?> PublishMessageAsync(
+        string routingKey,
+        IChannel channel,
+        byte[] messageBodyInBytes,
+        string messageId)
     {
         //010-000:Create activity (span)
         var activity = RabbitMQTelemetry.ActivitySource.StartActivity(
@@ -60,8 +70,12 @@ public class RabbitMQProductAddProductAddPublisher : IProductMessagePublisher
         {
             Persistent = true,//persist message
             ContentType = "application/json",
+            MessageId = messageId,
             Headers = new Dictionary<string, object?>()
         };
+
+        activity?.SetTag("messaging.message_id", messageId);
+        properties.Headers["message_id"] = Encoding.UTF8.GetBytes(messageId);
 
         //030-010 get and set user_id
         // add custom header (for downstream services)
@@ -108,5 +122,16 @@ public class RabbitMQProductAddProductAddPublisher : IProductMessagePublisher
         }
 
         return activity;
+    }
+
+    private static string CreateMessageId<T>(T message)
+    {
+        return message switch
+        {
+            MessageQueue.Messages.ProductAddMessage productAddMessage =>
+                $"product.add:{productAddMessage.ProductId:N}",
+            _ => throw new InvalidOperationException(
+                $"Unsupported message type {typeof(T).Name} for RabbitMQ product publisher.")
+        };
     }
 }

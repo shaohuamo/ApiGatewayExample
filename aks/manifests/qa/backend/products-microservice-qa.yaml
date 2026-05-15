@@ -74,6 +74,17 @@ spec:
           value: "products.exchange"
         - name: RabbitMQ_Products_RoutingKey
           value: "products.add"
+        - name: ServiceBus__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: products-secrets
+              key: servicebus-connection-string
+        - name: ServiceBus__ProductsUpdatesTopic
+          value: "products.updates"
+        - name: ServiceBus__ProductsUpdatesSubscription
+          value: "products.updates.test"
+        - name: ServiceBus__ProductsUpdatesReprocessTopic
+          value: "products.updates.Reprocess"
         - name: Redis__ConnectionString
           valueFrom:
             secretKeyRef:

@@ -4,12 +4,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using CommonService.RabbitMQ;
+using CommonService.ServiceBus;
+using Microsoft.Extensions.Configuration;
 using ProductsMicroservice.Core.CacheKeys;
 using ProductsMicroservice.Core.Diagnostics;
 using ProductsMicroservice.Core.DTO;
+using ProductsMicroservice.Core.MessageQueue.Abstractions;
 using ProductsMicroservice.Core.Services;
 using ProductsMicroservice.Infrastructure.DbContext;
 using ProductsMicroservice.Infrastructure.Options;
+using RabbitMQ.Client;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Text.Json;
@@ -21,6 +26,8 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<AppWarmupService> _logger;
         private readonly CacheOptions _cacheOptions;
+        private readonly IConfiguration _configuration;
+        private readonly ServiceBusOptions _serviceBusOptions;
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         //Telemetry
@@ -32,12 +39,18 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
         private static readonly Gauge<long> ServiceStartTime =
             WarmupMeter.CreateGauge<long>("product.api.start.time.seconds", "s");
 
-        public AppWarmupService(IServiceScopeFactory scopeFactory, ILogger<AppWarmupService> logger,
-            IOptions<CacheOptions> cacheOptions)
+        public AppWarmupService(
+            IServiceScopeFactory scopeFactory,
+            ILogger<AppWarmupService> logger,
+            IOptions<CacheOptions> cacheOptions,
+            IConfiguration configuration,
+            IOptions<ServiceBusOptions> serviceBusOptions)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
             _cacheOptions = cacheOptions.Value;
+            _configuration = configuration;
+            _serviceBusOptions = serviceBusOptions.Value;
         }
 
         public async Task StartAsync(CancellationToken ct)
@@ -55,6 +68,7 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
                 //Warmup logic
                 await PreheatDatabaseAsync(ct);
                 await PreheatCacheAsync(ct);
+                await PreheatMessageBrokersAsync(ct);
 
                 sw.Stop();
                 _logger.LogInformation("GlobalWarmup successful, Total Elapsed: {Elapsed}ms", sw.ElapsedMilliseconds);
@@ -176,6 +190,105 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
                 _logger.LogError(ex, "Error occur during cache warmup: {Key}, Elapsed: {Elapsed}ms",
                     sw.ElapsedMilliseconds, ProductCacheKeys.AllProductsKey);
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            }
+        }
+
+        private async Task PreheatMessageBrokersAsync(CancellationToken ct)
+        {
+            using var activity = ActivitySource.StartActivity("MessageBrokersWarmup");
+            var sw = Stopwatch.StartNew();
+
+            _logger.LogInformation("Message brokers warmup starting...");
+
+            try
+            {
+                await PreheatRabbitMQAsync(ct);
+                await PreheatAzureServiceBusAsync(ct);
+
+                sw.Stop();
+                _logger.LogInformation("Message brokers warmup successful, Elapsed: {Elapsed}ms",
+                    sw.ElapsedMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                _logger.LogError(ex, "Error occur during message brokers warmup, Elapsed: {Elapsed}ms",
+                    sw.ElapsedMilliseconds);
+
+                throw;
+            }
+        }
+
+        private async Task PreheatRabbitMQAsync(CancellationToken ct)
+        {
+            using var activity = ActivitySource.StartActivity("RabbitMQWarmup");
+            var sw = Stopwatch.StartNew();
+            string exchangeName = _configuration["RabbitMQ_Products_Exchange"]!;
+
+            _logger.LogInformation("RabbitMQ warmup starting for exchange {Exchange}", exchangeName);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(exchangeName))
+                {
+                    throw new InvalidOperationException("RabbitMQ_Products_Exchange must be configured.");
+                }
+
+                using var scope = _scopeFactory.CreateScope();
+                var connectionProvider = scope.ServiceProvider.GetRequiredService<IRabbitMQConnectionProvider>();
+
+                var connection = await connectionProvider.GetConnectionAsync();
+                await using var channel = await connection.CreateChannelAsync(cancellationToken: ct);
+
+                await channel.ExchangeDeclareAsync(
+                    exchange: exchangeName,
+                    type: ExchangeType.Direct,
+                    durable: true,
+                    cancellationToken: ct);
+
+                sw.Stop();
+                _logger.LogInformation("RabbitMQ warmup successful for exchange {Exchange}, Elapsed: {Elapsed}ms",
+                    exchangeName, sw.ElapsedMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                _logger.LogError(ex, "Error occur during RabbitMQ warmup for exchange {Exchange}, Elapsed: {Elapsed}ms",
+                    exchangeName, sw.ElapsedMilliseconds);
+
+                throw;
+            }
+        }
+
+        private async Task PreheatAzureServiceBusAsync(CancellationToken ct)
+        {
+            using var activity = ActivitySource.StartActivity("AzureServiceBusWarmup");
+            var sw = Stopwatch.StartNew();
+
+            _logger.LogInformation("Azure Service Bus warmup starting for topic {Topic}",
+                _serviceBusOptions.ProductsUpdatesTopic);
+
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var publisherWarmup = scope.ServiceProvider.GetRequiredService<IProductUpdateMessagePublisherWarmup>();
+
+                await publisherWarmup.WarmupAsync(ct);
+
+                sw.Stop();
+                _logger.LogInformation("Azure Service Bus warmup successful for topic {Topic}, Elapsed: {Elapsed}ms",
+                    _serviceBusOptions.ProductsUpdatesTopic, sw.ElapsedMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                _logger.LogError(ex, "Error occur during Azure Service Bus warmup for topic {Topic}, Elapsed: {Elapsed}ms",
+                    _serviceBusOptions.ProductsUpdatesTopic, sw.ElapsedMilliseconds);
+
+                throw;
             }
         }
 

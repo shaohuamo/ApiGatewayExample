@@ -26,5 +26,24 @@ namespace TestMicroservice.API.Diagnostics
                 name: "rabbitmq.processing.duration",
                 unit: "seconds",
                 description: "Time taken to process RabbitMQ messages");
+
+        /// <summary>
+        /// Counts number of Service Bus messages consumed
+        /// tags: status = success | error | invalid | duplicate
+        /// </summary>
+        public static readonly Counter<long> ServiceBusConsumeCounter =
+            TestMeter.CreateCounter<long>(
+                name: "servicebus.consume.count",
+                unit: "messages",
+                description: "Number of Service Bus messages consumed");
+
+        /// <summary>
+        /// Measures processing duration per Service Bus message
+        /// </summary>
+        public static readonly Histogram<double> ServiceBusProcessingHistogram =
+            TestMeter.CreateHistogram<double>(
+                name: "servicebus.processing.duration",
+                unit: "seconds",
+                description: "Time taken to process Service Bus messages");
     }
 }
