@@ -1,4 +1,5 @@
 ﻿using CommonService.RabbitMQ;
+using CommonService.ServiceBus;
 using Medallion.Threading;
 using Medallion.Threading.Redis;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ using ProductsMicroservice.Infrastructure.DbContext;
 using ProductsMicroservice.Infrastructure.Decorators.Caching;
 using ProductsMicroservice.Infrastructure.Decorators.Observability;
 using ProductsMicroservice.Infrastructure.HostedServices;
+using ProductsMicroservice.Infrastructure.Messaging;
 using ProductsMicroservice.Infrastructure.Options;
 using ProductsMicroservice.Infrastructure.Repositories;
 using StackExchange.Redis;
@@ -78,6 +80,11 @@ namespace ProductsMicroservice.Infrastructure
 
             services.AddScoped<IProductsRepository, ProductsRepository>();
             services.AddSingleton<IProductMessagePublisher, RabbitMQProductAddProductAddPublisher>();
+            services.AddSingleton<AzureServiceBusProductUpdatePublisher>();
+            services.AddSingleton<IProductUpdateMessagePublisher>(serviceProvider =>
+                serviceProvider.GetRequiredService<AzureServiceBusProductUpdatePublisher>());
+            services.AddSingleton<IProductUpdateMessagePublisherWarmup>(serviceProvider =>
+                serviceProvider.GetRequiredService<AzureServiceBusProductUpdatePublisher>());
 
             services.AddHttpClient<ITestMicroserviceClient, TestMicroserviceClient>(client =>
             {
@@ -91,6 +98,7 @@ namespace ProductsMicroservice.Infrastructure
 
             services.AddSingleton<IRabbitMQConnectionProvider, RabbitMQConnectionProvider>();
             services.Configure<RabbitMQOptions>(configuration.GetSection("RabbitMQ"));
+            services.Configure<ServiceBusOptions>(configuration.GetSection(ServiceBusOptions.SectionName));
 
             var redisOptions = configuration.GetSection(RedisOptions.SectionName).Get<RedisOptions>() ?? new RedisOptions();
 

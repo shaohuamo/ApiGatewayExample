@@ -27,6 +27,7 @@
 		</ItemGroup>
 
 		<ItemGroup>
+				<ProjectReference Include="..\..\src\backend\BuildingBlocks\CommonService\CommonService.csproj" />
 				<ProjectReference Include="..\..\src\backend\Services\Products\ProductsMicroservice.Core\ProductsMicroservice.Core.csproj" />
 		</ItemGroup>
 

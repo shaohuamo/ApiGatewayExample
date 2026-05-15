@@ -55,6 +55,25 @@ spec:
           value: "products.add"
         - name: RabbitMQ_Products_Queue
           value: "products.add.queue"
+        - name: ServiceBus__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: test-microservice-secrets
+              key: servicebus-connection-string
+        - name: ServiceBus__ProductsUpdatesTopic
+          value: "products.updates"
+        - name: ServiceBus__ProductsUpdatesSubscription
+          value: "products.updates.test"
+        - name: ServiceBus__ProductsUpdatesReprocessTopic
+          value: "products.updates.Reprocess"
+        - name: Redis__ConnectionString
+          value: "redis:6379"
+        - name: Redis__InstanceName
+          value: "TestMicroservice_"
+        - name: MessageIdempotency__KeyPrefix
+          value: "processed-message"
+        - name: MessageIdempotency__ProcessedMessageTtlMinutes
+          value: "1440"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector:4317"
         - name: OTEL_RESOURCE_ATTRIBUTES
