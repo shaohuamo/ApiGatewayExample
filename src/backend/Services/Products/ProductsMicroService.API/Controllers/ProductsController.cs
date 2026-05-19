@@ -119,7 +119,7 @@ namespace ProductsMicroService.API.Controllers
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
-        [HttpDelete("{ProductId:guid}")]
+        [HttpDelete("{productId:guid}")]
         public async Task<IActionResult> DeleteProductAsync([Required] Guid? productId)
         {
             bool isDeleted = await _productsDeleterService.DeleteProductAsync(productId!.Value);
