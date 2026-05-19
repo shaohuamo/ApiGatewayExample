@@ -18,7 +18,16 @@
           "Host": "products-microservice-service",
           "Port": 8080
         }
-      ]
+      ],
+
+      "RateLimitOptions": {
+        "Limit": 100,
+        "Period": "1m",
+        "HttpStatusCode": 429,
+        "EnableRateLimiting": true,
+        "ClientWhitelist": [],
+        "ClientIdHeader": "Client-Id"
+      }
     },
     {
       "UpstreamPathTemplate": "/gateway/products/{everything}",
@@ -37,7 +46,16 @@
           "Host": "products-microservice-service",
           "Port": 8080
         }
-      ]
+      ],
+
+      "RateLimitOptions": {
+        "Limit": 100,
+        "Period": "1m",
+        "HttpStatusCode": 429,
+        "EnableRateLimiting": true,
+        "ClientWhitelist": [],
+        "ClientIdHeader": "Client-Id"
+      }
     },
     {
       "UpstreamPathTemplate": "/gateway/test",
@@ -58,14 +76,11 @@
       ],
 
       "RateLimitOptions": {
-        "Limit": 3,
+        "Limit": 100,
         "Period": "1m",
         "HttpStatusCode": 429,
         "EnableRateLimiting": true,
-        "ClientWhitelist": [
-          "postman",
-          "Client2"
-        ],
+        "ClientWhitelist": [],
         "ClientIdHeader": "Client-Id"
       }
     }

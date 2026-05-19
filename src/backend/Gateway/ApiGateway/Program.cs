@@ -22,6 +22,8 @@ else
     builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 }
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("Ocelot.ApiGateway"))
     .WithLogging(logging => logging.AddOtlpExporter(), options =>

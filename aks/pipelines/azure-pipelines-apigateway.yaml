@@ -71,6 +71,18 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/dev/backend/apigateway-dev.yaml"
+              $target = "$(Pipeline.Workspace)/apigateway-dev.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
+                -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
+                -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
+                Set-Content $target
+            displayName: Render API Gateway dev manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy API Gateway to dev namespace in kubernetes
             inputs:
@@ -79,7 +91,7 @@ stages:
               kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
               namespace: dev
               manifests: |
-                aks/manifests/dev/backend/apigateway-dev.yaml
+                $(Pipeline.Workspace)/apigateway-dev.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -100,6 +112,18 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/qa/backend/apigateway-qa.yaml"
+              $target = "$(Pipeline.Workspace)/apigateway-qa.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
+                -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
+                -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
+                Set-Content $target
+            displayName: Render API Gateway qa manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy API Gateway to qa namespace in kubernetes
             inputs:
@@ -108,7 +132,7 @@ stages:
               kubernetesServiceConnection: qa-microservicesdemo-aks-cluster-qa-1778160953610
               namespace: qa
               manifests: |
-                aks/manifests/qa/backend/apigateway-qa.yaml
+                $(Pipeline.Workspace)/apigateway-qa.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -129,6 +153,18 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/uat/backend/apigateway-uat.yaml"
+              $target = "$(Pipeline.Workspace)/apigateway-uat.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
+                -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
+                -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
+                Set-Content $target
+            displayName: Render API Gateway uat manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy API Gateway to uat namespace in kubernetes
             inputs:
@@ -137,7 +173,7 @@ stages:
               kubernetesServiceConnection: uat-microservicesdemo-aks-cluster-uat-1778161095509
               namespace: uat
               manifests: |
-                aks/manifests/uat/backend/apigateway-uat.yaml
+                $(Pipeline.Workspace)/apigateway-uat.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -158,6 +194,18 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/staging/backend/apigateway-staging.yaml"
+              $target = "$(Pipeline.Workspace)/apigateway-staging.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
+                -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
+                -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
+                Set-Content $target
+            displayName: Render API Gateway staging manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy API Gateway to staging namespace in kubernetes
             inputs:
@@ -166,7 +214,7 @@ stages:
               kubernetesServiceConnection: staging-microservicesdemo-aks-cluster-staging-1778161154539
               namespace: staging
               manifests: |
-                aks/manifests/staging/backend/apigateway-staging.yaml
+                $(Pipeline.Workspace)/apigateway-staging.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -187,6 +235,18 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/prod/backend/apigateway-prod.yaml"
+              $target = "$(Pipeline.Workspace)/apigateway-prod.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
+                -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
+                -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
+                Set-Content $target
+            displayName: Render API Gateway prod manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy API Gateway to prod namespace in kubernetes
             inputs:
@@ -195,6 +255,6 @@ stages:
               kubernetesServiceConnection: prod-microservicesdemo-aks-cluster-prod-1778161221255
               namespace: prod
               manifests: |
-                aks/manifests/prod/backend/apigateway-prod.yaml
+                $(Pipeline.Workspace)/apigateway-prod.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
