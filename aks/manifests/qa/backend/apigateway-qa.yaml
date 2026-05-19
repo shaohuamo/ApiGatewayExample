@@ -24,6 +24,24 @@ spec:
           value: "http://otel-collector:4317"
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: "service.name=apigateway,deployment.environment=qa"
+        - name: Routes__0__RateLimitOptions__Limit
+          value: "$(OCELOT_LIMIT)"
+        - name: Routes__0__RateLimitOptions__Period
+          value: "$(OCELOT_PERIOD)"
+        - name: Routes__0__RateLimitOptions__ClientWhitelist__0
+          value: "$(APP_WHITELIST_1)"
+        - name: Routes__1__RateLimitOptions__Limit
+          value: "$(OCELOT_LIMIT)"
+        - name: Routes__1__RateLimitOptions__Period
+          value: "$(OCELOT_PERIOD)"
+        - name: Routes__1__RateLimitOptions__ClientWhitelist__0
+          value: "$(APP_WHITELIST_1)"
+        - name: Routes__2__RateLimitOptions__Limit
+          value: "$(OCELOT_LIMIT)"
+        - name: Routes__2__RateLimitOptions__Period
+          value: "$(OCELOT_PERIOD)"
+        - name: Routes__2__RateLimitOptions__ClientWhitelist__0
+          value: "$(APP_WHITELIST_1)"
         readinessProbe:
           tcpSocket:
             port: 8080
