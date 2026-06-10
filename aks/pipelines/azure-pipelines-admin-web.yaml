@@ -13,14 +13,19 @@ trigger:
   paths:
     include:
     - src/frontend/admin-web/**
+    - aks/manifests/dev/frontend/admin-web-dev.yaml
+    - aks/pipelines/azure-pipelines-admin-web.yaml
 
 resources:
 - repo: self
 
 variables:
-  # Reference global variable group for Docker registry and image configuration
-  # This group is accessible to Build stage
+  # Reference global variable groups for Docker registry and runtime secrets.
   - group: admin-web-global
+  - group: identityserver-global
+  - group: admin-web-keyvault
+  - group: infrastructure-key-vault
+  - group: identityserver-key-vault
 
   # Path to the admin-web Dockerfile (Next.js build is handled inside the Dockerfile)
   - name: dockerfilePath
@@ -71,6 +76,27 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
+            displayName: Create admin-web secrets in dev namespace
+            inputs:
+              action: createSecret
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
+              namespace: dev
+              secretType: generic
+              secretName: admin-web-secrets
+              forceUpdate: true
+              secretArguments: |
+                --from-literal=frontend-public-url=$(FRONTEND_PUBLIC_URL)
+                --from-literal=identityserver-public-url=$(IDENTITYSERVER_PUBLIC_URL)
+                --from-literal=identityserver-frontend-client-id=$(IDENTITYSERVER_FRONTEND_CLIENT_ID)
+                --from-literal=identityserver-frontend-client-secret=$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)
+                --from-literal=auth-secret=$(auth-secret)
+                --from-literal=postgres-host=postgres
+                --from-literal=postgres-user=postgres
+                --from-literal=postgres-password=$(postgres-password)
+                --from-literal=auth-redis-url=redis://redis:6379
+
+          - task: KubernetesManifest@1
             displayName: Deploy admin-web to dev namespace in kubernetes
             inputs:
               action: deploy
@@ -98,6 +124,22 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/qa/frontend/admin-web-qa.yaml"
+              $target = "$(Pipeline.Workspace)/admin-web-qa.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
+                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                Set-Content $target
+            displayName: Render admin-web qa manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy admin-web to qa namespace in kubernetes
             inputs:
@@ -105,7 +147,7 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: qa-microservicesdemo-aks-cluster-qa-1778160953610
               namespace: qa
-              manifests: aks/manifests/qa/frontend/admin-web-qa.yaml
+              manifests: $(Pipeline.Workspace)/admin-web-qa.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -126,6 +168,22 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/uat/frontend/admin-web-uat.yaml"
+              $target = "$(Pipeline.Workspace)/admin-web-uat.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
+                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                Set-Content $target
+            displayName: Render admin-web uat manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy admin-web to uat namespace in kubernetes
             inputs:
@@ -133,7 +191,7 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: uat-microservicesdemo-aks-cluster-uat-1778161095509
               namespace: uat
-              manifests: aks/manifests/uat/frontend/admin-web-uat.yaml
+              manifests: $(Pipeline.Workspace)/admin-web-uat.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -154,6 +212,22 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/staging/frontend/admin-web-staging.yaml"
+              $target = "$(Pipeline.Workspace)/admin-web-staging.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
+                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                Set-Content $target
+            displayName: Render admin-web staging manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy admin-web to staging namespace in kubernetes
             inputs:
@@ -161,7 +235,7 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: staging-microservicesdemo-aks-cluster-staging-1778161154539
               namespace: staging
-              manifests: aks/manifests/staging/frontend/admin-web-staging.yaml
+              manifests: $(Pipeline.Workspace)/admin-web-staging.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -182,6 +256,22 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              $source = "aks/manifests/prod/frontend/admin-web-prod.yaml"
+              $target = "$(Pipeline.Workspace)/admin-web-prod.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
+                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                Set-Content $target
+            displayName: Render admin-web prod manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy admin-web to prod namespace in kubernetes
             inputs:
@@ -189,6 +279,6 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: prod-microservicesdemo-aks-cluster-prod-1778161221255
               namespace: prod
-              manifests: aks/manifests/prod/frontend/admin-web-prod.yaml
+              manifests: $(Pipeline.Workspace)/admin-web-prod.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)

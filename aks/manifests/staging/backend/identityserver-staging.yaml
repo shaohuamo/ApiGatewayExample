@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identityserver-deployment
+  labels:
+    app: identityserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identityserver
+  template:
+    metadata:
+      labels:
+        app: identityserver
+    spec:
+      containers:
+      - name: identityserver
+        image: microservicesdemoregistry.azurecr.io/identityserver:$(tag)
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: POSTGRES__HOST
+          valueFrom:
+            secretKeyRef:
+              name: identityserver-secrets
+              key: postgres-host
+        - name: POSTGRES__PORT
+          value: "5432"
+        - name: POSTGRES__DATABASE
+          value: "identitydatabase"
+        - name: POSTGRES__USER
+          valueFrom:
+            secretKeyRef:
+              name: identityserver-secrets
+              key: postgres-user
+        - name: POSTGRES__PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: identityserver-secrets
+              key: postgres-password
+        - name: IdentityServer__SigningCredential__CertificatePath
+          value: "/app/certs/identityserver-signing-prod.pfx"
+        - name: IdentityServer__SigningCredential__CertificatePassword
+          valueFrom:
+            secretKeyRef:
+              name: identityserver-secrets
+              key: identityserver-signing-cert-password
+        - name: IdentityServer__IssuerUri
+          value: "$(IDENTITYSERVER_PUBLIC_URL)"
+        - name: Clients__Frontend__PublicUrl
+          value: "$(FRONTEND_PUBLIC_URL)"
+        - name: Clients__Frontend__ClientId
+          value: "$(IDENTITYSERVER_FRONTEND_CLIENT_ID)"
+        - name: Clients__Frontend__ClientSecret
+          value: "$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4317"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "deployment.environment=staging"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        volumeMounts:
+        - name: identityserver-signing-cert
+          mountPath: /app/certs
+          readOnly: true
+      volumes:
+      - name: identityserver-signing-cert
+        secret:
+          secretName: identityserver-secrets
+          items:
+          - key: identityserver-signing-prod.pfx
+            path: identityserver-signing-prod.pfx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identityserver-service
+  labels:
+    app: identityserver
+spec:
+  selector:
+    app: identityserver
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP

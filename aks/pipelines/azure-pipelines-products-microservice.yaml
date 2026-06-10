@@ -14,14 +14,16 @@ trigger:
     include:
     - src/backend/Services/Products/**
     - src/backend/BuildingBlocks/CommonService/**
+    - aks/manifests/dev/backend/products-microservice-dev.yaml
+    - aks/pipelines/azure-pipelines-products-microservice.yaml
 
 resources:
 - repo: self
 
 variables:
-  # Reference global variable group for Docker registry and image configuration
-  # This group is accessible to Build and Test stages
+  # Reference global variable groups for Docker registry and runtime secrets.
   - group: products-microservice-global
+  - group: infrastructure-key-vault
   
   # Explicit path avoids picking up Dockerfiles from other services (Gateway, etc.)
   - name: dockerfilePath
@@ -111,6 +113,26 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
+            displayName: Create Products secrets in dev namespace
+            inputs:
+              action: createSecret
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
+              namespace: dev
+              secretType: generic
+              secretName: products-secrets
+              forceUpdate: true
+              secretArguments: |
+                --from-literal=postgres-host=postgres
+                --from-literal=postgres-user=postgres
+                --from-literal=postgres-password=$(postgres-password)
+                --from-literal=rabbitmq-host=rabbitmq
+                --from-literal=rabbitmq-user=guest
+                --from-literal=rabbitmq-password=$(rabbitmq-password)
+                --from-literal=redis-connection-string=$(redis-connection-string)
+                --from-literal=servicebus-connection-string=$(servicebus-connection-string)
+
+          - task: KubernetesManifest@1
             displayName: Deploy Products microservice to dev namespace in kubernetes
             inputs:
               action: deploy
@@ -137,6 +159,26 @@ stages:
           steps:
           - checkout: self
             displayName: Checkout source code
+
+          - task: KubernetesManifest@1
+            displayName: Create Products secrets in qa namespace
+            inputs:
+              action: createSecret
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: qa-microservicesdemo-aks-cluster-qa-1778160953610
+              namespace: qa
+              secretType: generic
+              secretName: products-secrets
+              forceUpdate: true
+              secretArguments: |
+                --from-literal=postgres-host=postgres
+                --from-literal=postgres-user=postgres
+                --from-literal=postgres-password=$(postgres-password)
+                --from-literal=rabbitmq-host=rabbitmq
+                --from-literal=rabbitmq-user=guest
+                --from-literal=rabbitmq-password=$(rabbitmq-password)
+                --from-literal=redis-connection-string=$(redis-connection-string)
+                --from-literal=servicebus-connection-string=$(servicebus-connection-string)
 
           - task: KubernetesManifest@1
             displayName: Deploy Products microservice to qa namespace in kubernetes
@@ -167,6 +209,26 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
+            displayName: Create Products secrets in uat namespace
+            inputs:
+              action: createSecret
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: uat-microservicesdemo-aks-cluster-uat-1778161095509
+              namespace: uat
+              secretType: generic
+              secretName: products-secrets
+              forceUpdate: true
+              secretArguments: |
+                --from-literal=postgres-host=postgres
+                --from-literal=postgres-user=postgres
+                --from-literal=postgres-password=$(postgres-password)
+                --from-literal=rabbitmq-host=rabbitmq
+                --from-literal=rabbitmq-user=guest
+                --from-literal=rabbitmq-password=$(rabbitmq-password)
+                --from-literal=redis-connection-string=$(redis-connection-string)
+                --from-literal=servicebus-connection-string=$(servicebus-connection-string)
+
+          - task: KubernetesManifest@1
             displayName: Deploy Products microservice to uat namespace in kubernetes
             inputs:
               action: deploy
@@ -195,6 +257,26 @@ stages:
             displayName: Checkout source code
 
           - task: KubernetesManifest@1
+            displayName: Create Products secrets in staging namespace
+            inputs:
+              action: createSecret
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: staging-microservicesdemo-aks-cluster-staging-1778161154539
+              namespace: staging
+              secretType: generic
+              secretName: products-secrets
+              forceUpdate: true
+              secretArguments: |
+                --from-literal=postgres-host=postgres
+                --from-literal=postgres-user=postgres
+                --from-literal=postgres-password=$(postgres-password)
+                --from-literal=rabbitmq-host=rabbitmq
+                --from-literal=rabbitmq-user=guest
+                --from-literal=rabbitmq-password=$(rabbitmq-password)
+                --from-literal=redis-connection-string=$(redis-connection-string)
+                --from-literal=servicebus-connection-string=$(servicebus-connection-string)
+
+          - task: KubernetesManifest@1
             displayName: Deploy Products microservice to staging namespace in kubernetes
             inputs:
               action: deploy
@@ -221,6 +303,26 @@ stages:
           steps:
           - checkout: self
             displayName: Checkout source code
+
+          - task: KubernetesManifest@1
+            displayName: Create Products secrets in prod namespace
+            inputs:
+              action: createSecret
+              connectionType: kubernetesServiceConnection
+              kubernetesServiceConnection: prod-microservicesdemo-aks-cluster-prod-1778161221255
+              namespace: prod
+              secretType: generic
+              secretName: products-secrets
+              forceUpdate: true
+              secretArguments: |
+                --from-literal=postgres-host=postgres
+                --from-literal=postgres-user=postgres
+                --from-literal=postgres-password=$(postgres-password)
+                --from-literal=rabbitmq-host=rabbitmq
+                --from-literal=rabbitmq-user=guest
+                --from-literal=rabbitmq-password=$(rabbitmq-password)
+                --from-literal=redis-connection-string=$(redis-connection-string)
+                --from-literal=servicebus-connection-string=$(servicebus-connection-string)
 
           - task: KubernetesManifest@1
             displayName: Deploy Products microservice to prod namespace in kubernetes

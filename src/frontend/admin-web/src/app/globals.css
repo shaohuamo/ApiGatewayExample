@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 :root {
+  --font-body: "Segoe UI", Inter, Arial, sans-serif;
+  --font-display: "Segoe UI", Inter, Arial, sans-serif;
+  --font-geist-mono: "Cascadia Code", "Consolas", "Courier New", monospace;
   --bg: #ffffff;
   --bg-elevated: #FFFBF0;
   --bg-panel: #ffffff;

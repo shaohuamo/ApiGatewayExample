@@ -6,18 +6,19 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
     nginx.ingress.kubernetes.io/rate-limit-window: "1m"
 spec:
   ingressClassName: webapprouting.kubernetes.azure.com
   tls:
     - hosts:
-        - apigateway.example.com
-        - admin.example.com
+        - api.250669.xyz
+        - 250669.xyz
+        - auth.250669.xyz
       secretName: microservices-tls-prod
   rules:
     # API Gateway - entry point for all backend API traffic
-    - host: apigateway.example.com
+    - host: api.250669.xyz
       http:
         paths:
           - path: /
@@ -29,7 +30,7 @@ spec:
                   number: 8080
 
     # Admin Web - frontend application
-    - host: admin.example.com
+    - host: 250669.xyz
       http:
         paths:
           - path: /
@@ -39,6 +40,18 @@ spec:
                 name: admin-web-service
                 port:
                   number: 3000
+
+    # IdentityServer - public OIDC authority and login endpoint
+    - host: auth.250669.xyz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: identityserver-service
+                port:
+                  number: 8080
 
     # NOTE: products-microservice and test-microservice are intentionally NOT exposed
     # externally. All backend API traffic must go through the API Gateway.

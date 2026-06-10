@@ -156,24 +156,6 @@ stages:
                         --from-file=alertmanager.yml=alertmanager.yml \
                         --dry-run=client -o yaml | kubectl apply -f -
 
-                      kubectl -n $(namespace) create secret generic products-secrets \
-                        --from-literal=postgres-host='postgres' \
-                        --from-literal=postgres-user='postgres' \
-                        --from-literal=postgres-password='$(postgres-password)' \
-                        --from-literal=rabbitmq-host='rabbitmq' \
-                        --from-literal=rabbitmq-user='guest' \
-                        --from-literal=rabbitmq-password='$(rabbitmq-password)' \
-                        --from-literal=redis-connection-string='$(redis-connection-string)' \
-                        --from-literal=servicebus-connection-string='$(servicebus-connection-string)' \
-                        --dry-run=client -o yaml | kubectl apply -f -
-
-                      kubectl -n $(namespace) create secret generic test-microservice-secrets \
-                        --from-literal=rabbitmq-host='rabbitmq' \
-                        --from-literal=rabbitmq-user='guest' \
-                        --from-literal=rabbitmq-password='$(rabbitmq-password)' \
-                        --from-literal=servicebus-connection-string='$(servicebus-connection-string)' \
-                        --dry-run=client -o yaml | kubectl apply -f -
-
                       rm -f alertmanager.yml
 
                 - task: KubernetesManifest@1

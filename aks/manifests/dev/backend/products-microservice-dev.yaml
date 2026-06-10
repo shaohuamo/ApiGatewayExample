@@ -21,7 +21,7 @@ spec:
         - containerPort: 8080
         env:
         - name: ASPNETCORE_ENVIRONMENT
-          value: Development
+          value: Production
         - name: POSTGRES__HOST
           valueFrom:
             secretKeyRef:
@@ -109,7 +109,7 @@ spec:
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector:4317"
         - name: OTEL_RESOURCE_ATTRIBUTES
-          value: "deployment.environment=dev"
+          value: "deployment.environment=Production"
         - name: TestMicroserviceName
           value: "test-microservice-service"
         - name: TestMicroservicePort

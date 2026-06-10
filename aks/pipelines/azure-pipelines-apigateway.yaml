@@ -13,6 +13,8 @@ trigger:
   paths:
     include:
     - src/backend/Gateway/ApiGateway/**
+    - aks/manifests/dev/backend/apigateway-dev.yaml
+    - aks/pipelines/azure-pipelines-apigateway.yaml
 
 resources:
 - repo: self
@@ -21,6 +23,7 @@ variables:
   # Reference global variable group for Docker registry and image configuration
   # This group is accessible to Build stage
   - group: apigateway-global
+  - group: identityserver-global
 
   # Explicit path to the API Gateway Dockerfile
   - name: dockerfilePath
@@ -77,6 +80,7 @@ stages:
 
               (Get-Content $source -Raw) `
                 -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
                 -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
                 -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
@@ -118,6 +122,7 @@ stages:
 
               (Get-Content $source -Raw) `
                 -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
                 -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
                 -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
@@ -159,6 +164,7 @@ stages:
 
               (Get-Content $source -Raw) `
                 -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
                 -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
                 -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
@@ -200,6 +206,7 @@ stages:
 
               (Get-Content $source -Raw) `
                 -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
                 -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
                 -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |
@@ -241,6 +248,7 @@ stages:
 
               (Get-Content $source -Raw) `
                 -replace '\$\(tag\)', '$(tag)' `
+                -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(OCELOT_LIMIT\)', '$(OCELOT_LIMIT)' `
                 -replace '\$\(OCELOT_PERIOD\)', '$(OCELOT_PERIOD)' `
                 -replace '\$\(APP_WHITELIST_1\)', '$(APP_WHITELIST_1)' |

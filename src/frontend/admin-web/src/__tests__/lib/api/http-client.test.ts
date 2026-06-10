@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { AxiosError, AxiosHeaders } from "axios";
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from "axios";
 import {
   CircuitBreaker,
   isRetryableError,
@@ -8,11 +8,7 @@ import {
 
 function makeAxiosError(status?: number, code?: string): AxiosError {
   const headers = new AxiosHeaders();
-  const config = { headers } as Parameters<typeof AxiosError>[4] extends
-    | infer R
-    | undefined
-    ? R
-    : never;
+  const config = { headers } as InternalAxiosRequestConfig;
   const response = status
     ? ({
         status,
@@ -22,7 +18,7 @@ function makeAxiosError(status?: number, code?: string): AxiosError {
         config,
       } as unknown as import("axios").AxiosResponse)
     : undefined;
-  return new AxiosError("test", code, config as never, null, response);
+  return new AxiosError("test", code, config, null, response);
 }
 
 // ---------------------------------------------------------------------------

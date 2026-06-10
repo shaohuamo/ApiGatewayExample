@@ -69,7 +69,6 @@ export function Sidebar() {
           </nav>
         </div>
 
-
       </div>
     </aside>
   );

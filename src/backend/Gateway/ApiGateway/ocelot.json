@@ -16,6 +16,12 @@
       "ServiceName": "productservice",
       "LoadBalancerOptions": {
         "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+          "products-api"
+        ]
       }
     },
     {
@@ -33,6 +39,12 @@
       "ServiceName": "productservice",
       "LoadBalancerOptions": {
         "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+          "products-api"
+        ]
       }
     },
     {

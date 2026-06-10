@@ -24,6 +24,71 @@ spec:
           value: "http://apigateway-service:8080"
         - name: OTEL_COLLECTOR_INTERNAL_URL
           value: "http://otel-collector:4318"
+        - name: APP_ENV
+          value: "Production"
+        - name: FRONTEND_PUBLIC_URL
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: frontend-public-url
+        - name: AUTH_URL
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: frontend-public-url
+        - name: NEXTAUTH_URL
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: frontend-public-url
+        - name: IDENTITYSERVER_PUBLIC_URL
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: identityserver-public-url
+        - name: IDENTITYSERVER_INTERNAL_URL
+          value: "http://identityserver-service:8080"
+        - name: IDENTITYSERVER_FRONTEND_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: identityserver-frontend-client-id
+        - name: IDENTITYSERVER_FRONTEND_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: identityserver-frontend-client-secret
+        - name: AUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: auth-secret
+        - name: AUTH_POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: postgres-host
+        - name: AUTH_POSTGRES_PORT
+          value: "5432"
+        - name: AUTH_POSTGRES_DATABASE
+          value: "adminwebdatabase"
+        - name: AUTH_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: postgres-user
+        - name: AUTH_POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: postgres-password
+        - name: AUTH_REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: admin-web-secrets
+              key: auth-redis-url
+        - name: AUTH_ACCESS_TOKEN_DENYLIST_PREFIX
+          value: "admin-web:access-token-denylist"
         readinessProbe:
           httpGet:
             path: /api/health

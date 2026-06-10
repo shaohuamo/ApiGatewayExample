@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using OpenTelemetry;
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 
 namespace CommonService.Middlewares
@@ -30,13 +31,15 @@ namespace CommonService.Middlewares
         public async Task Invoke(HttpContext httpContext, ILogger<TraceContextMiddleware> logger)
         {
             // 010-000:Get UserId
-            // Priority：Baggage (upstream) > HttpContext.User (current auth) > Header
-            var userId = Baggage.GetBaggage("user_id");
+            // Priority: HttpContext.User (current auth) > trusted gateway header > Baggage (upstream)
+            var userId = GetClaimValue(httpContext.User, "sub")
+                         ?? GetClaimValue(httpContext.User, ClaimTypes.NameIdentifier)
+                         ?? GetClaimValue(httpContext.User, "nameidentifier")
+                         ?? httpContext.Request.Headers["X-User-Id"].ToString();
 
             if (string.IsNullOrEmpty(userId))
             {
-                userId = httpContext.User?.FindFirst("sub")?.Value
-                         ?? httpContext.Request.Headers["X-User-Id"].ToString();
+                userId = Baggage.GetBaggage("user_id");
             }
 
             userId = string.IsNullOrEmpty(userId) ? "anonymous" : userId;
@@ -58,6 +61,11 @@ namespace CommonService.Middlewares
             {
                 await _next(httpContext);
             }
+        }
+
+        private static string? GetClaimValue(ClaimsPrincipal? user, string claimType)
+        {
+            return user?.FindFirst(claimType)?.Value;
         }
     }
 

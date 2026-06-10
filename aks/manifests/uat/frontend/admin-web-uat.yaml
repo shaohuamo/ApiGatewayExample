@@ -24,6 +24,36 @@ spec:
           value: "http://apigateway-service:8080"
         - name: OTEL_COLLECTOR_INTERNAL_URL
           value: "http://otel-collector:4318"
+        - name: FRONTEND_PUBLIC_URL
+          value: "$(FRONTEND_PUBLIC_URL)"
+        - name: AUTH_URL
+          value: "$(FRONTEND_PUBLIC_URL)"
+        - name: NEXTAUTH_URL
+          value: "$(FRONTEND_PUBLIC_URL)"
+        - name: IDENTITYSERVER_PUBLIC_URL
+          value: "$(IDENTITYSERVER_PUBLIC_URL)"
+        - name: IDENTITYSERVER_INTERNAL_URL
+          value: "http://identityserver-service:8080"
+        - name: IDENTITYSERVER_FRONTEND_CLIENT_ID
+          value: "$(IDENTITYSERVER_FRONTEND_CLIENT_ID)"
+        - name: IDENTITYSERVER_FRONTEND_CLIENT_SECRET
+          value: "$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)"
+        - name: AUTH_SECRET
+          value: "$(AUTH_SECRET)"
+        - name: AUTH_POSTGRES_HOST
+          value: "postgres-service"
+        - name: AUTH_POSTGRES_PORT
+          value: "5432"
+        - name: AUTH_POSTGRES_DATABASE
+          value: "adminwebdatabase"
+        - name: AUTH_POSTGRES_USER
+          value: "$(POSTGRES_USER)"
+        - name: AUTH_POSTGRES_PASSWORD
+          value: "$(POSTGRES_PASSWORD)"
+        - name: AUTH_REDIS_URL
+          value: "redis://redis:6379"
+        - name: AUTH_ACCESS_TOKEN_DENYLIST_PREFIX
+          value: "admin-web:access-token-denylist"
         readinessProbe:
           httpGet:
             path: /api/health
