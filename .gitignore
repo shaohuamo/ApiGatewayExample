@@ -366,5 +366,8 @@ FodyWeavers.xsd
 # Environment configuration files
 .env
 
+# IdentityServer generated signing keys
+src/backend/IdentityServer/keys/
+
 # Azure Functions local development
 local.settings.json

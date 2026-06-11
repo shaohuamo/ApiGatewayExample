@@ -19,6 +19,12 @@
           "Port": 8080
         }
       ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+          "products-api"
+        ]
+      },
 
       "RateLimitOptions": {
         "Limit": 100,
@@ -47,6 +53,12 @@
           "Port": 8080
         }
       ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+          "products-api"
+        ]
+      },
 
       "RateLimitOptions": {
         "Limit": 100,

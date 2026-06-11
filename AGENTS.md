@@ -4,9 +4,13 @@
 
 .NET 9 microservices demo using Clean Architecture, Ocelot API Gateway, Consul service discovery, RabbitMQ, PostgreSQL, Redis, and OpenTelemetry. See [README.md](README.md) for setup instructions.
 
+## Command Examples
+
+When giving executable commands, provide PowerShell versions only.
+
 ## Build & Test
 
-```bash
+```powershell
 # Build entire solution
 dotnet build MicroservicesDemo.sln
 

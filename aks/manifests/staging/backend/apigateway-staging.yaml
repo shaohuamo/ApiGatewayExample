@@ -24,6 +24,20 @@ spec:
           value: "http://otel-collector:4317"
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: "service.name=apigateway,deployment.environment=staging"
+        - name: Authentication__Authority
+          value: "$(IDENTITYSERVER_PUBLIC_URL)"
+        - name: Authentication__MetadataAddress
+          value: "http://identityserver-service:8080/.well-known/openid-configuration"
+        - name: Authentication__Audience
+          value: "gateway-api"
+        - name: Authentication__RequireHttpsMetadata
+          value: "false"
+        - name: Authentication__DenylistRedisConnectionString
+          value: "redis:6379"
+        - name: Authentication__AccessTokenDenylistPrefix
+          value: "admin-web:access-token-denylist"
+        - name: Authentication__DenylistFailClosed
+          value: "true"
         - name: Routes__0__RateLimitOptions__Limit
           value: "$(OCELOT_LIMIT)"
         - name: Routes__0__RateLimitOptions__Period

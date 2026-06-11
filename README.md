@@ -181,7 +181,7 @@ tests/ProductsServiceUnitTests/ # Products 服务单元测试
 **📑 本地开发环境**（含 volume 挂载与热重载支持）：
 
 ```bash
-docker compose -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
+docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
 ```
 
 **📦 演示部署环境**（拉取预构建镜像，适合快速演示）：
@@ -374,7 +374,7 @@ tests/ProductsServiceUnitTests/ # Unit tests for Products services
 **📑 Local dev environment** (with volume mounts and hot reload support):
 
 ```bash
-docker compose -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
+docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
 ```
 
 **📦 Demo deployment** (pull pre-built images, fastest to start):

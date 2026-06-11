@@ -162,11 +162,11 @@ services:
     - ../../configs/postgres/conf/postgresql.conf:/etc/postgresql/postgresql.conf
    command: postgres -c config_file=/etc/postgresql/postgresql.conf
    healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U postgres"]
+    test: ["CMD-SHELL", "test \"$$(cat /proc/1/comm)\" = postgres && pg_isready -U postgres"]
     interval: 10s
     timeout: 5s
     retries: 10
-    start_period: 10s
+    start_period: 60s
    networks:
     - app-network
   postgres-exporter:
@@ -248,6 +248,50 @@ services:
        condition: service_healthy
       consul:
        condition: service_healthy
+  identityserver:
+    image: identityserver:dev
+    build:
+      context: ../..
+      dockerfile: src/backend/IdentityServer/Dockerfile
+    container_name: identityserver-container
+    hostname: identityserver
+    environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - POSTGRES__HOST=postgres
+     - POSTGRES__PORT=5432
+     - POSTGRES__DATABASE=identitydatabase
+     - POSTGRES__USER=postgres
+     - POSTGRES__PASSWORD=admin
+     - POSTGRES__MaxRetryCount=5
+     - POSTGRES__MaxRetryDelaySeconds=10
+     - IdentityServer__IssuerUri=http://localhost:8485
+     - IdentityServer__TokenLifetimes__AccessTokenSeconds=900
+     - IdentityServer__TokenLifetimes__AbsoluteRefreshTokenSeconds=2592000
+     - SeedUser__Enabled=true
+     - SeedUser__UserName=${IDENTITYSERVER_SEED_USER_NAME:?set-identityserver-seed-user-name}
+     - SeedUser__Email=${IDENTITYSERVER_SEED_USER_EMAIL:?set-identityserver-seed-user-email}
+     - SeedUser__Password=${IDENTITYSERVER_SEED_USER_PASSWORD:?set-identityserver-seed-user-password}
+     - Clients__Frontend__PublicUrl=http://localhost:3000
+     - Clients__Frontend__ClientSecret=frontend-secret
+     - Clients__Postman__RedirectUri=https://oauth.pstmn.io/v1/callback
+     - DataProtection__KeysPath=/app/data-protection-keys
+     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+     - OTEL_RESOURCE_ATTRIBUTES=service.name=identityserver,deployment.environment=development
+    ports:
+     - 8485:8080
+    volumes:
+     - identityserver_dataprotection:/app/data-protection-keys
+    networks:
+     - app-network
+    healthcheck:
+     test: ["CMD-SHELL", "grep -qi ':1F90 .* 0A ' /proc/net/tcp /proc/net/tcp6"]
+     interval: 10s
+     timeout: 5s
+     retries: 10
+     start_period: 30s
+    depends_on:
+      postgres:
+       condition: service_healthy
   apigateway:
     image: apigateway:dev
     build:
@@ -257,6 +301,13 @@ services:
     hostname: apigateway
     environment:
     - UseConsul=true
+    - Authentication__Authority=http://localhost:8485
+    - Authentication__MetadataAddress=http://identityserver:8080/.well-known/openid-configuration
+    - Authentication__Audience=gateway-api
+    - Authentication__RequireHttpsMetadata=false
+    - Authentication__DenylistRedisConnectionString=redis:6379
+    - Authentication__AccessTokenDenylistPrefix=admin-web:access-token-denylist
+    - Authentication__DenylistFailClosed=true
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
     - OTEL_RESOURCE_ATTRIBUTES=service.name=apigateway,deployment.environment=development 
     ports:
@@ -270,6 +321,10 @@ services:
        condition: service_started
      productsmicroservice.api:
        condition: service_started
+     identityserver:
+       condition: service_started
+     redis:
+       condition: service_healthy
   test-microservice1:
     image: testmicroserviceapi:dev
     build:
@@ -349,6 +404,22 @@ services:
     environment:
       - API_GATEWAY_INTERNAL_URL=http://apigateway:8080
       - OTEL_COLLECTOR_INTERNAL_URL=http://otel-collector:4318
+      - FRONTEND_PUBLIC_URL=http://localhost:3000
+      - APP_ENV=Development
+      - AUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:3000
+      - IDENTITYSERVER_PUBLIC_URL=http://localhost:8485
+      - IDENTITYSERVER_INTERNAL_URL=http://identityserver:8080
+      - IDENTITYSERVER_FRONTEND_CLIENT_ID=test_app
+      - IDENTITYSERVER_FRONTEND_CLIENT_SECRET=frontend-secret
+      - AUTH_SECRET=dev-auth-session-secret-change-me-please
+      - AUTH_POSTGRES_HOST=postgres
+      - AUTH_POSTGRES_PORT=5432
+      - AUTH_POSTGRES_DATABASE=adminwebdatabase
+      - AUTH_POSTGRES_USER=postgres
+      - AUTH_POSTGRES_PASSWORD=admin
+      - AUTH_REDIS_URL=redis://redis:6379
+      - AUTH_ACCESS_TOKEN_DENYLIST_PREFIX=admin-web:access-token-denylist
     ports:
       - 3000:3000
     networks:
@@ -356,6 +427,12 @@ services:
     depends_on:
       apigateway:
         condition: service_started
+      identityserver:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
       otel-collector:
         condition: service_started
 networks:
@@ -365,3 +442,4 @@ volumes:
   rabbitmq_data:
   prometheus_data:
   loki_storage:
+  identityserver_dataprotection:
