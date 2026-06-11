@@ -112,25 +112,58 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              function ConvertTo-Base64([string]$name, [string]$value) {
+                if ([string]::IsNullOrWhiteSpace($value)) {
+                  throw "Products secret value '$name' is empty."
+                }
+
+                [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($value))
+              }
+
+              $target = "$(Pipeline.Workspace)/products-secrets-dev.yaml"
+              $secretData = [ordered]@{
+                "postgres-host" = "postgres"
+                "postgres-user" = "postgres"
+                "postgres-password" = $env:PRODUCTS_POSTGRES_PASSWORD
+                "rabbitmq-host" = "rabbitmq"
+                "rabbitmq-user" = "guest"
+                "rabbitmq-password" = $env:PRODUCTS_RABBITMQ_PASSWORD
+                "redis-connection-string" = $env:PRODUCTS_REDIS_CONNECTION_STRING
+                "servicebus-connection-string" = $env:PRODUCTS_SERVICEBUS_CONNECTION_STRING
+              }
+
+              $lines = @(
+                "apiVersion: v1"
+                "kind: Secret"
+                "metadata:"
+                "  name: products-secrets"
+                "  namespace: dev"
+                "type: Opaque"
+                "data:"
+              )
+
+              foreach ($item in $secretData.GetEnumerator()) {
+                $lines += "  $($item.Key): $(ConvertTo-Base64 $item.Key $item.Value)"
+              }
+
+              Set-Content -Path $target -Value ($lines -join [Environment]::NewLine)
+            displayName: Render Products secrets manifest for dev namespace
+            env:
+              PRODUCTS_POSTGRES_PASSWORD: $(postgres-password)
+              PRODUCTS_RABBITMQ_PASSWORD: $(rabbitmq-password)
+              PRODUCTS_REDIS_CONNECTION_STRING: $(redis-connection-string)
+              PRODUCTS_SERVICEBUS_CONNECTION_STRING: $(servicebus-connection-string)
+
           - task: KubernetesManifest@1
-            displayName: Create Products secrets in dev namespace
+            displayName: Apply Products secrets in dev namespace
             inputs:
-              action: createSecret
+              action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
               namespace: dev
-              secretType: generic
-              secretName: products-secrets
-              forceUpdate: true
-              secretArguments: |
-                --from-literal=postgres-host=postgres
-                --from-literal=postgres-user=postgres
-                --from-literal=postgres-password=$(postgres-password)
-                --from-literal=rabbitmq-host=rabbitmq
-                --from-literal=rabbitmq-user=guest
-                --from-literal=rabbitmq-password=$(rabbitmq-password)
-                --from-literal=redis-connection-string=$(redis-connection-string)
-                --from-literal=servicebus-connection-string=$(servicebus-connection-string)
+              manifests: |
+                $(Pipeline.Workspace)/products-secrets-dev.yaml
 
           - task: KubernetesManifest@1
             displayName: Deploy Products microservice to dev namespace in kubernetes

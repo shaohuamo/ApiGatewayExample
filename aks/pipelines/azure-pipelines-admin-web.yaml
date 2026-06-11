@@ -96,6 +96,15 @@ stages:
                 --from-literal=postgres-password=$(postgres-password)
                 --from-literal=auth-redis-url=redis://redis:6379
 
+          - pwsh: |
+              $source = "aks/manifests/dev/frontend/admin-web-dev.yaml"
+              $target = "$(Pipeline.Workspace)/admin-web-dev.rendered.yaml"
+
+              (Get-Content $source -Raw) `
+                -replace '\$\(tag\)', '$(tag)' |
+                Set-Content $target
+            displayName: Render admin-web dev manifest
+
           - task: KubernetesManifest@1
             displayName: Deploy admin-web to dev namespace in kubernetes
             inputs:
@@ -103,7 +112,7 @@ stages:
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
               namespace: dev
-              manifests: aks/manifests/dev/frontend/admin-web-dev.yaml
+              manifests: $(Pipeline.Workspace)/admin-web-dev.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 

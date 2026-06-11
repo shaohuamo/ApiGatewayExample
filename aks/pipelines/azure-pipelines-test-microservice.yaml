@@ -74,21 +74,52 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              function ConvertTo-Base64([string]$name, [string]$value) {
+                if ([string]::IsNullOrWhiteSpace($value)) {
+                  throw "Test microservice secret value '$name' is empty."
+                }
+
+                [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($value))
+              }
+
+              $target = "$(Pipeline.Workspace)/test-microservice-secrets-dev.yaml"
+              $secretData = [ordered]@{
+                "rabbitmq-host" = "rabbitmq"
+                "rabbitmq-user" = "guest"
+                "rabbitmq-password" = $env:TEST_RABBITMQ_PASSWORD
+                "servicebus-connection-string" = $env:TEST_SERVICEBUS_CONNECTION_STRING
+              }
+
+              $lines = @(
+                "apiVersion: v1"
+                "kind: Secret"
+                "metadata:"
+                "  name: test-microservice-secrets"
+                "  namespace: dev"
+                "type: Opaque"
+                "data:"
+              )
+
+              foreach ($item in $secretData.GetEnumerator()) {
+                $lines += "  $($item.Key): $(ConvertTo-Base64 $item.Key $item.Value)"
+              }
+
+              Set-Content -Path $target -Value ($lines -join [Environment]::NewLine)
+            displayName: Render Test microservice secrets manifest for dev namespace
+            env:
+              TEST_RABBITMQ_PASSWORD: $(rabbitmq-password)
+              TEST_SERVICEBUS_CONNECTION_STRING: $(servicebus-connection-string)
+
           - task: KubernetesManifest@1
-            displayName: Create Test microservice secrets in dev namespace
+            displayName: Apply Test microservice secrets in dev namespace
             inputs:
-              action: createSecret
+              action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
               namespace: dev
-              secretType: generic
-              secretName: test-microservice-secrets
-              forceUpdate: true
-              secretArguments: |
-                --from-literal=rabbitmq-host=rabbitmq
-                --from-literal=rabbitmq-user=guest
-                --from-literal=rabbitmq-password=$(rabbitmq-password)
-                --from-literal=servicebus-connection-string=$(servicebus-connection-string)
+              manifests: |
+                $(Pipeline.Workspace)/test-microservice-secrets-dev.yaml
 
           - task: KubernetesManifest@1
             displayName: Deploy Test microservice to dev namespace in kubernetes

@@ -12,8 +12,10 @@ trigger:
   paths:
     include:
       - aks/manifests/dev/backend/ingress-dev.yaml
-      - aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-staging.yaml
-      - aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-prod.yaml
+      - aks/manifests/qa/backend/ingress-qa.yaml
+      - aks/manifests/uat/backend/ingress-uat.yaml
+      - aks/manifests/staging/backend/ingress-staging.yaml
+      - aks/manifests/prod/backend/ingress-prod.yaml
       - aks/pipelines/azure-pipelines-ingress.yaml
 
 resources:
@@ -47,9 +49,7 @@ stages:
                     connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
                     namespace: dev
-                    manifests: |
-                      aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-staging.yaml
-                      aks/manifests/dev/backend/ingress-dev.yaml
+                    manifests: aks/manifests/dev/backend/ingress-dev.yaml
 
   - stage: DeployToQA
     displayName: Deploy ingress to QA
@@ -74,9 +74,7 @@ stages:
                     connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: qa-microservicesdemo-aks-cluster-qa-1778160953610
                     namespace: qa
-                    manifests: |
-                      aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-prod.yaml
-                      aks/manifests/qa/backend/ingress-qa.yaml
+                    manifests: aks/manifests/qa/backend/ingress-qa.yaml
 
   - stage: DeployToUAT
     displayName: Deploy ingress to UAT
@@ -101,9 +99,7 @@ stages:
                     connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: uat-microservicesdemo-aks-cluster-uat-1778161095509
                     namespace: uat
-                    manifests: |
-                      aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-prod.yaml
-                      aks/manifests/uat/backend/ingress-uat.yaml
+                    manifests: aks/manifests/uat/backend/ingress-uat.yaml
 
   - stage: DeployToStaging
     displayName: Deploy ingress to Staging
@@ -154,6 +150,4 @@ stages:
                     connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: prod-microservicesdemo-aks-cluster-prod-1778161221255
                     namespace: prod
-                    manifests: |
-                      aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-prod.yaml
-                      aks/manifests/prod/backend/ingress-prod.yaml
+                    manifests: aks/manifests/prod/backend/ingress-prod.yaml

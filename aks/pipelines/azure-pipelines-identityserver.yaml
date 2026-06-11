@@ -72,8 +72,16 @@ stages:
 
                 - pwsh: |
                     $pfxPath = "$(Pipeline.Workspace)/identityserver-signing-prod.pfx"
-                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String("$(identityserver-signing-pfx-base64)"))
+                    $pfxBase64 = $env:IDENTITYSERVER_SIGNING_PFX_BASE64
+
+                    if ([string]::IsNullOrWhiteSpace($pfxBase64) -or $pfxBase64.Contains('$(')) {
+                      throw "Pipeline variable 'identityserver-signing-pfx-base64' is empty or not defined."
+                    }
+
+                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($pfxBase64))
                   displayName: Prepare IdentityServer signing certificate file
+                  env:
+                    IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
 
                 - task: KubernetesManifest@1
                   displayName: Create IdentityServer secrets in dev namespace
@@ -143,8 +151,16 @@ stages:
 
                 - pwsh: |
                     $pfxPath = "$(Pipeline.Workspace)/identityserver-signing-prod.pfx"
-                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String("$(identityserver-signing-pfx-base64)"))
+                    $pfxBase64 = $env:IDENTITYSERVER_SIGNING_PFX_BASE64
+
+                    if ([string]::IsNullOrWhiteSpace($pfxBase64) -or $pfxBase64.Contains('$(')) {
+                      throw "Pipeline variable 'identityserver-signing-pfx-base64' is empty or not defined."
+                    }
+
+                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($pfxBase64))
                   displayName: Prepare IdentityServer signing certificate file
+                  env:
+                    IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
 
                 - task: KubernetesManifest@1
                   displayName: Create IdentityServer secrets in qa namespace
@@ -214,8 +230,16 @@ stages:
 
                 - pwsh: |
                     $pfxPath = "$(Pipeline.Workspace)/identityserver-signing-prod.pfx"
-                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String("$(identityserver-signing-pfx-base64)"))
+                    $pfxBase64 = $env:IDENTITYSERVER_SIGNING_PFX_BASE64
+
+                    if ([string]::IsNullOrWhiteSpace($pfxBase64) -or $pfxBase64.Contains('$(')) {
+                      throw "Pipeline variable 'identityserver-signing-pfx-base64' is empty or not defined."
+                    }
+
+                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($pfxBase64))
                   displayName: Prepare IdentityServer signing certificate file
+                  env:
+                    IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
 
                 - task: KubernetesManifest@1
                   displayName: Create IdentityServer secrets in uat namespace
@@ -285,8 +309,16 @@ stages:
 
                 - pwsh: |
                     $pfxPath = "$(Pipeline.Workspace)/identityserver-signing-prod.pfx"
-                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String("$(identityserver-signing-pfx-base64)"))
+                    $pfxBase64 = $env:IDENTITYSERVER_SIGNING_PFX_BASE64
+
+                    if ([string]::IsNullOrWhiteSpace($pfxBase64) -or $pfxBase64.Contains('$(')) {
+                      throw "Pipeline variable 'identityserver-signing-pfx-base64' is empty or not defined."
+                    }
+
+                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($pfxBase64))
                   displayName: Prepare IdentityServer signing certificate file
+                  env:
+                    IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
 
                 - task: KubernetesManifest@1
                   displayName: Create IdentityServer secrets in staging namespace
@@ -356,8 +388,16 @@ stages:
 
                 - pwsh: |
                     $pfxPath = "$(Pipeline.Workspace)/identityserver-signing-prod.pfx"
-                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String("$(identityserver-signing-pfx-base64)"))
+                    $pfxBase64 = $env:IDENTITYSERVER_SIGNING_PFX_BASE64
+
+                    if ([string]::IsNullOrWhiteSpace($pfxBase64) -or $pfxBase64.Contains('$(')) {
+                      throw "Pipeline variable 'identityserver-signing-pfx-base64' is empty or not defined."
+                    }
+
+                    [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($pfxBase64))
                   displayName: Prepare IdentityServer signing certificate file
+                  env:
+                    IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
 
                 - task: KubernetesManifest@1
                   displayName: Create IdentityServer secrets in prod namespace
