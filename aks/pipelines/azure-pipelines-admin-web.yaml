@@ -75,26 +75,61 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - pwsh: |
+              function ConvertTo-Base64([string]$name, [string]$value) {
+                if ([string]::IsNullOrWhiteSpace($value) -or $value.Contains('$(')) {
+                  throw "admin-web secret value '$name' is empty or not defined."
+                }
+
+                [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($value))
+              }
+
+              $target = "$(Pipeline.Workspace)/admin-web-secrets-dev.yaml"
+              $secretData = [ordered]@{
+                "frontend-public-url" = $env:ADMIN_WEB_FRONTEND_PUBLIC_URL
+                "identityserver-public-url" = $env:ADMIN_WEB_IDENTITYSERVER_PUBLIC_URL
+                "identityserver-frontend-client-id" = $env:ADMIN_WEB_IDENTITYSERVER_FRONTEND_CLIENT_ID
+                "identityserver-frontend-client-secret" = $env:ADMIN_WEB_IDENTITYSERVER_FRONTEND_CLIENT_SECRET
+                "auth-secret" = $env:ADMIN_WEB_AUTH_SECRET
+                "postgres-host" = "postgres"
+                "postgres-user" = "postgres"
+                "postgres-password" = $env:ADMIN_WEB_POSTGRES_PASSWORD
+                "auth-redis-url" = "redis://redis:6379"
+              }
+
+              $lines = @(
+                "apiVersion: v1"
+                "kind: Secret"
+                "metadata:"
+                "  name: admin-web-secrets"
+                "  namespace: dev"
+                "type: Opaque"
+                "data:"
+              )
+
+              foreach ($item in $secretData.GetEnumerator()) {
+                $lines += "  $($item.Key): $(ConvertTo-Base64 $item.Key $item.Value)"
+              }
+
+              Set-Content -Path $target -Value ($lines -join [Environment]::NewLine)
+            displayName: Render admin-web secrets manifest for dev namespace
+            env:
+              ADMIN_WEB_FRONTEND_PUBLIC_URL: $(FRONTEND_PUBLIC_URL)
+              ADMIN_WEB_IDENTITYSERVER_PUBLIC_URL: $(IDENTITYSERVER_PUBLIC_URL)
+              ADMIN_WEB_IDENTITYSERVER_FRONTEND_CLIENT_ID: $(IDENTITYSERVER_FRONTEND_CLIENT_ID)
+              ADMIN_WEB_IDENTITYSERVER_FRONTEND_CLIENT_SECRET: $(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)
+              ADMIN_WEB_AUTH_SECRET: $(auth-secret)
+              ADMIN_WEB_POSTGRES_PASSWORD: $(postgres-password)
+
           - task: KubernetesManifest@1
-            displayName: Create admin-web secrets in dev namespace
+            displayName: Apply admin-web secrets in dev namespace
             inputs:
-              action: createSecret
+              action: deploy
               connectionType: kubernetesServiceConnection
               kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
               namespace: dev
-              secretType: generic
-              secretName: admin-web-secrets
-              forceUpdate: true
-              secretArguments: |
-                --from-literal=frontend-public-url=$(FRONTEND_PUBLIC_URL)
-                --from-literal=identityserver-public-url=$(IDENTITYSERVER_PUBLIC_URL)
-                --from-literal=identityserver-frontend-client-id=$(IDENTITYSERVER_FRONTEND_CLIENT_ID)
-                --from-literal=identityserver-frontend-client-secret=$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)
-                --from-literal=auth-secret=$(auth-secret)
-                --from-literal=postgres-host=postgres
-                --from-literal=postgres-user=postgres
-                --from-literal=postgres-password=$(postgres-password)
-                --from-literal=auth-redis-url=redis://redis:6379
+              manifests: |
+                $(Pipeline.Workspace)/admin-web-secrets-dev.yaml
 
           - pwsh: |
               $source = "aks/manifests/dev/frontend/admin-web-dev.yaml"
