@@ -156,6 +156,9 @@ stages:
                       -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
                       -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' `
                       -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                      -replace '\$\(IDENTITYSERVER_SEED_USER_NAME\)', '$(IDENTITYSERVER_SEED_USER_NAME)' `
+                      -replace '\$\(IDENTITYSERVER_SEED_USER_EMAIL\)', '$(IDENTITYSERVER_SEED_USER_EMAIL)' `
+                      -replace '\$\(IDENTITYSERVER_SEED_USER_PASSWORD\)', '$(IDENTITYSERVER_SEED_USER_PASSWORD)' `
                       -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' |
