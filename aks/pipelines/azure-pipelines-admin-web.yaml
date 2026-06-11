@@ -21,8 +21,8 @@ resources:
 
 variables:
   # Reference global variable groups for Docker registry and runtime secrets.
-  - group: admin-web-global
   - group: identityserver-global
+  - group: admin-web-global、
   - group: admin-web-keyvault
   - group: infrastructure-key-vault
   - group: identityserver-key-vault

@@ -22,8 +22,8 @@ resources:
 variables:
   # Reference global variable group for Docker registry and image configuration
   # This group is accessible to Build stage
-  - group: apigateway-global
   - group: identityserver-global
+  - group: apigateway-global
 
   # Explicit path to the API Gateway Dockerfile
   - name: dockerfilePath
