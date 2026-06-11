@@ -41,6 +41,10 @@ spec:
             secretKeyRef:
               name: identityserver-secrets
               key: postgres-password
+        - name: POSTGRES__MaxRetryCount
+          value: "5"
+        - name: POSTGRES__MaxRetryDelaySeconds
+          value: "10"
         - name: IdentityServer__SigningCredential__CertificatePath
           value: "/app/certs/identityserver-signing-prod.pfx"
         - name: IdentityServer__SigningCredential__CertificatePassword
@@ -50,6 +54,18 @@ spec:
               key: identityserver-signing-cert-password
         - name: IdentityServer__IssuerUri
           value: "$(IDENTITYSERVER_PUBLIC_URL)"
+        - name: IdentityServer__TokenLifetimes__AccessTokenSeconds
+          value: "900"
+        - name: IdentityServer__TokenLifetimes__AbsoluteRefreshTokenSeconds
+          value: "2592000"
+        - name: SeedUser__Enabled
+          value: "true"
+        - name: SeedUser__UserName
+          value: "$(IDENTITYSERVER_SEED_USER_NAME)"
+        - name: SeedUser__Email
+          value: "$(IDENTITYSERVER_SEED_USER_EMAIL)"
+        - name: SeedUser__Password
+          value: "$(IDENTITYSERVER_SEED_USER_PASSWORD)"
         - name: Clients__Frontend__PublicUrl
           value: "$(FRONTEND_PUBLIC_URL)"
         - name: Clients__Frontend__ClientId

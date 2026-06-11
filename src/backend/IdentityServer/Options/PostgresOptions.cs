@@ -4,11 +4,11 @@ public sealed class PostgresOptions
 {
     public const string SectionName = "POSTGRES";
 
-    public string Host { get; set; } = "localhost";
-    public string Port { get; set; } = "5432";
-    public string Database { get; set; } = "identitydatabase";
-    public string User { get; set; } = "postgres";
-    public string Password { get; set; } = "admin";
-    public int MaxRetryCount { get; set; } = 5;
-    public int MaxRetryDelaySeconds { get; set; } = 10;
+    public string Host { get; set; } = null!;
+    public string Port { get; set; } = null!;
+    public string Database { get; set; } = null!;
+    public string User { get; set; } = null!;
+    public string Password { get; set; } = null!;
+    public int MaxRetryCount { get; set; }
+    public int MaxRetryDelaySeconds { get; set; }
 }
