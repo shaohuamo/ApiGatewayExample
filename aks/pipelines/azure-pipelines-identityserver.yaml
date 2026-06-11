@@ -83,22 +83,64 @@ stages:
                   env:
                     IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
 
+                - pwsh: |
+                    function ConvertTo-Base64([string]$name, [string]$value) {
+                      if ([string]::IsNullOrWhiteSpace($value) -or $value.Contains('$(')) {
+                        throw "IdentityServer secret value '$name' is empty or not defined."
+                      }
+
+                      [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($value))
+                    }
+
+                    $pfxBase64 = $env:IDENTITYSERVER_SIGNING_PFX_BASE64
+                    if ([string]::IsNullOrWhiteSpace($pfxBase64) -or $pfxBase64.Contains('$(')) {
+                      throw "Pipeline variable 'identityserver-signing-pfx-base64' is empty or not defined."
+                    }
+
+                    $target = "$(Pipeline.Workspace)/identityserver-secrets-dev.yaml"
+                    $secretData = [ordered]@{
+                      "postgres-host" = "postgres"
+                      "postgres-user" = "postgres"
+                      "postgres-password" = $env:IDENTITYSERVER_POSTGRES_PASSWORD
+                      "identityserver-signing-cert-password" = $env:IDENTITYSERVER_SIGNING_CERT_PASSWORD
+                      "identityserver-signing-prod.pfx" = $pfxBase64
+                    }
+
+                    $lines = @(
+                      "apiVersion: v1"
+                      "kind: Secret"
+                      "metadata:"
+                      "  name: identityserver-secrets"
+                      "  namespace: dev"
+                      "type: Opaque"
+                      "data:"
+                    )
+
+                    foreach ($item in $secretData.GetEnumerator()) {
+                      if ($item.Key -eq "identityserver-signing-prod.pfx") {
+                        $lines += "  $($item.Key): $($item.Value)"
+                      }
+                      else {
+                        $lines += "  $($item.Key): $(ConvertTo-Base64 $item.Key $item.Value)"
+                      }
+                    }
+
+                    Set-Content -Path $target -Value ($lines -join [Environment]::NewLine)
+                  displayName: Render IdentityServer secrets manifest for dev namespace
+                  env:
+                    IDENTITYSERVER_POSTGRES_PASSWORD: $(postgres-password)
+                    IDENTITYSERVER_SIGNING_CERT_PASSWORD: $(identityserver-signing-cert-password)
+                    IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
+
                 - task: KubernetesManifest@1
-                  displayName: Create IdentityServer secrets in dev namespace
+                  displayName: Apply IdentityServer secrets in dev namespace
                   inputs:
-                    action: createSecret
+                    action: deploy
                     connectionType: kubernetesServiceConnection
                     kubernetesServiceConnection: dev-microservicesdemo-aks-cluster-dev-1778160743494
                     namespace: dev
-                    secretType: generic
-                    secretName: identityserver-secrets
-                    forceUpdate: true
-                    secretArguments: |
-                      --from-literal=postgres-host=postgres
-                      --from-literal=postgres-user=postgres
-                      --from-literal=postgres-password=$(postgres-password)
-                      --from-literal=identityserver-signing-cert-password=$(identityserver-signing-cert-password)
-                      --from-file=identityserver-signing-prod.pfx=$(Pipeline.Workspace)/identityserver-signing-prod.pfx
+                    manifests: |
+                      $(Pipeline.Workspace)/identityserver-secrets-dev.yaml
 
                 - pwsh: |
                     Remove-Item -LiteralPath "$(Pipeline.Workspace)/identityserver-signing-prod.pfx" -ErrorAction SilentlyContinue
