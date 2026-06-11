@@ -117,7 +117,7 @@ stages:
               ADMIN_WEB_FRONTEND_PUBLIC_URL: $(FRONTEND_PUBLIC_URL)
               ADMIN_WEB_IDENTITYSERVER_PUBLIC_URL: $(IDENTITYSERVER_PUBLIC_URL)
               ADMIN_WEB_IDENTITYSERVER_FRONTEND_CLIENT_ID: $(IDENTITYSERVER_FRONTEND_CLIENT_ID)
-              ADMIN_WEB_IDENTITYSERVER_FRONTEND_CLIENT_SECRET: $(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)
+              ADMIN_WEB_IDENTITYSERVER_FRONTEND_CLIENT_SECRET: $(identityserver-frontend-client-secret)
               ADMIN_WEB_AUTH_SECRET: $(auth-secret)
               ADMIN_WEB_POSTGRES_PASSWORD: $(postgres-password)
 
@@ -177,10 +177,10 @@ stages:
                 -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
-                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' `
                 -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
-                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
-                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                -replace '\$\(POSTGRES_USER\)', 'postgres' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(postgres-password)' |
                 Set-Content $target
             displayName: Render admin-web qa manifest
 
@@ -221,10 +221,10 @@ stages:
                 -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
-                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' `
                 -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
-                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
-                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                -replace '\$\(POSTGRES_USER\)', 'postgres' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(postgres-password)' |
                 Set-Content $target
             displayName: Render admin-web uat manifest
 
@@ -265,10 +265,10 @@ stages:
                 -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
-                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' `
                 -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
-                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
-                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                -replace '\$\(POSTGRES_USER\)', 'postgres' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(postgres-password)' |
                 Set-Content $target
             displayName: Render admin-web staging manifest
 
@@ -309,10 +309,10 @@ stages:
                 -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
                 -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
-                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_SECRET)' `
+                -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' `
                 -replace '\$\(AUTH_SECRET\)', '$(auth-secret)' `
-                -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
-                -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' |
+                -replace '\$\(POSTGRES_USER\)', 'postgres' `
+                -replace '\$\(POSTGRES_PASSWORD\)', '$(postgres-password)' |
                 Set-Content $target
             displayName: Render admin-web prod manifest
 
