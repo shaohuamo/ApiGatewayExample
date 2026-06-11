@@ -7,6 +7,8 @@ trigger:
       - dev
   paths:
     include:
+      - aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-staging.yaml
+      - aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-prod.yaml
       - aks/pipelines/azure-pipelines-cluster-addons.yaml
 
 resources:
@@ -36,7 +38,8 @@ stages:
           runOnce:
             deploy:
               steps:
-                - checkout: none
+                - checkout: self
+                  displayName: Checkout source code
 
                 - task: AzureCLI@2
                   displayName: Enable application routing add-on
@@ -88,6 +91,26 @@ stages:
                       kubectl patch nginxingresscontroller default \
                         --type merge \
                         -p '{"spec":{"scaling":{"minReplicas":1,"maxReplicas":2,"threshold":"balanced"}}}'
+
+                      ADMISSION_SERVICE_EXISTS=$(kubectl get service ingress-nginx-controller-admission \
+                        --namespace ingress-nginx \
+                        --ignore-not-found 2>/dev/null || true)
+
+                      if [ -z "$ADMISSION_SERVICE_EXISTS" ]; then
+                        STALE_WEBHOOKS=$(kubectl get validatingwebhookconfiguration \
+                          -o jsonpath='{range .items[*]}{.metadata.name}{"|"}{range .webhooks[*]}{.clientConfig.service.namespace}{"/"}{.clientConfig.service.name}{" "}{end}{"\n"}{end}' |
+                          awk -F'|' '$2 ~ /ingress-nginx\/ingress-nginx-controller-admission/ { print $1 }')
+
+                        if [ -n "$STALE_WEBHOOKS" ]; then
+                          while IFS= read -r webhook; do
+                            kubectl delete validatingwebhookconfiguration "$webhook"
+                          done <<< "$STALE_WEBHOOKS"
+                        fi
+                      fi
+
+                      kubectl apply \
+                        -f aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-staging.yaml \
+                        -f aks/manifests/shared/cert-manager/clusterissuer-letsencrypt-prod.yaml
 
                       kubectl get ingressclass webapprouting.kubernetes.azure.com
                       kubectl get service \

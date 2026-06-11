@@ -34,6 +34,10 @@ variables:
   # Agent VM image name
   - name: vmImageName
     value: 'ubuntu-latest'
+  - name: azureSubscription
+    value: microservicesdemo-resource-group-connection
+  - name: acrName
+    value: microservicesdemoregistry
 
 stages:
 - stage: Build
@@ -73,6 +77,37 @@ stages:
           steps:
           - checkout: self
             displayName: Checkout source code
+
+          - task: AzureCLI@2
+            displayName: Verify API Gateway image tag exists in ACR
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $acrName = "$(acrName)"
+                $repository = "$(imageRepository)"
+                $tag = "$(tag)"
+
+                if ([string]::IsNullOrWhiteSpace($acrName) -or [string]::IsNullOrWhiteSpace($repository) -or [string]::IsNullOrWhiteSpace($tag)) {
+                  throw "ACR image check failed because acrName, imageRepository, or tag is empty."
+                }
+
+                $tagCount = az acr repository show-tags `
+                  --name $acrName `
+                  --repository $repository `
+                  --query "[?@=='$tag'] | length(@)" `
+                  --output tsv
+
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to query ACR repository '$acrName/$repository'. Check the repository name and Azure service connection permissions."
+                }
+
+                if ([int]$tagCount -lt 1) {
+                  throw "Image '${acrName}.azurecr.io/${repository}:$tag' does not exist in ACR. Stop deployment before AKS receives a bad image tag."
+                }
+
+                Write-Host "Verified image '${acrName}.azurecr.io/${repository}:$tag' exists in ACR."
 
           - pwsh: |
               $source = "aks/manifests/dev/backend/apigateway-dev.yaml"
@@ -116,6 +151,37 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - task: AzureCLI@2
+            displayName: Verify API Gateway image tag exists in ACR
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $acrName = "$(acrName)"
+                $repository = "$(imageRepository)"
+                $tag = "$(tag)"
+
+                if ([string]::IsNullOrWhiteSpace($acrName) -or [string]::IsNullOrWhiteSpace($repository) -or [string]::IsNullOrWhiteSpace($tag)) {
+                  throw "ACR image check failed because acrName, imageRepository, or tag is empty."
+                }
+
+                $tagCount = az acr repository show-tags `
+                  --name $acrName `
+                  --repository $repository `
+                  --query "[?@=='$tag'] | length(@)" `
+                  --output tsv
+
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to query ACR repository '$acrName/$repository'. Check the repository name and Azure service connection permissions."
+                }
+
+                if ([int]$tagCount -lt 1) {
+                  throw "Image '${acrName}.azurecr.io/${repository}:$tag' does not exist in ACR. Stop deployment before AKS receives a bad image tag."
+                }
+
+                Write-Host "Verified image '${acrName}.azurecr.io/${repository}:$tag' exists in ACR."
+
           - pwsh: |
               $source = "aks/manifests/qa/backend/apigateway-qa.yaml"
               $target = "$(Pipeline.Workspace)/apigateway-qa.rendered.yaml"
@@ -157,6 +223,37 @@ stages:
           steps:
           - checkout: self
             displayName: Checkout source code
+
+          - task: AzureCLI@2
+            displayName: Verify API Gateway image tag exists in ACR
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $acrName = "$(acrName)"
+                $repository = "$(imageRepository)"
+                $tag = "$(tag)"
+
+                if ([string]::IsNullOrWhiteSpace($acrName) -or [string]::IsNullOrWhiteSpace($repository) -or [string]::IsNullOrWhiteSpace($tag)) {
+                  throw "ACR image check failed because acrName, imageRepository, or tag is empty."
+                }
+
+                $tagCount = az acr repository show-tags `
+                  --name $acrName `
+                  --repository $repository `
+                  --query "[?@=='$tag'] | length(@)" `
+                  --output tsv
+
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to query ACR repository '$acrName/$repository'. Check the repository name and Azure service connection permissions."
+                }
+
+                if ([int]$tagCount -lt 1) {
+                  throw "Image '${acrName}.azurecr.io/${repository}:$tag' does not exist in ACR. Stop deployment before AKS receives a bad image tag."
+                }
+
+                Write-Host "Verified image '${acrName}.azurecr.io/${repository}:$tag' exists in ACR."
 
           - pwsh: |
               $source = "aks/manifests/uat/backend/apigateway-uat.yaml"
@@ -200,6 +297,37 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - task: AzureCLI@2
+            displayName: Verify API Gateway image tag exists in ACR
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $acrName = "$(acrName)"
+                $repository = "$(imageRepository)"
+                $tag = "$(tag)"
+
+                if ([string]::IsNullOrWhiteSpace($acrName) -or [string]::IsNullOrWhiteSpace($repository) -or [string]::IsNullOrWhiteSpace($tag)) {
+                  throw "ACR image check failed because acrName, imageRepository, or tag is empty."
+                }
+
+                $tagCount = az acr repository show-tags `
+                  --name $acrName `
+                  --repository $repository `
+                  --query "[?@=='$tag'] | length(@)" `
+                  --output tsv
+
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to query ACR repository '$acrName/$repository'. Check the repository name and Azure service connection permissions."
+                }
+
+                if ([int]$tagCount -lt 1) {
+                  throw "Image '${acrName}.azurecr.io/${repository}:$tag' does not exist in ACR. Stop deployment before AKS receives a bad image tag."
+                }
+
+                Write-Host "Verified image '${acrName}.azurecr.io/${repository}:$tag' exists in ACR."
+
           - pwsh: |
               $source = "aks/manifests/staging/backend/apigateway-staging.yaml"
               $target = "$(Pipeline.Workspace)/apigateway-staging.rendered.yaml"
@@ -242,6 +370,37 @@ stages:
           - checkout: self
             displayName: Checkout source code
 
+          - task: AzureCLI@2
+            displayName: Verify API Gateway image tag exists in ACR
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $acrName = "$(acrName)"
+                $repository = "$(imageRepository)"
+                $tag = "$(tag)"
+
+                if ([string]::IsNullOrWhiteSpace($acrName) -or [string]::IsNullOrWhiteSpace($repository) -or [string]::IsNullOrWhiteSpace($tag)) {
+                  throw "ACR image check failed because acrName, imageRepository, or tag is empty."
+                }
+
+                $tagCount = az acr repository show-tags `
+                  --name $acrName `
+                  --repository $repository `
+                  --query "[?@=='$tag'] | length(@)" `
+                  --output tsv
+
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to query ACR repository '$acrName/$repository'. Check the repository name and Azure service connection permissions."
+                }
+
+                if ([int]$tagCount -lt 1) {
+                  throw "Image '${acrName}.azurecr.io/${repository}:$tag' does not exist in ACR. Stop deployment before AKS receives a bad image tag."
+                }
+
+                Write-Host "Verified image '${acrName}.azurecr.io/${repository}:$tag' exists in ACR."
+
           - pwsh: |
               $source = "aks/manifests/prod/backend/apigateway-prod.yaml"
               $target = "$(Pipeline.Workspace)/apigateway-prod.rendered.yaml"
@@ -266,3 +425,4 @@ stages:
                 $(Pipeline.Workspace)/apigateway-prod.rendered.yaml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
+
