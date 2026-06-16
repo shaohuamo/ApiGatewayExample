@@ -4,11 +4,11 @@
 <div class="confirm-email-page">
     <div class="lead">
         <h1>Email confirmation</h1>
-        <p>Complete local account registration.</p>
+        <p>Complete your account setup.</p>
     </div>
 
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-7 col-lg-5">
             <div class="card">
                 <div class="card-header">
                     <h2>@(Model.View.IsSuccess ? "Email confirmed" : "Confirmation failed")</h2>
@@ -22,7 +22,7 @@
                     {
                         <a class="btn btn-primary"
                            asp-page="/Account/Login/Index"
-                           asp-route-returnUrl="@Model.View.ReturnUrl">Back to Login</a>
+                           asp-route-returnUrl="@Model.View.ReturnUrl">Back to sign in</a>
                     }
                     else
                     {
@@ -32,7 +32,7 @@
                            asp-route-returnUrl="@Model.View.ReturnUrl">Resend confirmation email</a>
                         <a class="btn btn-secondary"
                            asp-page="/Account/Login/Index"
-                           asp-route-returnUrl="@Model.View.ReturnUrl">Back to Login</a>
+                           asp-route-returnUrl="@Model.View.ReturnUrl">Back to sign in</a>
                     }
                 </div>
             </div>
