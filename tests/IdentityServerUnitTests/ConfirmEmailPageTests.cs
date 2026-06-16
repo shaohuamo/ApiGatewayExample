@@ -39,6 +39,48 @@ public sealed class ConfirmEmailPageTests
     }
 
     [Fact]
+    public async Task OnGet_WhenContextIdExists_RestoresReturnUrlAndRemovesContextAfterConfirmation()
+    {
+        var userManager = PageModelTestHelpers.CreateUserManager();
+        var user = new ApplicationUser
+        {
+            Id = "user-1",
+            UserName = "new-user",
+            Email = "new-user@example.com"
+        };
+        var token = "token with +/=";
+        var encodedToken = EmailConfirmationLinkFactory.EncodeToken(token);
+        var storedContext = EmailConfirmationReturnUrlContext.Serialize("/connect/authorize?client_id=web&state=long-state");
+
+        userManager.Setup(x => x.FindByIdAsync("user-1")).ReturnsAsync(user);
+        userManager.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(false);
+        userManager.Setup(x => x.ConfirmEmailAsync(user, token)).ReturnsAsync(IdentityResult.Success);
+        userManager
+            .Setup(x => x.GetAuthenticationTokenAsync(
+                user,
+                EmailConfirmationReturnUrlContext.LoginProvider,
+                EmailConfirmationReturnUrlContext.BuildTokenName("context-1")))
+            .ReturnsAsync(storedContext);
+        userManager
+            .Setup(x => x.RemoveAuthenticationTokenAsync(
+                user,
+                EmailConfirmationReturnUrlContext.LoginProvider,
+                EmailConfirmationReturnUrlContext.BuildTokenName("context-1")))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var page = new ConfirmEmailPage(userManager.Object);
+
+        await page.OnGet("user-1", encodedToken, returnUrl: null, contextId: "context-1");
+
+        page.View.IsSuccess.Should().BeTrue();
+        page.View.ReturnUrl.Should().Be("/connect/authorize?client_id=web&state=long-state");
+        userManager.Verify(x => x.RemoveAuthenticationTokenAsync(
+            user,
+            EmailConfirmationReturnUrlContext.LoginProvider,
+            EmailConfirmationReturnUrlContext.BuildTokenName("context-1")), Times.Once);
+    }
+
+    [Fact]
     public async Task OnGet_WhenTokenIsInvalid_ShowsFailure()
     {
         var userManager = PageModelTestHelpers.CreateUserManager();
