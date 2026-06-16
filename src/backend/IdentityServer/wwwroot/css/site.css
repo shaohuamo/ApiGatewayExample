@@ -22,6 +22,31 @@
   height: 0;
 }
 
+.login-page .lead {
+  margin-bottom: 20px;
+}
+
+.login-page .lead h1 {
+  margin-bottom: 8px;
+}
+
+.login-page .card-header h2 {
+  margin-bottom: 0;
+  font-size: 1.5rem;
+}
+
+.login-page .login-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.login-page .login-register-prompt {
+  margin: 18px 0 0;
+  color: #6c757d;
+}
+
 .grants-page .card {
   margin-top: 20px;
   border-bottom: 1px solid lightgray;

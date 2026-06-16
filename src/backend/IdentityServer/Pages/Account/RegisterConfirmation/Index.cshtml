@@ -4,14 +4,14 @@
 <div class="register-confirmation-page">
     <div class="lead">
         <h1>Check your email</h1>
-        <p>Confirm your email address to finish creating your local account.</p>
+        <p>Confirm your email address to finish creating your account.</p>
     </div>
 
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-7 col-lg-5">
             <div class="card">
                 <div class="card-header">
-                    <h2>Email confirmation required</h2>
+                    <h2>Confirmation required</h2>
                 </div>
                 <div class="card-body">
                     <p>
@@ -22,7 +22,7 @@
                     </p>
                     <a class="btn btn-primary"
                        asp-page="/Account/Login/Index"
-                       asp-route-returnUrl="@Model.ReturnUrl">Back to Login</a>
+                       asp-route-returnUrl="@Model.ReturnUrl">Back to sign in</a>
                     <a class="btn btn-link"
                        asp-page="/Account/ResendConfirmation/Index"
                        asp-route-email="@Model.Email"

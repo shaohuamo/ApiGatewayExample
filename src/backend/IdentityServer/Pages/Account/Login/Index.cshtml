@@ -3,8 +3,8 @@
 
 <div class="login-page">
     <div class="lead">
-        <h1>Login</h1>
-        <p>Choose how to login</p>
+        <h1>Sign in</h1>
+        <p>Use your MicroservicesDemo account to continue.</p>
     </div>
 
     <partial name="_ValidationSummary" />
@@ -23,10 +23,10 @@
 
         @if (Model.View.EnableLocalLogin)
         {
-            <div class="col-sm-6">
+            <div class="col-md-7 col-lg-5">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Local Account</h2>
+                        <h2>Account sign-in</h2>
                     </div>
 
                     <div class="card-body">
@@ -54,11 +54,16 @@
                                 </div>
                             }
                             
-                            <button class="btn btn-primary" name="Input.Button" value="login">Login</button>
-                            <button class="btn btn-secondary" name="Input.Button" value="cancel">Cancel</button>
-                            <a class="btn btn-link"
-                               asp-page="/Account/Register/Index"
-                               asp-route-returnUrl="@Model.Input.ReturnUrl">New User? Register here</a>
+                            <div class="login-actions">
+                                <button class="btn btn-primary" name="Input.Button" value="login">Sign in</button>
+                                <button class="btn btn-outline-secondary" name="Input.Button" value="cancel">Cancel</button>
+                            </div>
+
+                            <p class="login-register-prompt">
+                                New to MicroservicesDemo?
+                                <a asp-page="/Account/Register/Index"
+                                   asp-route-returnUrl="@Model.Input.ReturnUrl">Create an account</a>
+                            </p>
                         </form>
                     </div>
                 </div>
@@ -67,10 +72,10 @@
 
         @if (Model.View.VisibleExternalProviders.Any())
         {
-            <div class="col-sm-6">
+            <div class="col-md-7 col-lg-5">
                 <div class="card">
                     <div class="card-header">
-                        <h2>External Account</h2>
+                        <h2>External sign-in</h2>
                     </div>
                     <div class="card-body">
                         <ul class="list-inline">
