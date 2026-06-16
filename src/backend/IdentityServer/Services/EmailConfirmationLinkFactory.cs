@@ -24,7 +24,7 @@ public sealed class EmailConfirmationLinkFactory(IOptions<ResendEmailOptions> op
         var confirmationPath = url.Page(
             "/Account/ConfirmEmail/Index",
             pageHandler: null,
-            values: new { userId = user.Id, code = encodedCode },
+            values: new { userId = user.Id, code = encodedCode, returnUrl },
             protocol: null);
 
         if (string.IsNullOrWhiteSpace(confirmationPath))
