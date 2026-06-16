@@ -23,35 +23,8 @@ public sealed class EmailConfirmationService(
         }
 
         var confirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var returnUrlContextId = await StoreReturnUrlAsync(user, returnUrl);
-        var confirmationLink = linkFactory.CreateEmailConfirmationLink(
-            url,
-            user,
-            confirmationToken,
-            returnUrlContextId);
+        var confirmationLink = linkFactory.CreateEmailConfirmationLink(url, user, confirmationToken, returnUrl);
 
         await emailSender.SendEmailConfirmationAsync(user.Email, confirmationLink, cancellationToken);
-    }
-
-    private async Task<string?> StoreReturnUrlAsync(ApplicationUser user, string? returnUrl)
-    {
-        if (string.IsNullOrWhiteSpace(returnUrl))
-        {
-            return null;
-        }
-
-        var contextId = EmailConfirmationReturnUrlContext.CreateContextId();
-        var result = await userManager.SetAuthenticationTokenAsync(
-            user,
-            EmailConfirmationReturnUrlContext.LoginProvider,
-            EmailConfirmationReturnUrlContext.BuildTokenName(contextId),
-            EmailConfirmationReturnUrlContext.Serialize(returnUrl));
-
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException("Could not store the email confirmation return URL context.");
-        }
-
-        return contextId;
     }
 }
