@@ -365,6 +365,7 @@ FodyWeavers.xsd
 
 # Environment configuration files
 .env
+configs/secrets/
 
 # IdentityServer generated signing keys
 src/backend/IdentityServer/keys/

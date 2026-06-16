@@ -77,7 +77,8 @@ services:
     ports:
       - 9093:9093
     volumes:
-      - ../../configs/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ../../configs/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ../../configs/secrets/alertmanager-slack-webhook.txt:/etc/alertmanager/secrets/slack_webhook_url:ro
     networks:
       - app-network
   grafana:
