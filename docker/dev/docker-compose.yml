@@ -77,7 +77,8 @@ services:
     ports:
       - 9093:9093
     volumes:
-      - ../../configs/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ../../configs/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ../../configs/secrets/alertmanager-slack-webhook.txt:/etc/alertmanager/secrets/slack_webhook_url:ro
     networks:
       - app-network
   grafana:
@@ -156,7 +157,7 @@ services:
     - POSTGRES_USER=postgres
     - POSTGRES_PASSWORD=admin
    ports:
-    - "5432:5432"
+    - "15432:5432"
    volumes:
     - ../../configs/postgres/init:/docker-entrypoint-initdb.d
     - ../../configs/postgres/conf/postgresql.conf:/etc/postgresql/postgresql.conf
@@ -267,6 +268,13 @@ services:
      - IdentityServer__IssuerUri=http://localhost:8485
      - IdentityServer__TokenLifetimes__AccessTokenSeconds=900
      - IdentityServer__TokenLifetimes__AbsoluteRefreshTokenSeconds=2592000
+     - ResendEmail__ApiToken=${RESEND_EMAIL_API_TOKEN:-}
+     - ResendEmail__From=${RESEND_EMAIL_FROM:-MicroservicesDemo <verify@auth.250669.xyz>}
+     - ResendEmail__PublicBaseUrl=${IDENTITYSERVER_PUBLIC_URL:-http://localhost:8485}
+     - ResendEmail__ConfirmationSubject=${RESEND_EMAIL_CONFIRMATION_SUBJECT:-Confirm your MicroservicesDemo account}
+     - Redis__ConnectionString=redis:6379
+     - Redis__InstanceName=IdentityServer_
+     - EmailVerificationRateLimit__Enabled=${EMAIL_VERIFICATION_RATE_LIMIT_ENABLED:-true}
      - SeedUser__Enabled=true
      - SeedUser__UserName=${IDENTITYSERVER_SEED_USER_NAME:?set-identityserver-seed-user-name}
      - SeedUser__Email=${IDENTITYSERVER_SEED_USER_EMAIL:?set-identityserver-seed-user-email}
@@ -291,6 +299,8 @@ services:
      start_period: 30s
     depends_on:
       postgres:
+       condition: service_healthy
+      redis:
        condition: service_healthy
   apigateway:
     image: apigateway:dev

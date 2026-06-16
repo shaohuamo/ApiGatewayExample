@@ -136,9 +136,20 @@ public class Index : PageModel
                 }
             }
 
-            const string error = "invalid credentials";
-            await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, error, clientId: context?.Client.ClientId));
-            Telemetry.Metrics.UserLoginFailure(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider, error);
+            if (result.IsNotAllowed)
+            {
+                var user = await _userManager.FindByNameAsync(Input.Username!);
+                const string error = "email not confirmed";
+                await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, error, clientId: context?.Client.ClientId));
+                Telemetry.Metrics.UserLoginFailure(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider, error);
+                ModelState.AddModelError(string.Empty, "Please confirm your email address before logging in.");
+                await BuildModelAsync(Input.ReturnUrl, requiresEmailConfirmation: true, unconfirmedEmail: user?.Email);
+                return Page();
+            }
+
+            const string invalidCredentialsError = "invalid credentials";
+            await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, invalidCredentialsError, clientId: context?.Client.ClientId));
+            Telemetry.Metrics.UserLoginFailure(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider, invalidCredentialsError);
             ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
         }
 
@@ -147,7 +158,10 @@ public class Index : PageModel
         return Page();
     }
 
-    private async Task BuildModelAsync(string? returnUrl)
+    private async Task BuildModelAsync(
+        string? returnUrl,
+        bool requiresEmailConfirmation = false,
+        string? unconfirmedEmail = null)
     {
         Input = new InputModel
         {
@@ -166,6 +180,8 @@ public class Index : PageModel
                 View = new ViewModel
                 {
                     EnableLocalLogin = local,
+                    RequiresEmailConfirmation = requiresEmailConfirmation,
+                    UnconfirmedEmail = unconfirmedEmail,
                 };
 
                 Input.Username = context.LoginHint;
@@ -214,7 +230,9 @@ public class Index : PageModel
         {
             AllowRememberLogin = LoginOptions.AllowRememberLogin,
             EnableLocalLogin = allowLocal && LoginOptions.AllowLocalLogin,
-            ExternalProviders = providers.ToArray()
+            ExternalProviders = providers.ToArray(),
+            RequiresEmailConfirmation = requiresEmailConfirmation,
+            UnconfirmedEmail = unconfirmedEmail,
         };
     }
 }

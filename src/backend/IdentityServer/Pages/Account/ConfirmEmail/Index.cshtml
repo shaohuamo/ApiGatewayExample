@@ -1,0 +1,41 @@
+@page
+@model IdentityServer.Pages.Account.ConfirmEmail.Index
+
+<div class="confirm-email-page">
+    <div class="lead">
+        <h1>Email confirmation</h1>
+        <p>Complete local account registration.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>@(Model.View.IsSuccess ? "Email confirmed" : "Confirmation failed")</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert @(Model.View.IsSuccess ? "alert-success" : "alert-danger")">
+                        @Model.View.Message
+                    </div>
+
+                    @if (Model.View.IsSuccess)
+                    {
+                        <a class="btn btn-primary"
+                           asp-page="/Account/Login/Index"
+                           asp-route-returnUrl="@Model.View.ReturnUrl">Back to Login</a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary"
+                           asp-page="/Account/ResendConfirmation/Index"
+                           asp-route-email="@Model.View.Email"
+                           asp-route-returnUrl="@Model.View.ReturnUrl">Resend confirmation email</a>
+                        <a class="btn btn-secondary"
+                           asp-page="/Account/Login/Index"
+                           asp-route-returnUrl="@Model.View.ReturnUrl">Back to Login</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -9,6 +9,16 @@
 
     <partial name="_ValidationSummary" />
 
+    @if (Model.View.RequiresEmailConfirmation)
+    {
+        <div class="alert alert-info">
+            Confirm your email address before logging in.
+            <a asp-page="/Account/ResendConfirmation/Index"
+               asp-route-email="@Model.View.UnconfirmedEmail"
+               asp-route-returnUrl="@Model.Input.ReturnUrl">Resend confirmation email</a>
+        </div>
+    }
+
     <div class="row">
 
         @if (Model.View.EnableLocalLogin)

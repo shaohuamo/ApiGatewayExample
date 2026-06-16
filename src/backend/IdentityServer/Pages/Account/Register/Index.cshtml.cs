@@ -1,8 +1,8 @@
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
-using Duende.IdentityServer;
 using IdentityServer.Models;
+using IdentityServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,23 +15,26 @@ namespace IdentityServer.Pages.Account.Register;
 public class Index : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IIdentityServerInteractionService _interaction;
-    private readonly IEventService _events;
+    private readonly IEmailConfirmationService _emailConfirmationService;
+    private readonly IEmailVerificationRateLimiter _emailVerificationRateLimiter;
+    private readonly ILogger<Index> _logger;
 
     [BindProperty]
     public InputModel Input { get; set; } = default!;
 
     public Index(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
         IIdentityServerInteractionService interaction,
-        IEventService events)
+        IEmailConfirmationService emailConfirmationService,
+        IEmailVerificationRateLimiter emailVerificationRateLimiter,
+        ILogger<Index> logger)
     {
         _userManager = userManager;
-        _signInManager = signInManager;
         _interaction = interaction;
-        _events = events;
+        _emailConfirmationService = emailConfirmationService;
+        _emailVerificationRateLimiter = emailVerificationRateLimiter;
+        _logger = logger;
     }
 
     public IActionResult OnGet(string? returnUrl)
@@ -44,12 +47,41 @@ public class Index : PageModel
         return Page();
     }
 
+    public async Task<IActionResult> OnGetIsEmailAvailable([FromQuery(Name = "Input.Email")] string? email)
+    {
+        email ??= Request.Query["Email"].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return new JsonResult(true);
+        }
+
+        var user = await _userManager.FindByEmailAsync(email.Trim());
+        return new JsonResult(user == null ? true : "Email is already registered.");
+    }
+
     public async Task<IActionResult> OnPost()
     {
         var context = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
 
         if (!ModelState.IsValid)
         {
+            return Page();
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(Input.Email);
+
+        var rateLimitResult = await _emailVerificationRateLimiter.CheckRegisterAsync(
+            HttpContext,
+            HttpContext.RequestAborted);
+        if (!rateLimitResult.IsAllowed)
+        {
+            _logger.LogWarning(
+                "Register request was rate limited. Reason: {RateLimitReason}.",
+                rateLimitResult.Reason);
+            ModelState.AddModelError(
+                string.Empty,
+                "Too many registration attempts. Please try again later.");
+            Telemetry.Metrics.UserRegisterFailure(context?.Client.ClientId, "rate_limited");
             return Page();
         }
 
@@ -71,28 +103,22 @@ public class Index : PageModel
             return Page();
         }
 
-        await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
+        try
+        {
+            await _emailConfirmationService.SendConfirmationEmailAsync(
+                user,
+                Input.ReturnUrl,
+                Url,
+                HttpContext.RequestAborted);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send email confirmation for user {UserId}.", user.Id);
+        }
+
         Telemetry.Metrics.UserRegister(context?.Client.ClientId);
-        Telemetry.Metrics.UserLogin(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider);
-        await _signInManager.SignInAsync(user, isPersistent: false);
-
-        if (context != null)
-        {
-            ArgumentNullException.ThrowIfNull(Input.ReturnUrl, nameof(Input.ReturnUrl));
-
-            if (context.IsNativeClient())
-            {
-                return this.LoadingPage(Input.ReturnUrl);
-            }
-
-            return Redirect(Input.ReturnUrl);
-        }
-
-        if (Url.IsLocalUrl(Input.ReturnUrl))
-        {
-            return Redirect(Input.ReturnUrl);
-        }
-
-        return Redirect("~/");
+        return RedirectToPage(
+            "/Account/RegisterConfirmation/Index",
+            new { email = Input.Email, returnUrl = Input.ReturnUrl });
     }
 }

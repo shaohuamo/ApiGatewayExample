@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Resend;
 using Serilog;
 using Serilog.Filters;
 
@@ -64,6 +65,22 @@ internal static class HostingExtensions
         builder.Services.Configure<SeedUserOptions>(builder.Configuration.GetSection(SeedUserOptions.SectionName));
         builder.Services.Configure<SigningCredentialOptions>(
             builder.Configuration.GetSection(SigningCredentialOptions.SectionName));
+        builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection(RedisOptions.SectionName));
+        builder.Services.Configure<ResendEmailOptions>(builder.Configuration.GetSection(ResendEmailOptions.SectionName));
+        builder.Services.Configure<EmailVerificationRateLimitOptions>(
+            builder.Configuration.GetSection(EmailVerificationRateLimitOptions.SectionName));
+        builder.Services.PostConfigure<ResendEmailOptions>(options =>
+        {
+            if (string.IsNullOrWhiteSpace(options.PublicBaseUrl))
+            {
+                options.PublicBaseUrl = builder.Configuration["IdentityServer:IssuerUri"];
+            }
+
+            if (string.IsNullOrWhiteSpace(options.ConfirmationSubject))
+            {
+                options.ConfirmationSubject = "Confirm your MicroservicesDemo account";
+            }
+        });
 
         var dataProtectionKeysPath = builder.Configuration["DataProtection:KeysPath"];
         if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
@@ -106,13 +123,29 @@ internal static class HostingExtensions
 
         builder.Services.Configure<IdentityOptions>(options =>
         {
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequiredLength = 6;
-            options.User.RequireUniqueEmail = false;
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireNonAlphanumeric = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequiredLength = 12;
+            options.Password.RequiredUniqueChars = 4;
+            options.SignIn.RequireConfirmedEmail = true;
+            options.User.RequireUniqueEmail = true;
         });
+
+        builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromHours(24);
+        });
+
+        builder.Services.AddResend(options =>
+        {
+            options.ApiToken = builder.Configuration["ResendEmail:ApiToken"] ?? string.Empty;
+        });
+        builder.Services.AddScoped<EmailConfirmationLinkFactory>();
+        builder.Services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
+        builder.Services.AddSingleton<IEmailVerificationRateLimiter, RedisEmailVerificationRateLimiter>();
+        builder.Services.AddTransient<IIdentityEmailSender, ResendIdentityEmailSender>();
 
         var identityServerBuilder = builder.Services
             .AddIdentityServer(options =>
@@ -195,6 +228,7 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.UseForwardedHeaders();
         app.UseSerilogRequestLogging();
 
         if (app.Environment.IsDevelopment())
@@ -202,7 +236,6 @@ internal static class HostingExtensions
             app.UseDeveloperExceptionPage();
         }
 
-        app.UseForwardedHeaders();
         app.UseStaticFiles();
         app.UseRouting();
         app.UseIdentityServer();

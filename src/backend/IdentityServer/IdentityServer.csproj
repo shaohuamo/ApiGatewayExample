@@ -11,6 +11,7 @@
     <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="7.0.4" />
     <PackageReference Include="IdentityModel" Version="6.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,6 +27,7 @@
     <PackageReference Include="OpenTelemetry.Resources.Container" Version="1.15.0-beta.1" />
     <PackageReference Include="OpenTelemetry.Resources.Host" Version="1.15.0-beta.2" />
     <PackageReference Include="Polly" Version="7.2.4" />
+    <PackageReference Include="Resend" Version="0.5.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
   </ItemGroup>
 </Project>

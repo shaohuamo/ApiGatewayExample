@@ -54,6 +54,23 @@ spec:
               key: identityserver-signing-cert-password
         - name: IdentityServer__IssuerUri
           value: "$(IDENTITYSERVER_PUBLIC_URL)"
+        - name: ResendEmail__ApiToken
+          valueFrom:
+            secretKeyRef:
+              name: identityserver-secrets
+              key: resend-email-api-token
+        - name: ResendEmail__From
+          value: "MicroservicesDemo <verify@auth.250669.xyz>"
+        - name: ResendEmail__PublicBaseUrl
+          value: "$(IDENTITYSERVER_PUBLIC_URL)"
+        - name: ResendEmail__ConfirmationSubject
+          value: "Confirm your MicroservicesDemo account"
+        - name: Redis__ConnectionString
+          value: "redis:6379"
+        - name: Redis__InstanceName
+          value: "IdentityServer_"
+        - name: EmailVerificationRateLimit__Enabled
+          value: "$(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED)"
         - name: IdentityServer__TokenLifetimes__AccessTokenSeconds
           value: "900"
         - name: IdentityServer__TokenLifetimes__AbsoluteRefreshTokenSeconds
