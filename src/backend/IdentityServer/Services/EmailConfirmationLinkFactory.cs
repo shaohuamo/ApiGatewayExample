@@ -15,7 +15,7 @@ public sealed class EmailConfirmationLinkFactory(IOptions<ResendEmailOptions> op
         IUrlHelper url,
         ApplicationUser user,
         string confirmationToken,
-        string? returnUrlContextId)
+        string? returnUrl)
     {
         ArgumentNullException.ThrowIfNull(url);
         ArgumentNullException.ThrowIfNull(user);
@@ -24,7 +24,7 @@ public sealed class EmailConfirmationLinkFactory(IOptions<ResendEmailOptions> op
         var confirmationPath = url.Page(
             "/Account/ConfirmEmail/Index",
             pageHandler: null,
-            values: new { userId = user.Id, code = encodedCode, contextId = returnUrlContextId },
+            values: new { userId = user.Id, code = encodedCode },
             protocol: null);
 
         if (string.IsNullOrWhiteSpace(confirmationPath))

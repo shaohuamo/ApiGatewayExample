@@ -16,7 +16,7 @@ public sealed class EmailConfirmationLinkFactoryTests
     #region CreateEmailConfirmationLink
 
     [Fact]
-    public void CreateEmailConfirmationLink_UsesShortReturnUrlContextId()
+    public void CreateEmailConfirmationLink_DoesNotIncludeReturnUrl()
     {
         var factory = new EmailConfirmationLinkFactory(Options.Create(new ResendEmailOptions
         {
@@ -33,20 +33,19 @@ public sealed class EmailConfirmationLinkFactoryTests
         });
         url.Setup(x => x.RouteUrl(It.IsAny<UrlRouteContext>()))
             .Callback<UrlRouteContext>(context => routeContext = context)
-            .Returns("/Account/ConfirmEmail?userId=user-1&code=encoded-token&contextId=context-1");
+            .Returns("/Account/ConfirmEmail?userId=user-1&code=encoded-token");
 
         var confirmationLink = factory.CreateEmailConfirmationLink(
             url.Object,
             user,
             "confirmation-token",
-            "context-1");
+            "/connect/authorize/callback?state=long-oidc-state");
 
-        confirmationLink.Should().Be("https://auth.example.com/Account/ConfirmEmail?userId=user-1&code=encoded-token&contextId=context-1");
+        confirmationLink.Should().Be("https://auth.example.com/Account/ConfirmEmail?userId=user-1&code=encoded-token");
 
         var routeValues = new RouteValueDictionary(routeContext!.Values);
         routeValues.Should().ContainKey("userId");
         routeValues.Should().ContainKey("code");
-        routeValues.Should().ContainKey("contextId").WhoseValue.Should().Be("context-1");
         routeValues.Should().NotContainKey("returnUrl");
     }
 
