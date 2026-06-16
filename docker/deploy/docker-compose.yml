@@ -261,6 +261,13 @@ services:
      - IdentityServer__IssuerUri=${IDENTITYSERVER_PUBLIC_URL:-http://localhost:8085}
      - IdentityServer__TokenLifetimes__AccessTokenSeconds=900
      - IdentityServer__TokenLifetimes__AbsoluteRefreshTokenSeconds=2592000
+     - ResendEmail__ApiToken=${RESEND_EMAIL_API_TOKEN:-}
+     - ResendEmail__From=${RESEND_EMAIL_FROM:-MicroservicesDemo <verify@auth.250669.xyz>}
+     - ResendEmail__PublicBaseUrl=${IDENTITYSERVER_PUBLIC_URL:-http://localhost:8085}
+     - ResendEmail__ConfirmationSubject=${RESEND_EMAIL_CONFIRMATION_SUBJECT:-Confirm your MicroservicesDemo account}
+     - Redis__ConnectionString=redis:6379
+     - Redis__InstanceName=IdentityServer_
+     - EmailVerificationRateLimit__Enabled=${EMAIL_VERIFICATION_RATE_LIMIT_ENABLED:-true}
      - IdentityServer__SigningCredential__CertificatePath=${IDENTITYSERVER_SIGNING_CERTIFICATE_PATH:?set-identityserver-signing-certificate-path}
      - IdentityServer__SigningCredential__CertificatePassword=${IDENTITYSERVER_SIGNING_CERTIFICATE_PASSWORD:?set-identityserver-signing-certificate-password}
      - SeedUser__Enabled=${IDENTITYSERVER_SEED_USER_ENABLED:-false}
@@ -288,6 +295,8 @@ services:
      start_period: 30s
     depends_on:
       postgres:
+       condition: service_healthy
+      redis:
        condition: service_healthy
   apigateway:
     image: lambdazb/apigateway:${APIGATEWAY_IMAGE_TAG:-latest}

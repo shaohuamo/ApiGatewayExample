@@ -1,0 +1,48 @@
+@page
+@model IdentityServer.Pages.Account.ResendConfirmation.Index
+
+<div class="resend-confirmation-page">
+    <div class="lead">
+        <h1>Resend confirmation email</h1>
+        <p>Request a new email confirmation link.</p>
+    </div>
+
+    <partial name="_ValidationSummary" />
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Email confirmation</h2>
+                </div>
+                <div class="card-body">
+                    @if (Model.EmailSent)
+                    {
+                        <div class="alert alert-info">
+                            If an unconfirmed account exists for that email address, a new confirmation email has been sent.
+                        </div>
+                        <a class="btn btn-primary"
+                           asp-page="/Account/Login/Index"
+                           asp-route-returnUrl="@Model.Input.ReturnUrl">Back to Login</a>
+                    }
+                    else
+                    {
+                        <form asp-page="/Account/ResendConfirmation/Index">
+                            <input type="hidden" asp-for="Input.ReturnUrl" />
+
+                            <div class="form-group">
+                                <label asp-for="Input.Email"></label>
+                                <input class="form-control" placeholder="Email" asp-for="Input.Email" autofocus>
+                            </div>
+
+                            <button class="btn btn-primary" type="submit">Resend confirmation email</button>
+                            <a class="btn btn-secondary"
+                               asp-page="/Account/Login/Index"
+                               asp-route-returnUrl="@Model.Input.ReturnUrl">Back to Login</a>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

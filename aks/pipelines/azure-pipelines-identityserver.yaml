@@ -12,7 +12,7 @@ trigger:
   paths:
     include:
       - src/backend/IdentityServer/**
-      - aks/manifests/dev/backend/identityserver-dev.yaml
+      - aks/manifests/*/backend/identityserver-*.yaml
       - aks/pipelines/azure-pipelines-identityserver.yaml
 
 resources:
@@ -103,6 +103,7 @@ stages:
                       "postgres-user" = "postgres"
                       "postgres-password" = $env:IDENTITYSERVER_POSTGRES_PASSWORD
                       "identityserver-signing-cert-password" = $env:IDENTITYSERVER_SIGNING_CERT_PASSWORD
+                      "resend-email-api-token" = $env:RESEND_EMAIL_API_TOKEN
                       "identityserver-signing-prod.pfx" = $pfxBase64
                     }
 
@@ -131,6 +132,7 @@ stages:
                     IDENTITYSERVER_POSTGRES_PASSWORD: $(postgres-password)
                     IDENTITYSERVER_SIGNING_CERT_PASSWORD: $(identityserver-signing-cert-password)
                     IDENTITYSERVER_SIGNING_PFX_BASE64: $(identityserver-signing-pfx-base64)
+                    RESEND_EMAIL_API_TOKEN: $(resend-email-api-token)
 
                 - task: KubernetesManifest@1
                   displayName: Apply IdentityServer secrets in dev namespace
@@ -150,12 +152,17 @@ stages:
                 - pwsh: |
                     $source = "aks/manifests/dev/backend/identityserver-dev.yaml"
                     $target = "$(Pipeline.Workspace)/identityserver-dev.rendered.yaml"
+                    $emailVerificationRateLimitEnabled = '$(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED)'
+                    if ([string]::IsNullOrWhiteSpace($emailVerificationRateLimitEnabled) -or $emailVerificationRateLimitEnabled.Contains('$(')) {
+                      $emailVerificationRateLimitEnabled = "true"
+                    }
 
                     (Get-Content $source -Raw) `
                       -replace '\$\(tag\)', '$(tag)' `
                       -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
                       -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' `
                       -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                      -replace '\$\(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED\)', $emailVerificationRateLimitEnabled `
                       -replace '\$\(IDENTITYSERVER_SEED_USER_NAME\)', '$(IDENTITYSERVER_SEED_USER_NAME)' `
                       -replace '\$\(IDENTITYSERVER_SEED_USER_EMAIL\)', '$(IDENTITYSERVER_SEED_USER_EMAIL)' `
                       -replace '\$\(IDENTITYSERVER_SEED_USER_PASSWORD\)', '$(IDENTITYSERVER_SEED_USER_PASSWORD)' `
@@ -222,6 +229,7 @@ stages:
                       --from-literal=postgres-user=postgres
                       --from-literal=postgres-password=$(postgres-password)
                       --from-literal=identityserver-signing-cert-password=$(identityserver-signing-cert-password)
+                      --from-literal=resend-email-api-token=$(resend-email-api-token)
                       --from-file=identityserver-signing-prod.pfx=$(Pipeline.Workspace)/identityserver-signing-prod.pfx
 
                 - pwsh: |
@@ -232,12 +240,17 @@ stages:
                 - pwsh: |
                     $source = "aks/manifests/qa/backend/identityserver-qa.yaml"
                     $target = "$(Pipeline.Workspace)/identityserver-qa.rendered.yaml"
+                    $emailVerificationRateLimitEnabled = '$(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED)'
+                    if ([string]::IsNullOrWhiteSpace($emailVerificationRateLimitEnabled) -or $emailVerificationRateLimitEnabled.Contains('$(')) {
+                      $emailVerificationRateLimitEnabled = "true"
+                    }
 
                     (Get-Content $source -Raw) `
                       -replace '\$\(tag\)', '$(tag)' `
                       -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
                       -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' `
                       -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                      -replace '\$\(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED\)', $emailVerificationRateLimitEnabled `
                       -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' |
@@ -301,6 +314,7 @@ stages:
                       --from-literal=postgres-user=postgres
                       --from-literal=postgres-password=$(postgres-password)
                       --from-literal=identityserver-signing-cert-password=$(identityserver-signing-cert-password)
+                      --from-literal=resend-email-api-token=$(resend-email-api-token)
                       --from-file=identityserver-signing-prod.pfx=$(Pipeline.Workspace)/identityserver-signing-prod.pfx
 
                 - pwsh: |
@@ -311,12 +325,17 @@ stages:
                 - pwsh: |
                     $source = "aks/manifests/uat/backend/identityserver-uat.yaml"
                     $target = "$(Pipeline.Workspace)/identityserver-uat.rendered.yaml"
+                    $emailVerificationRateLimitEnabled = '$(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED)'
+                    if ([string]::IsNullOrWhiteSpace($emailVerificationRateLimitEnabled) -or $emailVerificationRateLimitEnabled.Contains('$(')) {
+                      $emailVerificationRateLimitEnabled = "true"
+                    }
 
                     (Get-Content $source -Raw) `
                       -replace '\$\(tag\)', '$(tag)' `
                       -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
                       -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' `
                       -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                      -replace '\$\(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED\)', $emailVerificationRateLimitEnabled `
                       -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' |
@@ -380,6 +399,7 @@ stages:
                       --from-literal=postgres-user=postgres
                       --from-literal=postgres-password=$(postgres-password)
                       --from-literal=identityserver-signing-cert-password=$(identityserver-signing-cert-password)
+                      --from-literal=resend-email-api-token=$(resend-email-api-token)
                       --from-file=identityserver-signing-prod.pfx=$(Pipeline.Workspace)/identityserver-signing-prod.pfx
 
                 - pwsh: |
@@ -390,12 +410,17 @@ stages:
                 - pwsh: |
                     $source = "aks/manifests/staging/backend/identityserver-staging.yaml"
                     $target = "$(Pipeline.Workspace)/identityserver-staging.rendered.yaml"
+                    $emailVerificationRateLimitEnabled = '$(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED)'
+                    if ([string]::IsNullOrWhiteSpace($emailVerificationRateLimitEnabled) -or $emailVerificationRateLimitEnabled.Contains('$(')) {
+                      $emailVerificationRateLimitEnabled = "true"
+                    }
 
                     (Get-Content $source -Raw) `
                       -replace '\$\(tag\)', '$(tag)' `
                       -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
                       -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' `
                       -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                      -replace '\$\(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED\)', $emailVerificationRateLimitEnabled `
                       -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' |
@@ -459,6 +484,7 @@ stages:
                       --from-literal=postgres-user=postgres
                       --from-literal=postgres-password=$(postgres-password)
                       --from-literal=identityserver-signing-cert-password=$(identityserver-signing-cert-password)
+                      --from-literal=resend-email-api-token=$(resend-email-api-token)
                       --from-file=identityserver-signing-prod.pfx=$(Pipeline.Workspace)/identityserver-signing-prod.pfx
 
                 - pwsh: |
@@ -469,12 +495,17 @@ stages:
                 - pwsh: |
                     $source = "aks/manifests/prod/backend/identityserver-prod.yaml"
                     $target = "$(Pipeline.Workspace)/identityserver-prod.rendered.yaml"
+                    $emailVerificationRateLimitEnabled = '$(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED)'
+                    if ([string]::IsNullOrWhiteSpace($emailVerificationRateLimitEnabled) -or $emailVerificationRateLimitEnabled.Contains('$(')) {
+                      $emailVerificationRateLimitEnabled = "true"
+                    }
 
                     (Get-Content $source -Raw) `
                       -replace '\$\(tag\)', '$(tag)' `
                       -replace '\$\(POSTGRES_USER\)', '$(POSTGRES_USER)' `
                       -replace '\$\(POSTGRES_PASSWORD\)', '$(POSTGRES_PASSWORD)' `
                       -replace '\$\(IDENTITYSERVER_PUBLIC_URL\)', '$(IDENTITYSERVER_PUBLIC_URL)' `
+                      -replace '\$\(EMAIL_VERIFICATION_RATE_LIMIT_ENABLED\)', $emailVerificationRateLimitEnabled `
                       -replace '\$\(FRONTEND_PUBLIC_URL\)', '$(FRONTEND_PUBLIC_URL)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_ID\)', '$(IDENTITYSERVER_FRONTEND_CLIENT_ID)' `
                       -replace '\$\(IDENTITYSERVER_FRONTEND_CLIENT_SECRET\)', '$(identityserver-frontend-client-secret)' |
