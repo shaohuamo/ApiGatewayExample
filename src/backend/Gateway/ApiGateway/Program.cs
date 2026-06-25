@@ -110,7 +110,11 @@ builder.Services.AddOpenTelemetry()
         options.IncludeScopes = true;
     })
     .WithTracing(tracerBuilder => tracerBuilder
-        .AddAspNetCoreInstrumentation()
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.Filter = context =>
+                !IsNoisyGatewayPath(context.Request.Path);
+        })
         .AddHttpClientInstrumentation()
         .AddOtlpExporter())
     .WithMetrics(meterBuilder => meterBuilder
@@ -163,4 +167,16 @@ app.Run();
 static string? GetClaimValue(ClaimsPrincipal? user, string claimType)
 {
     return user?.FindFirst(claimType)?.Value;
+}
+
+static bool IsNoisyGatewayPath(PathString path)
+{
+    return path == "/"
+        || path.StartsWithSegments("/favicon.ico")
+        || path.StartsWithSegments("/___proxy_subdomain_cpanel")
+        || path.StartsWithSegments("/wp-json")
+        || path.StartsWithSegments("/xmlrpc.php")
+        || path.StartsWithSegments("/console")
+        || path == "/server"
+        || path.StartsWithSegments("/server-status");
 }
