@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ProductResponse, ProductAddRequest, ProductUpdateRequest } from "@/types/product";
 import { useAddProduct, useUpdateProduct } from "@/hooks/use-products";
+import { useT } from "@/lib/i18n/provider";
 
 interface ProductFormDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ export function ProductFormDialog({
   const isEditing = !!product;
   const addMutation = useAddProduct();
   const updateMutation = useUpdateProduct();
+  const t = useT();
 
   const [productName, setProductName] = useState(() => product?.productName ?? "");
   const [unitPrice, setUnitPrice] = useState(() => product?.unitPrice?.toString() ?? "");
@@ -29,15 +31,15 @@ export function ProductFormDialog({
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
     if (!productName.trim()) {
-      newErrors.productName = "Product Name can't be blank";
+      newErrors.productName = t("productForm.nameRequired");
     }
     const price = parseFloat(unitPrice);
     if (isNaN(price) || price < 0) {
-      newErrors.unitPrice = "Unit Price should be 0 or greater";
+      newErrors.unitPrice = t("productForm.priceInvalid");
     }
     const qty = parseInt(quantityInStock, 10);
     if (isNaN(qty) || qty < 0) {
-      newErrors.quantityInStock = "Quantity In Stock should be 0 or greater";
+      newErrors.quantityInStock = t("productForm.quantityInvalid");
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -83,28 +85,28 @@ export function ProductFormDialog({
       <div className="dialog-card relative w-full max-w-2xl rounded-[2rem] p-6 sm:p-8">
         <div className="flex flex-col gap-3 border-b border-[var(--border)] pb-5">
           <div className="flex items-center gap-3">
-            <div className="label-chip">Product Editor</div>
-            <span className="soft-badge">{isEditing ? "Update record" : "Create record"}</span>
+            <div className="label-chip">{t("productForm.editor")}</div>
+            <span className="soft-badge">{isEditing ? t("productForm.updateRecord") : t("productForm.createRecord")}</span>
           </div>
           <h2 className="font-display text-3xl font-semibold text-[var(--text)]">
-            {isEditing ? "Edit Product" : "Add Product"}
+            {isEditing ? t("productForm.editTitle") : t("productForm.addTitle")}
           </h2>
           <p className="text-sm leading-6 text-[var(--muted)] sm:text-base">
-            Keep product details, pricing, and stock in one clean form without leaving the catalog view.
+            {t("productForm.description")}
           </p>
         </div>
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label className="mb-2 block text-sm font-medium text-[var(--text)]">
-              Product Name <span className="text-red-500">*</span>
+              {t("productForm.name")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
                 className="editorial-field"
-                placeholder="Enter product name"
+                placeholder={t("productForm.namePlaceholder")}
               />
               {errors.productName && (
                 <p className="mt-2 text-xs text-[var(--danger)]">{errors.productName}</p>
@@ -112,7 +114,7 @@ export function ProductFormDialog({
             </div>
             <div>
               <label className="mb-2 block text-sm font-medium text-[var(--text)]">
-              Unit Price ($)
+              {t("productForm.price")}
               </label>
               <input
                 type="number"
@@ -129,7 +131,7 @@ export function ProductFormDialog({
             </div>
             <div>
               <label className="mb-2 block text-sm font-medium text-[var(--text)]">
-              Quantity In Stock
+              {t("productForm.quantity")}
               </label>
               <input
                 type="number"
@@ -149,7 +151,7 @@ export function ProductFormDialog({
           </div>
           {(addMutation.isError || updateMutation.isError) && (
             <p className="rounded-2xl border border-[rgba(232,137,110,0.28)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger)]">
-              {(addMutation.error || updateMutation.error)?.message ?? "Failed to save product. Please try again."}
+              {(addMutation.error || updateMutation.error)?.message ?? t("productForm.saveFailed")}
             </p>
           )}
           <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -158,14 +160,14 @@ export function ProductFormDialog({
               onClick={() => onOpenChange(false)}
               className="editorial-button-ghost"
             >
-              Cancel
+              {t("productForm.cancel")}
             </button>
             <button
               type="submit"
               disabled={isPending}
               className="editorial-button"
             >
-              {isPending ? "Saving..." : isEditing ? "Update" : "Add"}
+              {isPending ? t("productForm.saving") : isEditing ? t("productForm.update") : t("productForm.add")}
             </button>
           </div>
         </form>

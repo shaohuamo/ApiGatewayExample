@@ -6,6 +6,7 @@ using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace IdentityServer.Pages.Ciba;
 
@@ -16,15 +17,18 @@ public class Consent : PageModel
     private readonly IBackchannelAuthenticationInteractionService _interaction;
     private readonly IEventService _events;
     private readonly ILogger<Consent> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public Consent(
         IBackchannelAuthenticationInteractionService interaction,
         IEventService events,
-        ILogger<Consent> logger)
+        ILogger<Consent> logger,
+        IStringLocalizer<SharedResource> localizer)
     {
         _interaction = interaction;
         _events = events;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public ViewModel View { get; set; } = default!;
@@ -94,12 +98,12 @@ public class Consent : PageModel
             }
             else
             {
-                ModelState.AddModelError("", ConsentOptions.MustChooseOneErrorMessage);
+                ModelState.AddModelError("", _localizer[ConsentOptions.MustChooseOneErrorMessage].Value);
             }
         }
         else
         {
-            ModelState.AddModelError("", ConsentOptions.InvalidSelectionErrorMessage);
+            ModelState.AddModelError("", _localizer[ConsentOptions.InvalidSelectionErrorMessage].Value);
         }
 
         if (result != null)

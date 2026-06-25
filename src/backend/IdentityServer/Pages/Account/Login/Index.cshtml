@@ -3,8 +3,8 @@
 
 <div class="login-page">
     <div class="lead">
-        <h1>Sign in</h1>
-        <p>Use your MicroservicesDemo account to continue.</p>
+        <h1>@T["Sign in"]</h1>
+        <p>@T["Use your MicroservicesDemo account to continue."]</p>
     </div>
 
     <partial name="_ValidationSummary" />
@@ -12,10 +12,10 @@
     @if (Model.View.RequiresEmailConfirmation)
     {
         <div class="alert alert-info">
-            Confirm your email address before logging in.
+            @T["Confirm your email address before logging in."]
             <a asp-page="/Account/ResendConfirmation/Index"
                asp-route-email="@Model.View.UnconfirmedEmail"
-               asp-route-returnUrl="@Model.Input.ReturnUrl">Resend confirmation email</a>
+               asp-route-returnUrl="@Model.Input.ReturnUrl">@T["Resend confirmation email"]</a>
         </div>
     }
 
@@ -26,7 +26,7 @@
             <div class="col-md-7 col-lg-5">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Account sign-in</h2>
+                        <h2>@T["Account sign-in"]</h2>
                     </div>
 
                     <div class="card-body">
@@ -35,11 +35,11 @@
 
                             <div class="form-group">
                                 <label asp-for="Input.Username"></label>
-                                <input class="form-control" placeholder="Username" asp-for="Input.Username" autofocus>
+                                <input class="form-control" placeholder="@T["Username"]" asp-for="Input.Username" autofocus>
                             </div>
                             <div class="form-group">
                                 <label asp-for="Input.Password"></label>
-                                <input type="password" class="form-control" placeholder="Password" asp-for="Input.Password" autocomplete="off">
+                                <input type="password" class="form-control" placeholder="@T["Password"]" asp-for="Input.Password" autocomplete="off">
                             </div>
                             
                             @if (Model.View.AllowRememberLogin)
@@ -48,21 +48,21 @@
                                     <div class="form-check">
                                         <input class="form-check-input" asp-for="Input.RememberLogin">
                                         <label class="form-check-label" asp-for="Input.RememberLogin">
-                                            Remember My Login
+                                            @T["Remember My Login"]
                                         </label>
                                     </div>
                                 </div>
                             }
                             
                             <div class="login-actions">
-                                <button class="btn btn-primary" name="Input.Button" value="login">Sign in</button>
-                                <button class="btn btn-outline-secondary" name="Input.Button" value="cancel">Cancel</button>
+                                <button class="btn btn-primary" name="Input.Button" value="login">@T["Sign in"]</button>
+                                <button class="btn btn-outline-secondary" name="Input.Button" value="cancel">@T["Cancel"]</button>
                             </div>
 
                             <p class="login-register-prompt">
-                                New to MicroservicesDemo?
+                                @T["New to MicroservicesDemo?"]
                                 <a asp-page="/Account/Register/Index"
-                                   asp-route-returnUrl="@Model.Input.ReturnUrl">Create an account</a>
+                                   asp-route-returnUrl="@Model.Input.ReturnUrl">@T["Create an account"]</a>
                             </p>
                         </form>
                     </div>
@@ -75,7 +75,7 @@
             <div class="col-md-7 col-lg-5">
                 <div class="card">
                     <div class="card-header">
-                        <h2>External sign-in</h2>
+                        <h2>@T["External sign-in"]</h2>
                     </div>
                     <div class="card-body">
                         <ul class="list-inline">
@@ -99,8 +99,8 @@
         @if (!Model.View.EnableLocalLogin && !Model.View.VisibleExternalProviders.Any())
         {
             <div class="alert alert-warning">
-                <strong>Invalid login request</strong>
-                There are no login schemes configured for this request.
+                <strong>@T["Invalid login request"]</strong>
+                @T["There are no login schemes configured for this request."]
             </div>
         }
     </div>

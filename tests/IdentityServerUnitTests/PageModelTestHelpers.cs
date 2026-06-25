@@ -1,9 +1,11 @@
 using IdentityServer.Models;
+using IdentityServer;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -12,6 +14,9 @@ namespace IdentityServerUnitTests;
 
 internal static class PageModelTestHelpers
 {
+    public static IStringLocalizer<SharedResource> Localizer { get; } =
+        new PassThroughStringLocalizer();
+
     public static Mock<UserManager<ApplicationUser>> CreateUserManager()
     {
         var store = new Mock<IUserStore<ApplicationUser>>();
@@ -48,5 +53,16 @@ internal static class PageModelTestHelpers
             HttpContext = new DefaultHttpContext()
         };
         page.Url = Mock.Of<IUrlHelper>();
+    }
+
+    private sealed class PassThroughStringLocalizer : IStringLocalizer<SharedResource>
+    {
+        public LocalizedString this[string name] => new(name, name);
+
+        public LocalizedString this[string name, params object[] arguments] =>
+            new(name, string.Format(name, arguments));
+
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            Enumerable.Empty<LocalizedString>();
     }
 }

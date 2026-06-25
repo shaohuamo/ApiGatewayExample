@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/provider";
 
 type UserMenuProps = {
   userName?: string;
@@ -11,6 +12,7 @@ export function UserMenu({ userName }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   useEffect(() => {
     if (!isOpen) {
@@ -85,7 +87,7 @@ export function UserMenu({ userName }: UserMenuProps) {
             <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-[var(--muted)]" aria-hidden="true">
               <path d="M10 17l5-5-5-5M15 12H3M21 4v16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span>{isSigningOut ? "Signing out" : "Logout"}</span>
+            <span>{isSigningOut ? t("user.signingOut") : t("user.logout")}</span>
           </button>
         </div>
       )}

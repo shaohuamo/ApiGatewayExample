@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace IdentityServer.Pages.Account.Register;
 
@@ -19,6 +20,7 @@ public class Index : PageModel
     private readonly IEmailConfirmationService _emailConfirmationService;
     private readonly IEmailVerificationRateLimiter _emailVerificationRateLimiter;
     private readonly ILogger<Index> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     [BindProperty]
     public InputModel Input { get; set; } = default!;
@@ -28,13 +30,15 @@ public class Index : PageModel
         IIdentityServerInteractionService interaction,
         IEmailConfirmationService emailConfirmationService,
         IEmailVerificationRateLimiter emailVerificationRateLimiter,
-        ILogger<Index> logger)
+        ILogger<Index> logger,
+        IStringLocalizer<SharedResource> localizer)
     {
         _userManager = userManager;
         _interaction = interaction;
         _emailConfirmationService = emailConfirmationService;
         _emailVerificationRateLimiter = emailVerificationRateLimiter;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public IActionResult OnGet(string? returnUrl)
@@ -56,7 +60,7 @@ public class Index : PageModel
         }
 
         var user = await _userManager.FindByEmailAsync(email.Trim());
-        return new JsonResult(user == null ? true : "Email is already registered.");
+        return new JsonResult(user == null ? true : _localizer["Email is already registered."].Value);
     }
 
     public async Task<IActionResult> OnPost()
@@ -80,7 +84,7 @@ public class Index : PageModel
                 rateLimitResult.Reason);
             ModelState.AddModelError(
                 string.Empty,
-                "Too many registration attempts. Please try again later.");
+                _localizer["Too many registration attempts. Please try again later."].Value);
             Telemetry.Metrics.UserRegisterFailure(context?.Client.ClientId, "rate_limited");
             return Page();
         }

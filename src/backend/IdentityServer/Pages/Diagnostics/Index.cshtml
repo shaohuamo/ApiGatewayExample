@@ -3,14 +3,14 @@
 
 <div class="diagnostics-page">
     <div class="lead">
-        <h1>Authentication Cookie</h1>
+        <h1>@T["Authentication Cookie"]</h1>
     </div>
 
     <div class="row">
         <div class="col">
             <div class="card">
                 <div class="card-header">
-                    <h2>Claims</h2>
+                    <h2>@T["Claims"]</h2>
                 </div>
                 <div class="card-body">
                     @if(Model.View.AuthenticateResult.Principal != null)
@@ -30,7 +30,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-header">
-                    <h2>Properties</h2>
+                    <h2>@T["Properties"]</h2>
                 </div>
                 <div class="card-body">
                     <dl>
@@ -44,7 +44,7 @@
                         }
                         @if (Model.View.Clients.Any())
                         {
-                            <dt>Clients</dt>
+                            <dt>@T["Clients"]</dt>
                             <dd>
                                 @{
                                     var clients = Model.View.Clients.ToArray();

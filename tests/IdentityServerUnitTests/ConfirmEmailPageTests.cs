@@ -28,7 +28,7 @@ public sealed class ConfirmEmailPageTests
         userManager.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(false);
         userManager.Setup(x => x.ConfirmEmailAsync(user, token)).ReturnsAsync(IdentityResult.Success);
 
-        var page = new ConfirmEmailPage(userManager.Object);
+        var page = new ConfirmEmailPage(userManager.Object, PageModelTestHelpers.Localizer);
 
         await page.OnGet("user-1", encodedToken, "/connect/authorize");
 
@@ -52,7 +52,7 @@ public sealed class ConfirmEmailPageTests
         userManager.Setup(x => x.FindByIdAsync("user-1")).ReturnsAsync(user);
         userManager.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(false);
 
-        var page = new ConfirmEmailPage(userManager.Object);
+        var page = new ConfirmEmailPage(userManager.Object, PageModelTestHelpers.Localizer);
 
         await page.OnGet("user-1", "not valid base64", "/connect/authorize");
 

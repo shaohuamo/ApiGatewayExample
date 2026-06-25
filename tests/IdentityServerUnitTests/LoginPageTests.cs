@@ -59,7 +59,8 @@ public sealed class LoginPageTests
             identityProviderStore.Object,
             events.Object,
             userManager.Object,
-            signInManager.Object)
+            signInManager.Object,
+            PageModelTestHelpers.Localizer)
         {
             Input = new LoginInputModel
             {

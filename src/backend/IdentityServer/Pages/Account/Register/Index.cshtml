@@ -3,8 +3,8 @@
 
 <div class="register-page">
     <div class="lead">
-        <h1>Register</h1>
-        <p>Create an account</p>
+        <h1>@T["Register"]</h1>
+        <p>@T["Create an account"]</p>
     </div>
 
     <partial name="_ValidationSummary" />
@@ -13,7 +13,7 @@
         <div class="col-sm-6">
             <div class="card">
                 <div class="card-header">
-                    <h2>Account</h2>
+                    <h2>@T["Account"]</h2>
                 </div>
 
                 <div class="card-body">
@@ -22,32 +22,32 @@
 
                         <div class="form-group">
                             <label asp-for="Input.Username"></label>
-                            <input class="form-control" placeholder="Username" asp-for="Input.Username" autofocus>
+                            <input class="form-control" placeholder="@T["Username"]" asp-for="Input.Username" autofocus>
                             <span asp-validation-for="Input.Username" class="text-danger"></span>
                         </div>
                         <div class="form-group">
                             <label asp-for="Input.Email"></label>
-                            <input class="form-control" placeholder="Email" asp-for="Input.Email">
+                            <input class="form-control" placeholder="@T["Email"]" asp-for="Input.Email">
                             <span asp-validation-for="Input.Email" class="text-danger"></span>
                         </div>
                         <div class="form-group">
                             <label asp-for="Input.Password"></label>
-                            <input type="password" class="form-control" placeholder="Password" asp-for="Input.Password" autocomplete="new-password">
+                            <input type="password" class="form-control" placeholder="@T["Password"]" asp-for="Input.Password" autocomplete="new-password">
                             <small class="form-text text-muted">
-                                Use at least 12 characters with uppercase, lowercase, digit, and non-alphanumeric characters.
+                                @T["Use at least 12 characters with uppercase, lowercase, digit, and non-alphanumeric characters."]
                             </small>
                             <span asp-validation-for="Input.Password" class="text-danger"></span>
                         </div>
                         <div class="form-group">
                             <label asp-for="Input.ConfirmPassword"></label>
-                            <input type="password" class="form-control" placeholder="Confirm password" asp-for="Input.ConfirmPassword" autocomplete="new-password">
+                            <input type="password" class="form-control" placeholder="@T["Confirm password"]" asp-for="Input.ConfirmPassword" autocomplete="new-password">
                             <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                         </div>
 
-                        <button class="btn btn-primary" type="submit">Register</button>
+                        <button class="btn btn-primary" type="submit">@T["Register"]</button>
                         <a class="btn btn-secondary"
                            asp-page="/Account/Login/Index"
-                           asp-route-returnUrl="@Model.Input.ReturnUrl">Back to Login</a>
+                           asp-route-returnUrl="@Model.Input.ReturnUrl">@T["Back to Login"]</a>
                     </form>
                 </div>
             </div>

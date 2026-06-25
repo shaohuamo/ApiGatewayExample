@@ -3,15 +3,15 @@
 
 <div class="logged-out-page">
     <h1>
-        Logout
-        <small>You are now logged out</small>
+        @T["Logout"]
+        <small>@T["You are now logged out"]</small>
     </h1>
 
     @if (Model.View.PostLogoutRedirectUri != null)
     {
         <div>
-            Click <a class="PostLogoutRedirectUri" href="@Model.View.PostLogoutRedirectUri">here</a> to return to the
-            <span>@Model.View.ClientName</span> application.
+            @T["Click"] <a class="PostLogoutRedirectUri" href="@Model.View.PostLogoutRedirectUri">@T["here"]</a> @T["to return to the"]
+            <span>@Model.View.ClientName</span> @T["application."]
         </div>
     }
 

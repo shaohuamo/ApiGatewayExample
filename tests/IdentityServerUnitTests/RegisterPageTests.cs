@@ -52,7 +52,8 @@ public sealed class RegisterPageTests
             interaction.Object,
             emailConfirmationService.Object,
             emailVerificationRateLimiter.Object,
-            NullLogger<RegisterPage>.Instance)
+            NullLogger<RegisterPage>.Instance,
+            PageModelTestHelpers.Localizer)
         {
             Input = new RegisterInputModel
             {
@@ -106,7 +107,8 @@ public sealed class RegisterPageTests
             interaction.Object,
             emailConfirmationService.Object,
             emailVerificationRateLimiter.Object,
-            NullLogger<RegisterPage>.Instance)
+            NullLogger<RegisterPage>.Instance,
+            PageModelTestHelpers.Localizer)
         {
             Input = new RegisterInputModel
             {
@@ -187,7 +189,8 @@ public sealed class RegisterPageTests
             Mock.Of<IIdentityServerInteractionService>(),
             Mock.Of<IEmailConfirmationService>(),
             Mock.Of<IEmailVerificationRateLimiter>(),
-            NullLogger<RegisterPage>.Instance);
+            NullLogger<RegisterPage>.Instance,
+            PageModelTestHelpers.Localizer);
         PageModelTestHelpers.ConfigurePage(page);
 
         return page;

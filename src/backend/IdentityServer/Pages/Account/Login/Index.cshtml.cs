@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace IdentityServer.Pages.Account.Login;
 
@@ -22,6 +23,7 @@ public class Index : PageModel
     private readonly IEventService _events;
     private readonly IAuthenticationSchemeProvider _schemeProvider;
     private readonly IIdentityProviderStore _identityProviderStore;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public ViewModel View { get; set; } = default!;
 
@@ -34,7 +36,8 @@ public class Index : PageModel
         IIdentityProviderStore identityProviderStore,
         IEventService events,
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        IStringLocalizer<SharedResource> localizer)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -42,6 +45,7 @@ public class Index : PageModel
         _schemeProvider = schemeProvider;
         _identityProviderStore = identityProviderStore;
         _events = events;
+        _localizer = localizer;
     }
 
     public async Task<IActionResult> OnGet(string? returnUrl)
@@ -142,7 +146,7 @@ public class Index : PageModel
                 const string error = "email not confirmed";
                 await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, error, clientId: context?.Client.ClientId));
                 Telemetry.Metrics.UserLoginFailure(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider, error);
-                ModelState.AddModelError(string.Empty, "Please confirm your email address before logging in.");
+                ModelState.AddModelError(string.Empty, _localizer["Please confirm your email address before logging in."].Value);
                 await BuildModelAsync(Input.ReturnUrl, requiresEmailConfirmation: true, unconfirmedEmail: user?.Email);
                 return Page();
             }
@@ -150,7 +154,7 @@ public class Index : PageModel
             const string invalidCredentialsError = "invalid credentials";
             await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, invalidCredentialsError, clientId: context?.Client.ClientId));
             Telemetry.Metrics.UserLoginFailure(context?.Client.ClientId, IdentityServerConstants.LocalIdentityProvider, invalidCredentialsError);
-            ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
+            ModelState.AddModelError(string.Empty, _localizer[LoginOptions.InvalidCredentialsErrorMessage].Value);
         }
 
         // something went wrong, show form with error

@@ -3,12 +3,15 @@ using IdentityServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace IdentityServer.Pages.Account.ConfirmEmail;
 
 [SecurityHeaders]
 [AllowAnonymous]
-public class Index(UserManager<ApplicationUser> userManager) : PageModel
+public class Index(
+    UserManager<ApplicationUser> userManager,
+    IStringLocalizer<SharedResource> localizer) : PageModel
 {
     public ViewModel View { get; private set; } = new();
 
@@ -34,7 +37,7 @@ public class Index(UserManager<ApplicationUser> userManager) : PageModel
         if (await userManager.IsEmailConfirmedAsync(user))
         {
             View.IsSuccess = true;
-            View.Message = "Your email address is already confirmed. You can sign in now.";
+            View.Message = localizer["Your email address is already confirmed. You can sign in now."].Value;
             return;
         }
 
@@ -53,7 +56,7 @@ public class Index(UserManager<ApplicationUser> userManager) : PageModel
         if (result.Succeeded)
         {
             View.IsSuccess = true;
-            View.Message = "Your email address has been confirmed. You can sign in now.";
+            View.Message = localizer["Your email address has been confirmed. You can sign in now."].Value;
             return;
         }
 
@@ -63,6 +66,6 @@ public class Index(UserManager<ApplicationUser> userManager) : PageModel
     private void SetFailure(string message)
     {
         View.IsSuccess = false;
-        View.Message = message;
+        View.Message = localizer[message].Value;
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Localization;
 
 namespace IdentityServer.Pages.Device;
 
@@ -19,15 +20,18 @@ public class Index : PageModel
     private readonly IDeviceFlowInteractionService _interaction;
     private readonly IEventService _events;
     private readonly IOptions<IdentityServerOptions> _options;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public Index(
         IDeviceFlowInteractionService interaction,
         IEventService eventService,
-        IOptions<IdentityServerOptions> options)
+        IOptions<IdentityServerOptions> options,
+        IStringLocalizer<SharedResource> localizer)
     {
         _interaction = interaction;
         _events = eventService;
         _options = options;
+        _localizer = localizer;
     }
 
     public ViewModel View { get; set; } = default!;
@@ -44,7 +48,7 @@ public class Index : PageModel
 
         if (!await SetViewModelAsync(userCode))
         {
-            ModelState.AddModelError("", DeviceOptions.InvalidUserCode);
+            ModelState.AddModelError("", _localizer[DeviceOptions.InvalidUserCode].Value);
             return Page();
         }
 
@@ -105,12 +109,12 @@ public class Index : PageModel
             }
             else
             {
-                ModelState.AddModelError("", ConsentOptions.MustChooseOneErrorMessage);
+                ModelState.AddModelError("", _localizer[ConsentOptions.MustChooseOneErrorMessage].Value);
             }
         }
         else
         {
-            ModelState.AddModelError("", ConsentOptions.InvalidSelectionErrorMessage);
+            ModelState.AddModelError("", _localizer[ConsentOptions.InvalidSelectionErrorMessage].Value);
         }
 
         if (grantedConsent != null)
