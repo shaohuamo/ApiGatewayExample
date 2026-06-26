@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const METHODS_WITHOUT_BODY = new Set(["GET", "HEAD"]);
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 type RouteContext = {
   params: Promise<{
@@ -25,6 +26,52 @@ function getGatewayBaseUrl() {
   }
 
   return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+}
+
+function trimTrailingSlash(value: string) {
+  return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+function getFrontendPublicOrigin(request: NextRequest) {
+  const configuredUrl = process.env.FRONTEND_PUBLIC_URL;
+
+  if (configuredUrl) {
+    return new URL(trimTrailingSlash(configuredUrl)).origin;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function getRequestSourceOrigin(request: NextRequest) {
+  const origin = request.headers.get("origin");
+
+  if (origin) {
+    return new URL(origin).origin;
+  }
+
+  const referer = request.headers.get("referer");
+
+  if (referer) {
+    return new URL(referer).origin;
+  }
+
+  return null;
+}
+
+function isCsrfProtectedRequest(request: NextRequest) {
+  return !SAFE_METHODS.has(request.method.toUpperCase());
+}
+
+function isSameOriginRequest(request: NextRequest) {
+  if (!isCsrfProtectedRequest(request)) {
+    return true;
+  }
+
+  try {
+    return getRequestSourceOrigin(request) === getFrontendPublicOrigin(request);
+  } catch {
+    return false;
+  }
 }
 
 function getJwtSubject(accessToken: string | undefined) {
@@ -82,6 +129,13 @@ async function proxyRequest(request: NextRequest, { params }: RouteContext) {
     return NextResponse.json(
       { message: "API_GATEWAY_INTERNAL_URL is not configured." },
       { status: 500 }
+    );
+  }
+
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json(
+      { message: "Cross-site request rejected." },
+      { status: 403 }
     );
   }
 
