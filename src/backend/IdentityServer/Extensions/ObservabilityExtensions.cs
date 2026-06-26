@@ -23,7 +23,12 @@ public static class ObservabilityExtensions
             })
             .WithTracing(tracerBuilder => tracerBuilder
                 .AddNpgsql()
-                .AddAspNetCoreInstrumentation()
+                .AddAspNetCoreInstrumentation(options =>
+                {
+                    options.Filter = context =>
+                        !context.Request.Path.StartsWithSegments("/health")
+                        && !IsStaticAssetPath(context.Request.Path);
+                })
                 .AddHttpClientInstrumentation()
                 .AddOtlpExporter())
             .WithMetrics(meterBuilder => meterBuilder
@@ -37,5 +42,29 @@ public static class ObservabilityExtensions
                 .AddOtlpExporter());
 
         return builder;
+    }
+
+    private static bool IsStaticAssetPath(PathString path)
+    {
+        if (path.StartsWithSegments("/lib") || path.StartsWithSegments("/js"))
+        {
+            return true;
+        }
+
+        var value = path.Value;
+
+        return value is not null
+            && (value.EndsWith(".css", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".map", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".ico", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".webp", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".woff", StringComparison.OrdinalIgnoreCase)
+                || value.EndsWith(".woff2", StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -6,9 +6,11 @@ import { formatCurrency } from "@/lib/utils";
 import { ProductFormDialog } from "@/components/products/product-form-dialog";
 import { DeleteConfirmDialog } from "@/components/products/delete-confirm-dialog";
 import type { ProductResponse } from "@/types/product";
+import { useI18n } from "@/lib/i18n/provider";
 
 export default function ProductsPage() {
   const { data: products, isLoading, error } = useProducts();
+  const { locale, t } = useI18n();
   const [formOpen, setFormOpen] = useState(false);
   const [formSessionId, setFormSessionId] = useState(0);
   const [editProduct, setEditProduct] = useState<ProductResponse | undefined>();
@@ -48,10 +50,9 @@ export default function ProductsPage() {
     : 0;
 
   const stats = [
-    { label: "Products", value: totalProducts.toString().padStart(2, "0"), detail: "Tracked SKUs" },
-    { label: "Units in Stock", value: totalUnits.toLocaleString(), detail: "Live inventory volume" },
-    { label: "Inventory Value", value: formatCurrency(totalInventoryValue), detail: "Combined sell-through value" },
-    { label: "Average Price", value: formatCurrency(averagePrice), detail: "Per product benchmark" },
+    { label: t("products.stats.units"), value: totalUnits.toLocaleString(locale), detail: t("products.stats.unitsDetail") },
+    { label: t("products.stats.value"), value: formatCurrency(totalInventoryValue, locale), detail: t("products.stats.valueDetail") },
+    { label: t("products.stats.average"), value: formatCurrency(averagePrice, locale), detail: t("products.stats.averageDetail") },
   ];
 
   return (
@@ -60,46 +61,48 @@ export default function ProductsPage() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="label-chip">Products Workspace</div>
+              <div className="label-chip">{t("products.workspace")}</div>
             </div>
             <h1 className="font-display mt-5 text-4xl font-semibold leading-none text-[var(--text)] sm:text-5xl lg:text-[4.6rem]">
-              Products
+              {t("products.title")}
             </h1>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto lg:min-w-[240px]">
             <div className="surface-panel-soft rounded-[1.2rem] px-4 py-4">
-              <div className="kicker">Active Catalog</div>
+              <div className="kicker">{t("products.activeCatalog")}</div>
               <div className="mt-3 flex items-end gap-3">
                 <span className="font-display text-4xl font-semibold text-[var(--text)]">
                   {totalProducts.toString().padStart(2, "0")}
                 </span>
-                <span className="pb-1 text-sm text-[var(--muted)]">products in view</span>
+                <span className="pb-1 text-sm text-[var(--muted)]">{t("products.inView")}</span>
               </div>
             </div>
             <button onClick={handleAdd} className="editorial-button self-start sm:self-stretch">
               <span className="text-lg leading-none">+</span>
-              <span>Add Product</span>
+              <span>{t("products.add")}</span>
             </button>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
           <article key={stat.label} className="stat-card rounded-[1.6rem] p-5 sm:p-6">
             <div className="kicker">{stat.label}</div>
             <div className="font-display mt-4 text-3xl font-semibold text-[var(--text)] sm:text-[2.35rem]">
               {stat.value}
             </div>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{stat.detail}</p>
+            {stat.detail && (
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{stat.detail}</p>
+            )}
           </article>
         ))}
       </section>
 
       {isLoading && (
         <section className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {[...Array(4)].map((_, index) => (
+          <div className="grid gap-4 md:grid-cols-3">
+            {[...Array(3)].map((_, index) => (
               <div key={index} className="stat-card rounded-[1.6rem] p-5 sm:p-6">
                 <div className="skeleton-block h-3 w-24 rounded-full" />
                 <div className="skeleton-block mt-4 h-10 w-32 rounded-2xl" />
@@ -120,12 +123,12 @@ export default function ProductsPage() {
 
       {error && (
         <section className="state-panel rounded-[1.8rem] border-[color:var(--danger-soft)] p-6 sm:p-8">
-          <div className="kicker text-[var(--danger)]">Service Error</div>
+          <div className="kicker text-[var(--danger)]">{t("products.serviceError")}</div>
           <h2 className="font-display mt-3 text-3xl font-semibold text-[var(--text)]">
-            Failed to load products.
+            {t("products.loadFailed")}
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--muted)] sm:text-base">
-            Make sure the backend is running and reachable through the gateway, then refresh the page.
+            {t("products.loadFailedDetail")}
           </p>
         </section>
       )}
@@ -137,36 +140,30 @@ export default function ProductsPage() {
               <path d="M4 7.5 12 3l8 4.5M4 7.5v9L12 21m-8-13.5L12 12m8-4.5L12 12m0 9v-9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h2 className="font-display mt-6 text-3xl font-semibold text-[var(--text)]">No products yet</h2>
+          <h2 className="font-display mt-6 text-3xl font-semibold text-[var(--text)]">{t("products.emptyTitle")}</h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[var(--muted)] sm:text-base">
-            The catalog is empty. Click &quot;Add Product&quot; to create one and start tracking inventory.
+            {t("products.emptyDetail")}
           </p>
         </section>
       )}
 
       {products && products.length > 0 && (
         <section className="surface-panel overflow-hidden rounded-[1.8rem]">
-          <div className="flex flex-col gap-4 border-b border-[var(--border)] px-5 py-5 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="border-b border-[var(--border)] px-5 py-5 sm:px-6">
             <div>
-              <div className="kicker">Catalog Matrix</div>
-              <h2 className="font-display mt-2 text-2xl font-semibold text-[var(--text)] sm:text-3xl">
-                Active product inventory
+              <h2 className="font-display text-2xl font-semibold text-[var(--text)] sm:text-3xl">
+                {t("products.inventoryTitle")}
               </h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="soft-badge">{totalProducts} products</span>
-              <span className="soft-badge">{totalUnits.toLocaleString()} units tracked</span>
-              <span className="soft-badge">{formatCurrency(totalInventoryValue)} total value</span>
             </div>
           </div>
           <div className="table-scroll">
             <table className="data-table w-full text-sm">
             <thead>
               <tr>
-                <th>Product Name</th>
-                <th className="text-right">Unit Price</th>
-                <th className="text-right">Qty In Stock</th>
-                <th className="table-actions-heading">Actions</th>
+                <th>{t("products.table.name")}</th>
+                <th className="text-right">{t("products.table.price")}</th>
+                <th className="text-right">{t("products.table.quantity")}</th>
+                <th className="table-actions-heading">{t("products.table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -181,12 +178,11 @@ export default function ProductsPage() {
                       </div>
                       <div>
                         <div className="font-medium text-[var(--text)]">{product.productName ?? "-"}</div>
-                        <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--muted)]">SKU record</div>
                       </div>
                     </div>
                   </td>
                   <td className="text-right font-medium text-[var(--text)]">
-                    {formatCurrency(product.unitPrice)}
+                    {formatCurrency(product.unitPrice, locale)}
                   </td>
                   <td className="text-right text-[var(--text)]">
                     {product.quantityInStock ?? "-"}
@@ -197,13 +193,13 @@ export default function ProductsPage() {
                         onClick={() => handleEdit(product)}
                         className="table-action-button"
                       >
-                        Edit
+                        {t("products.edit")}
                       </button>
                       <button
                         onClick={() => setDeleteProduct(product)}
                         className="table-action-button table-action-button-danger"
                       >
-                        Delete
+                        {t("products.delete")}
                       </button>
                     </div>
                   </td>

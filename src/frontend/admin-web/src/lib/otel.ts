@@ -32,10 +32,10 @@ export function initOpenTelemetry() {
     instrumentations: [
       getWebAutoInstrumentations({
         "@opentelemetry/instrumentation-fetch": {
-          ignoreUrls: [/\/otel\//, /\/_next\//],
+          ignoreUrls: [/\/otel\//, /\/_next\//, /[?&]_rsc=/],
         },
         "@opentelemetry/instrumentation-xml-http-request": {
-          ignoreUrls: [/\/otel\//, /\/_next\//],
+          ignoreUrls: [/\/otel\//, /\/_next\//, /[?&]_rsc=/],
         },
         "@opentelemetry/instrumentation-user-interaction": {
           eventNames: ["click"],

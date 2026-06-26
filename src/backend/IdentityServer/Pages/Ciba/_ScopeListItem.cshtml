@@ -16,7 +16,7 @@
                    name="Input.ScopesConsented"
                    value="@Model.Value" />
         }
-        <strong>@Model.DisplayName</strong>
+        <strong>@T[Model.DisplayName ?? Model.Name ?? Model.Value ?? string.Empty]</strong>
         @if (Model.Emphasize)
         {
             <span class="glyphicon glyphicon-exclamation-sign"></span>
@@ -24,22 +24,22 @@
     </label>
     @if (Model.Required)
     {
-        <span><em>(required)</em></span>
+        <span><em>@T["(required)"]</em></span>
     }
     @if (Model.Description != null)
     {
         <div class="consent-description">
-            <label for="scopes_@Model.Value">@Model.Description</label>
+            <label for="scopes_@Model.Value">@T[Model.Description]</label>
         </div>
     }
     @if (Model.Resources?.Any() == true)
     {
         <div class="consent-description">
-            <label>Will be available to these resource servers:</label>
+            <label>@T["Will be available to these resource servers:"]</label>
             <ul>
             @foreach (var resource in Model.Resources)
             {
-                <li>@resource.DisplayName</li>
+                <li>@T[resource.DisplayName ?? resource.Name ?? string.Empty]</li>
             }
             </ul>
         </div>

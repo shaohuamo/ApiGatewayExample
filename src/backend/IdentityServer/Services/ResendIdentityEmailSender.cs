@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using IdentityServer.Options;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Localization;
 using Resend;
 
 namespace IdentityServer.Services;
@@ -8,6 +9,7 @@ namespace IdentityServer.Services;
 public sealed class ResendIdentityEmailSender(
     IResend resend,
     IOptions<ResendEmailOptions> options,
+    IStringLocalizer<SharedResource> localizer,
     ILogger<ResendIdentityEmailSender> logger) : IIdentityEmailSender
 {
     private readonly ResendEmailOptions _options = options.Value;
@@ -20,7 +22,7 @@ public sealed class ResendIdentityEmailSender(
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
         ArgumentException.ThrowIfNullOrWhiteSpace(confirmationLink);
 
-        var message = CreateEmailConfirmationMessage(_options, email, confirmationLink);
+        var message = CreateEmailConfirmationMessage(_options, email, confirmationLink, localizer);
 
         await resend.EmailSendAsync(message, cancellationToken);
 
@@ -30,7 +32,8 @@ public sealed class ResendIdentityEmailSender(
     public static EmailMessage CreateEmailConfirmationMessage(
         ResendEmailOptions options,
         string email,
-        string confirmationLink)
+        string confirmationLink,
+        IStringLocalizer<SharedResource>? localizer = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
@@ -42,31 +45,40 @@ public sealed class ResendIdentityEmailSender(
         }
 
         var subject = string.IsNullOrWhiteSpace(options.ConfirmationSubject)
-            ? "Confirm your MicroservicesDemo account"
+            || options.ConfirmationSubject == "Confirm your MicroservicesDemo account"
+            ? Localize(localizer, "Confirm your MicroservicesDemo account")
             : options.ConfirmationSubject;
 
         var encodedLink = HtmlEncoder.Default.Encode(confirmationLink);
+        var htmlIntro = Localize(localizer, "Thanks for registering with MicroservicesDemo.");
+        var htmlInstruction = Localize(localizer, "Please confirm your email address by clicking the link below:");
+        var htmlButton = Localize(localizer, "Confirm email");
+        var htmlIgnore = Localize(localizer, "If you did not create this account, you can ignore this email.");
+        var textInstruction = Localize(localizer, "Confirm your email address by opening this link:");
 
         return new EmailMessage
         {
             From = options.From,
             Subject = subject,
             HtmlBody = $"""
-                <p>Thanks for registering with MicroservicesDemo.</p>
-                <p>Please confirm your email address by clicking the link below:</p>
-                <p><a href="{encodedLink}">Confirm email</a></p>
-                <p>If you did not create this account, you can ignore this email.</p>
+                <p>{htmlIntro}</p>
+                <p>{htmlInstruction}</p>
+                <p><a href="{encodedLink}">{htmlButton}</a></p>
+                <p>{htmlIgnore}</p>
                 """,
             TextBody = $"""
-                Thanks for registering with MicroservicesDemo.
+                {htmlIntro}
 
-                Confirm your email address by opening this link:
+                {textInstruction}
                 {confirmationLink}
 
-                If you did not create this account, you can ignore this email.
+                {htmlIgnore}
                 """
         }.AddRecipient(email);
     }
+
+    private static string Localize(IStringLocalizer<SharedResource>? localizer, string key) =>
+        localizer?[key].Value ?? key;
 }
 
 internal static class EmailMessageExtensions

@@ -7,6 +7,7 @@ using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace IdentityServer.Pages.Consent;
 
@@ -17,15 +18,18 @@ public class Index : PageModel
     private readonly IIdentityServerInteractionService _interaction;
     private readonly IEventService _events;
     private readonly ILogger<Index> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public Index(
         IIdentityServerInteractionService interaction,
         IEventService events,
-        ILogger<Index> logger)
+        ILogger<Index> logger,
+        IStringLocalizer<SharedResource> localizer)
     {
         _interaction = interaction;
         _events = events;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public ViewModel View { get; set; } = default!;
@@ -95,12 +99,12 @@ public class Index : PageModel
             }
             else
             {
-                ModelState.AddModelError("", ConsentOptions.MustChooseOneErrorMessage);
+                ModelState.AddModelError("", _localizer[ConsentOptions.MustChooseOneErrorMessage].Value);
             }
         }
         else
         {
-            ModelState.AddModelError("", ConsentOptions.InvalidSelectionErrorMessage);
+            ModelState.AddModelError("", _localizer[ConsentOptions.InvalidSelectionErrorMessage].Value);
         }
 
         if (grantedConsent != null)

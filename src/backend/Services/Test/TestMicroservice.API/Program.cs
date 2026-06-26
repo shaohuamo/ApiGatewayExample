@@ -25,7 +25,11 @@ builder.Services.AddOpenTelemetry()
         .AddSource(DiagnosticsConfig.ServiceName)
         .AddSource(RabbitMQTelemetry.ActivitySource.Name)
         .AddSource(ServiceBusTelemetry.ActivitySource.Name)
-        .AddAspNetCoreInstrumentation()
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.Filter = context =>
+                !context.Request.Path.StartsWithSegments("/health");
+        })
         .AddHttpClientInstrumentation(options =>
         {
             options.FilterHttpRequestMessage = (req) => !req.RequestUri!.Host.Contains("consul");

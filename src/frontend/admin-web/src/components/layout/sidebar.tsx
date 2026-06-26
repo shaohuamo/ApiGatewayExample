@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/provider";
 
 const navItems = [
   {
@@ -18,12 +19,13 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <aside className="relative z-10 border-b border-[var(--border)] bg-[#8FC7E8] lg:min-h-screen lg:w-80 lg:border-b-0 lg:border-r">
       <div className="flex h-full flex-col px-4 py-4 sm:px-6 lg:px-6 lg:py-8">
         <div className="surface-panel-soft rounded-[1.75rem] p-4 sm:p-5">
-          <div className="kicker mb-4">Control Surface</div>
+          <div className="kicker mb-4">{t("layout.controlSurface")}</div>
           <Link href="/" className="group block">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border-strong)] bg-[var(--accent-soft)] text-[var(--accent-strong)] shadow-[0_12px_24px_rgba(0,0,0,0.18)]">
@@ -33,7 +35,7 @@ export function Sidebar() {
               </div>
               <div>
                 <div className="font-display text-[1.15rem] font-semibold text-[var(--text)] group-hover:text-[var(--accent-strong)]">
-                  Microservices Admin
+                  {t("app.title")}
                 </div>
               </div>
             </div>
@@ -41,7 +43,7 @@ export function Sidebar() {
         </div>
 
         <div className="mt-6 px-1">
-          <div className="kicker mb-3">Navigation</div>
+          <div className="kicker mb-3">{t("layout.navigation")}</div>
           <nav className="flex flex-col gap-2">
         {navItems.map((item) => (
           <Link
@@ -62,7 +64,7 @@ export function Sidebar() {
             )}>
               {item.icon}
             </span>
-            <span className="flex-1">{item.label}</span>
+            <span className="flex-1">{t("nav.products")}</span>
             <span className="text-xs text-[var(--muted)]">0{item.href === "/products" ? "1" : "2"}</span>
           </Link>
         ))}

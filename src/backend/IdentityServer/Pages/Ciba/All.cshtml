@@ -8,7 +8,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-header">
-                    <h2>Pending Backchannel Login Requests</h2>
+                    <h2>@T["Pending Backchannel Login Requests"]</h2>
                 </div>
                 <div class="card-body">
                     @if (Model.Logins.Any())
@@ -16,9 +16,9 @@
                         <table class="table table-bordered table-striped table-sm">
                             <thead>
                                 <tr>
-                                    <th>Id</th>
-                                    <th>Client Id</th>
-                                    <th>Binding Message</th>
+                                    <th>@T["Id"]</th>
+                                    <th>@T["Client Id"]</th>
+                                    <th>@T["Binding Message"]</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -30,7 +30,7 @@
                                         <td>@login.Client.ClientId</td>
                                         <td>@login.BindingMessage</td>
                                         <td>
-                                            <a asp-page="Consent" asp-route-id="@login.InternalId" class="btn btn-primary">Process</a>
+                                            <a asp-page="Consent" asp-route-id="@login.InternalId" class="btn btn-primary">@T["Process"]</a>
                                         </td>
                                     </tr>
                                 }
@@ -39,7 +39,7 @@
                     }
                     else
                     {
-                        <div>No Pending Login Requests</div>
+                        <div>@T["No Pending Login Requests"]</div>
                     }
                 </div>
             </div>

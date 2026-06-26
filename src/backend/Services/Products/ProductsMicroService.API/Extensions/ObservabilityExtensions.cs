@@ -46,7 +46,11 @@ namespace ProductsMicroService.API.Extensions
                         !ctx.ToString().Contains("CLIENT", StringComparison.OrdinalIgnoreCase);
                     })
                     .AddNpgsql()
-                    .AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.Filter = context =>
+                            !context.Request.Path.StartsWithSegments("/health");
+                    })
                     .AddHttpClientInstrumentation(options =>
                     {
                         options.FilterHttpRequestMessage = (req) =>

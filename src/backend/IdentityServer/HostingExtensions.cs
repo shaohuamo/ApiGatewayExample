@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using Duende.IdentityServer;
 using IdentityServer.Data;
 using IdentityServer.Extensions;
+using IdentityServer.Localization;
 using IdentityServer.Models;
 using IdentityServer.Options;
 using IdentityServer.Services;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -59,7 +62,32 @@ internal static class HostingExtensions
     {
         builder.AddObservability();
 
-        builder.Services.AddRazorPages();
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        builder.Services.AddRazorPages()
+            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+            .AddDataAnnotationsLocalization(options =>
+            {
+                options.DataAnnotationLocalizerProvider = (_, factory) =>
+                    factory.Create(typeof(SharedResource));
+            });
+
+        var supportedCultures = CultureCookieHelper.SupportedCultures
+            .Select(culture => new CultureInfo(culture))
+            .ToArray();
+        builder.Services.Configure<RequestLocalizationOptions>(options =>
+        {
+            options.DefaultRequestCulture = new RequestCulture("en");
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+            options.RequestCultureProviders =
+            [
+                new CookieRequestCultureProvider
+                {
+                    CookieName = CultureCookieHelper.CookieName,
+                },
+                new AcceptLanguageHeaderRequestCultureProvider()
+            ];
+        });
 
         builder.Services.Configure<PostgresOptions>(builder.Configuration.GetSection(PostgresOptions.SectionName));
         builder.Services.Configure<SeedUserOptions>(builder.Configuration.GetSection(SeedUserOptions.SectionName));
@@ -119,7 +147,8 @@ internal static class HostingExtensions
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<LocalizedIdentityErrorDescriber>();
 
         builder.Services.Configure<IdentityOptions>(options =>
         {
@@ -236,6 +265,7 @@ internal static class HostingExtensions
             app.UseDeveloperExceptionPage();
         }
 
+        app.UseRequestLocalization();
         app.UseStaticFiles();
         app.UseRouting();
         app.UseIdentityServer();

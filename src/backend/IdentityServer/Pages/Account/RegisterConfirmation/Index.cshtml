@@ -3,30 +3,30 @@
 
 <div class="register-confirmation-page">
     <div class="lead">
-        <h1>Check your email</h1>
-        <p>Confirm your email address to finish creating your account.</p>
+        <h1>@T["Check your email"]</h1>
+        <p>@T["Confirm your email address to finish creating your account."]</p>
     </div>
 
     <div class="row">
         <div class="col-md-7 col-lg-5">
             <div class="card">
                 <div class="card-header">
-                    <h2>Confirmation required</h2>
+                    <h2>@T["Confirmation required"]</h2>
                 </div>
                 <div class="card-body">
                     <p>
-                        If an account was created for <strong>@Model.Email</strong>, a confirmation email has been sent.
+                        @T["If an account was created for"] <strong>@Model.Email</strong>, @T["a confirmation email has been sent."]
                     </p>
                     <p>
-                        Please open the link in that email before logging in.
+                        @T["Please open the link in that email before logging in."]
                     </p>
                     <a class="btn btn-primary"
                        asp-page="/Account/Login/Index"
-                       asp-route-returnUrl="@Model.ReturnUrl">Back to sign in</a>
+                       asp-route-returnUrl="@Model.ReturnUrl">@T["Back to sign in"]</a>
                     <a class="btn btn-link"
                        asp-page="/Account/ResendConfirmation/Index"
                        asp-route-email="@Model.Email"
-                       asp-route-returnUrl="@Model.ReturnUrl">Resend confirmation email</a>
+                       asp-route-returnUrl="@Model.ReturnUrl">@T["Resend confirmation email"]</a>
                 </div>
             </div>
         </div>

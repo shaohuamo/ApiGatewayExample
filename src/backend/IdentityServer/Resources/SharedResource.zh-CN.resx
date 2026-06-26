@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Duende IdentityServer" xml:space="preserve"><value>Duende IdentityServer</value></data>
+  <data name="Language" xml:space="preserve"><value>语言</value></data>
+  <data name="English" xml:space="preserve"><value>English</value></data>
+  <data name="Chinese" xml:space="preserve"><value>中文</value></data>
+  <data name="Logout" xml:space="preserve"><value>退出登录</value></data>
+  <data name="Sign in" xml:space="preserve"><value>登录</value></data>
+  <data name="Use your MicroservicesDemo account to continue." xml:space="preserve"><value>使用你的 MicroservicesDemo 账号继续。</value></data>
+  <data name="Confirm your email address before logging in." xml:space="preserve"><value>登录前请先确认你的邮箱地址。</value></data>
+  <data name="Resend confirmation email" xml:space="preserve"><value>重新发送确认邮件</value></data>
+  <data name="Account sign-in" xml:space="preserve"><value>账号登录</value></data>
+  <data name="Username" xml:space="preserve"><value>用户名</value></data>
+  <data name="Password" xml:space="preserve"><value>密码</value></data>
+  <data name="Remember My Login" xml:space="preserve"><value>记住我的登录状态</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="New to MicroservicesDemo?" xml:space="preserve"><value>第一次使用 MicroservicesDemo？</value></data>
+  <data name="Create an account" xml:space="preserve"><value>创建账号</value></data>
+  <data name="External sign-in" xml:space="preserve"><value>外部账号登录</value></data>
+  <data name="Invalid login request" xml:space="preserve"><value>无效的登录请求</value></data>
+  <data name="There are no login schemes configured for this request." xml:space="preserve"><value>当前请求没有配置可用的登录方式。</value></data>
+  <data name="Register" xml:space="preserve"><value>注册</value></data>
+  <data name="Account" xml:space="preserve"><value>账号</value></data>
+  <data name="Email" xml:space="preserve"><value>邮箱</value></data>
+  <data name="Confirm password" xml:space="preserve"><value>确认密码</value></data>
+  <data name="Use at least 12 characters with uppercase, lowercase, digit, and non-alphanumeric characters." xml:space="preserve"><value>至少使用 12 个字符，并包含大写字母、小写字母、数字和非字母数字字符。</value></data>
+  <data name="Back to Login" xml:space="preserve"><value>返回登录</value></data>
+  <data name="Email confirmation" xml:space="preserve"><value>邮箱确认</value></data>
+  <data name="Complete your account setup." xml:space="preserve"><value>完成你的账号设置。</value></data>
+  <data name="Email confirmed" xml:space="preserve"><value>邮箱已确认</value></data>
+  <data name="Confirmation failed" xml:space="preserve"><value>确认失败</value></data>
+  <data name="Back to sign in" xml:space="preserve"><value>返回登录</value></data>
+  <data name="Check your email" xml:space="preserve"><value>请检查你的邮箱</value></data>
+  <data name="Confirm your email address to finish creating your account." xml:space="preserve"><value>确认邮箱地址以完成账号创建。</value></data>
+  <data name="Confirmation required" xml:space="preserve"><value>需要邮箱确认</value></data>
+  <data name="If an account was created for" xml:space="preserve"><value>如果已经为</value></data>
+  <data name="a confirmation email has been sent." xml:space="preserve"><value>创建了账号，确认邮件已经发送。</value></data>
+  <data name="Please open the link in that email before logging in." xml:space="preserve"><value>请先打开邮件中的链接，再进行登录。</value></data>
+  <data name="Request a new email confirmation link." xml:space="preserve"><value>请求新的邮箱确认链接。</value></data>
+  <data name="If an unconfirmed account exists for that email address, a new confirmation email has been sent." xml:space="preserve"><value>如果该邮箱存在未确认账号，新的确认邮件已经发送。</value></data>
+  <data name="Would you like to logout of IdentityServer?" xml:space="preserve"><value>你要退出 IdentityServer 吗？</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="You are now logged out" xml:space="preserve"><value>你已退出登录</value></data>
+  <data name="Click" xml:space="preserve"><value>点击</value></data>
+  <data name="here" xml:space="preserve"><value>这里</value></data>
+  <data name="to return to the" xml:space="preserve"><value>返回</value></data>
+  <data name="application." xml:space="preserve"><value>应用。</value></data>
+  <data name="Access Denied" xml:space="preserve"><value>访问被拒绝</value></data>
+  <data name="You do not have permission to access that resource." xml:space="preserve"><value>你没有权限访问该资源。</value></data>
+  <data name="is requesting your permission" xml:space="preserve"><value>正在请求你的授权</value></data>
+  <data name="Uncheck the permissions you do not wish to grant." xml:space="preserve"><value>取消勾选你不希望授予的权限。</value></data>
+  <data name="Personal Information" xml:space="preserve"><value>个人信息</value></data>
+  <data name="Application Access" xml:space="preserve"><value>应用访问权限</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="Description or name of device" xml:space="preserve"><value>描述或设备名称</value></data>
+  <data name="Remember My Decision" xml:space="preserve"><value>记住我的选择</value></data>
+  <data name="Yes, Allow" xml:space="preserve"><value>是，允许</value></data>
+  <data name="No, Do Not Allow" xml:space="preserve"><value>否，不允许</value></data>
+  <data name="User Code" xml:space="preserve"><value>用户代码</value></data>
+  <data name="Please enter the code displayed on your device." xml:space="preserve"><value>请输入设备上显示的代码。</value></data>
+  <data name="User Code:" xml:space="preserve"><value>用户代码：</value></data>
+  <data name="Submit" xml:space="preserve"><value>提交</value></data>
+  <data name="Please confirm that the authorization request matches the code:" xml:space="preserve"><value>请确认授权请求与此代码匹配：</value></data>
+  <data name="Success" xml:space="preserve"><value>成功</value></data>
+  <data name="You have successfully authorized the device" xml:space="preserve"><value>你已成功授权该设备</value></data>
+  <data name="Verify that this identifier matches what the client is displaying:" xml:space="preserve"><value>请确认此标识符与客户端显示的内容一致：</value></data>
+  <data name="Do you wish to continue?" xml:space="preserve"><value>是否继续？</value></data>
+  <data name="Yes, Continue" xml:space="preserve"><value>是，继续</value></data>
+  <data name="Pending Backchannel Login Requests" xml:space="preserve"><value>待处理的后台通道登录请求</value></data>
+  <data name="Id" xml:space="preserve"><value>Id</value></data>
+  <data name="Client Id" xml:space="preserve"><value>客户端 Id</value></data>
+  <data name="Binding Message" xml:space="preserve"><value>绑定消息</value></data>
+  <data name="Process" xml:space="preserve"><value>处理</value></data>
+  <data name="No Pending Login Requests" xml:space="preserve"><value>没有待处理的登录请求</value></data>
+  <data name="(required)" xml:space="preserve"><value>（必需）</value></data>
+  <data name="Will be available to these resource servers:" xml:space="preserve"><value>将可供以下资源服务器使用：</value></data>
+  <data name="Client Application Permissions" xml:space="preserve"><value>客户端应用权限</value></data>
+  <data name="Below is the list of applications you have given permission to and the resources they have access to." xml:space="preserve"><value>下面列出了你已授权的应用，以及它们可以访问的资源。</value></data>
+  <data name="You have not given access to any applications" xml:space="preserve"><value>你尚未授权任何应用</value></data>
+  <data name="Revoke Access" xml:space="preserve"><value>撤销访问</value></data>
+  <data name="Description:" xml:space="preserve"><value>描述：</value></data>
+  <data name="Created:" xml:space="preserve"><value>创建时间：</value></data>
+  <data name="Expires:" xml:space="preserve"><value>过期时间：</value></data>
+  <data name="Identity Grants" xml:space="preserve"><value>身份授权</value></data>
+  <data name="API Grants" xml:space="preserve"><value>API 授权</value></data>
+  <data name="Authentication Cookie" xml:space="preserve"><value>认证 Cookie</value></data>
+  <data name="Claims" xml:space="preserve"><value>声明</value></data>
+  <data name="Properties" xml:space="preserve"><value>属性</value></data>
+  <data name="Clients" xml:space="preserve"><value>客户端</value></data>
+  <data name="Error" xml:space="preserve"><value>错误</value></data>
+  <data name="Sorry, there was an error" xml:space="preserve"><value>抱歉，发生了错误</value></data>
+  <data name="Request Id:" xml:space="preserve"><value>请求 Id：</value></data>
+  <data name="You are now being returned to the application" xml:space="preserve"><value>正在返回应用</value></data>
+  <data name="Once complete, you may close this tab." xml:space="preserve"><value>完成后，你可以关闭此标签页。</value></data>
+  <data name="User Sessions" xml:space="preserve"><value>用户会话</value></data>
+  <data name="Prev" xml:space="preserve"><value>上一页</value></data>
+  <data name="Next" xml:space="preserve"><value>下一页</value></data>
+  <data name="Name:" xml:space="preserve"><value>名称：</value></data>
+  <data name="Session Id:" xml:space="preserve"><value>会话 Id：</value></data>
+  <data name="Subject Id:" xml:space="preserve"><value>主体 Id：</value></data>
+  <data name="Filter" xml:space="preserve"><value>筛选</value></data>
+  <data name="Total Results:" xml:space="preserve"><value>总结果数：</value></data>
+  <data name="Page" xml:space="preserve"><value>第</value></data>
+  <data name="of" xml:space="preserve"><value>页，共</value></data>
+  <data name="Subject Id" xml:space="preserve"><value>主体 Id</value></data>
+  <data name="Session Id" xml:space="preserve"><value>会话 Id</value></data>
+  <data name="Display Name" xml:space="preserve"><value>显示名称</value></data>
+  <data name="Created" xml:space="preserve"><value>创建时间</value></data>
+  <data name="Expires" xml:space="preserve"><value>过期时间</value></data>
+  <data name="Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="Clients:" xml:space="preserve"><value>客户端：</value></data>
+  <data name="None" xml:space="preserve"><value>无</value></data>
+  <data name="No User Sessions" xml:space="preserve"><value>没有用户会话</value></data>
+  <data name="You do not have server-side sessions enabled." xml:space="preserve"><value>你尚未启用服务端会话。</value></data>
+  <data name="To do so, use" xml:space="preserve"><value>如需启用，请在 IdentityServer 配置中使用</value></data>
+  <data name="on your IdentityServer configuration." xml:space="preserve"><value>。</value></data>
+  <data name="See the" xml:space="preserve"><value>查看</value></data>
+  <data name="documentation" xml:space="preserve"><value>文档</value></data>
+  <data name="for more information." xml:space="preserve"><value>了解更多信息。</value></data>
+  <data name="Welcome to Duende IdentityServer" xml:space="preserve"><value>欢迎使用 Duende IdentityServer</value></data>
+  <data name="version" xml:space="preserve"><value>版本</value></data>
+  <data name="IdentityServer publishes a" xml:space="preserve"><value>IdentityServer 发布了一个</value></data>
+  <data name="discovery document" xml:space="preserve"><value>发现文档</value></data>
+  <data name="where you can find metadata and links to all the endpoints, key material, etc." xml:space="preserve"><value>你可以在其中找到元数据、所有端点链接、密钥材料等信息。</value></data>
+  <data name="to see the claims for your current session." xml:space="preserve"><value>查看当前会话的声明。</value></data>
+  <data name="to manage your stored grants." xml:space="preserve"><value>管理已保存的授权。</value></data>
+  <data name="to view the server side sessions." xml:space="preserve"><value>查看服务端会话。</value></data>
+  <data name="to view your pending CIBA login requests." xml:space="preserve"><value>查看待处理的 CIBA 登录请求。</value></data>
+  <data name="Here are links to the" xml:space="preserve"><value>这里是</value></data>
+  <data name="source code repository" xml:space="preserve"><value>源代码仓库</value></data>
+  <data name="and" xml:space="preserve"><value>以及</value></data>
+  <data name="ready to use samples" xml:space="preserve"><value>可直接使用的示例</value></data>
+  <data name="License" xml:space="preserve"><value>许可证</value></data>
+  <data name="Serial Number" xml:space="preserve"><value>序列号</value></data>
+  <data name="Expiration" xml:space="preserve"><value>过期时间</value></data>
+  <data name="The {0} field is required." xml:space="preserve"><value>请填写{0}。</value></data>
+  <data name="The {0} field is not a valid email address." xml:space="preserve"><value>{0}格式无效。</value></data>
+  <data name="Email is already registered." xml:space="preserve"><value>该邮箱已经注册。</value></data>
+  <data name="The password must be at least 12 and at most 128 characters long." xml:space="preserve"><value>密码长度必须至少 12 个字符且不超过 128 个字符。</value></data>
+  <data name="The password must include uppercase, lowercase, digit, and non-alphanumeric characters." xml:space="preserve"><value>密码必须包含大写字母、小写字母、数字和非字母数字字符。</value></data>
+  <data name="The password and confirmation password do not match." xml:space="preserve"><value>密码和确认密码不匹配。</value></data>
+  <data name="Please confirm your email address before logging in." xml:space="preserve"><value>登录前请先确认你的邮箱地址。</value></data>
+  <data name="Invalid username or password" xml:space="preserve"><value>用户名或密码无效</value></data>
+  <data name="Too many registration attempts. Please try again later." xml:space="preserve"><value>注册尝试次数过多，请稍后再试。</value></data>
+  <data name="The email confirmation link is invalid." xml:space="preserve"><value>邮箱确认链接无效。</value></data>
+  <data name="Your email address is already confirmed. You can sign in now." xml:space="preserve"><value>你的邮箱地址已经确认，现在可以登录。</value></data>
+  <data name="Your email address has been confirmed. You can sign in now." xml:space="preserve"><value>你的邮箱地址已确认，现在可以登录。</value></data>
+  <data name="The email confirmation link is invalid or has expired." xml:space="preserve"><value>邮箱确认链接无效或已过期。</value></data>
+  <data name="You must pick at least one permission" xml:space="preserve"><value>请至少选择一个权限</value></data>
+  <data name="Invalid selection" xml:space="preserve"><value>选择无效</value></data>
+  <data name="Invalid user code" xml:space="preserve"><value>用户代码无效</value></data>
+  <data name="Offline Access" xml:space="preserve"><value>离线访问</value></data>
+  <data name="Access to your applications and resources, even when you are offline" xml:space="preserve"><value>即使你离线，也允许访问你的应用和资源</value></data>
+  <data name="Products API" xml:space="preserve"><value>产品 API</value></data>
+  <data name="API Gateway" xml:space="preserve"><value>API 网关</value></data>
+  <data name="Admin Frontend" xml:space="preserve"><value>管理前端</value></data>
+  <data name="User identifier" xml:space="preserve"><value>用户标识符</value></data>
+  <data name="User profile" xml:space="preserve"><value>用户资料</value></data>
+  <data name="Username '{0}' is already taken." xml:space="preserve"><value>用户名“{0}”已被使用。</value></data>
+  <data name="Email '{0}' is already registered." xml:space="preserve"><value>邮箱“{0}”已经注册。</value></data>
+  <data name="Email '{0}' is invalid." xml:space="preserve"><value>邮箱“{0}”无效。</value></data>
+  <data name="Username '{0}' is invalid." xml:space="preserve"><value>用户名“{0}”无效。</value></data>
+  <data name="Incorrect password." xml:space="preserve"><value>密码不正确。</value></data>
+  <data name="Passwords must have at least one digit ('0'-'9')." xml:space="preserve"><value>密码必须至少包含一个数字（0-9）。</value></data>
+  <data name="Passwords must have at least one lowercase letter ('a'-'z')." xml:space="preserve"><value>密码必须至少包含一个小写字母（a-z）。</value></data>
+  <data name="Passwords must have at least one non alphanumeric character." xml:space="preserve"><value>密码必须至少包含一个非字母数字字符。</value></data>
+  <data name="Passwords must have at least one uppercase letter ('A'-'Z')." xml:space="preserve"><value>密码必须至少包含一个大写字母（A-Z）。</value></data>
+  <data name="Passwords must be at least {0} characters." xml:space="preserve"><value>密码长度必须至少为 {0} 个字符。</value></data>
+  <data name="Confirm your MicroservicesDemo account" xml:space="preserve"><value>确认你的 MicroservicesDemo 账号</value></data>
+  <data name="Thanks for registering with MicroservicesDemo." xml:space="preserve"><value>感谢你注册 MicroservicesDemo。</value></data>
+  <data name="Please confirm your email address by clicking the link below:" xml:space="preserve"><value>请点击下面的链接确认你的邮箱地址：</value></data>
+  <data name="Confirm email" xml:space="preserve"><value>确认邮箱</value></data>
+  <data name="If you did not create this account, you can ignore this email." xml:space="preserve"><value>如果不是你创建了此账号，可以忽略这封邮件。</value></data>
+  <data name="Confirm your email address by opening this link:" xml:space="preserve"><value>打开以下链接确认你的邮箱地址：</value></data>
+</root>
