@@ -22,6 +22,9 @@ public static class ObservabilityExtensions
                 options.IncludeScopes = true;
             })
             .WithTracing(tracerBuilder => tracerBuilder
+                .AddSource(Duende.IdentityServer.IdentityServerConstants.Tracing.Basic)
+                .AddSource(Duende.IdentityServer.IdentityServerConstants.Tracing.Services)
+                .AddSource(Duende.IdentityServer.IdentityServerConstants.Tracing.Stores)
                 .AddNpgsql()
                 .AddAspNetCoreInstrumentation(options =>
                 {
