@@ -101,7 +101,7 @@ The badges above dynamically show the latest `dev` branch run for each pipeline;
 
 | Type | Pipeline definitions |
 | --- | --- |
-| Applications | [Products](aks/pipelines/azure-pipelines-products-microservice.yaml) · [API Gateway](aks/pipelines/azure-pipelines-apigateway.yaml) · [IdentityServer](aks/pipelines/azure-pipelines-identityserver.yaml) · [Test Microservice](aks/pipelines/azure-pipelines-test-microservice.yaml) · [Admin Web](aks/pipelines/azure-pipelines-admin-web.yaml) · [Product Updates Reprocessor](aks/pipelines/azure-pipelines-product-updates-reprocessor-function.yaml) |
+| Applications | [Products Microservice](aks/pipelines/azure-pipelines-products-microservice.yaml) · [API Gateway](aks/pipelines/azure-pipelines-apigateway.yaml) · [IdentityServer](aks/pipelines/azure-pipelines-identityserver.yaml) · [Test Microservice](aks/pipelines/azure-pipelines-test-microservice.yaml) · [Admin Web](aks/pipelines/azure-pipelines-admin-web.yaml) · [Product Updates Reprocessor](aks/pipelines/azure-pipelines-product-updates-reprocessor-function.yaml) |
 | Platform | [Infrastructure](aks/pipelines/azure-pipelines-infrastructure.yaml) · [Ingress](aks/pipelines/azure-pipelines-ingress.yaml) · [Cluster Add-ons](aks/pipelines/azure-pipelines-cluster-addons.yaml) |
 
 ## ✨ Key Highlights
@@ -414,7 +414,24 @@ The Nginx pod in the AKS application-routing namespace is `Running` and Ready, p
 
 ### 🔭 Tracing, Metrics, and Logs
 
-**Evidence to look for:** Jaeger traces show propagation through the gateway, APIs, Redis, and RabbitMQ-related spans. Grafana and log-to-trace links show that metrics and logs can be investigated in the same distributed trace context.
+**Evidence to look for:** Jaeger traces cover OIDC sign-in, token issuance, and business requests propagating through the gateway, APIs, Redis, and RabbitMQ-related spans. Grafana and log-to-trace links show that metrics and logs can be investigated in the same distributed trace context.
+
+#### 🔐 IdentityServer OIDC Login Flow
+
+This screenshot shows the four authentication traces produced by one sign-in operation: `POST /Account/Login` validates the user and establishes the login session, the authorization callback resumes the original authorize request, discovery retrieves the OIDC metadata, and the BFF finally calls the token endpoint. Browser front-channel redirects and BFF back-channel HTTP requests appear as separate traces in Jaeger.
+
+![IdentityServer OIDC Login Flow](images/JaegerIdentityServerLoginFlow.png)
+
+#### 🎫 Authorization Code Token Exchange
+
+The token endpoint trace shows the BFF exchanging a one-time authorization code for tokens. IdentityServer retrieves and removes the code, validates the client and scopes, creates the access, refresh, and identity tokens, and signs the JWTs. Removing the authorization code after redemption prevents replay.
+
+<details>
+<summary>Expand the complete token exchange trace</summary>
+
+![IdentityServer Authorization Code Token Exchange](images/JaegerIdentityServerTokenExchange.png)
+
+</details>
 
 #### 📊 Jaeger POST Flow
 
