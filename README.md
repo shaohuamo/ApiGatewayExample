@@ -1,26 +1,43 @@
 # MicroservicesDemo
 
-**MicroservicesDemo** is a .NET 9 microservices showcase project that demonstrates API gateway routing, service discovery, event-driven messaging, distributed caching, observability, and clean architecture practices in a containerized local environment.
+[English](README.en.md) | 简体中文
 
-**MicroservicesDemo** 是一个基于 .NET 9 的微服务演示项目，展示 API Gateway 路由、服务发现、事件驱动消息、分布式缓存、可观测性与 Clean Architecture 的整合落地，运行在容器化本地环境中。
+**MicroservicesDemo** 是一个基于 .NET 9 的微服务演示项目，展示 API Gateway 路由、服务发现、事件驱动消息、分布式缓存、可观测性与 Clean Architecture 的整合落地；既支持通过 Docker Compose 在本地运行，也提供部署在 AKS 上的在线演示环境。
 
-## Project Snapshot / 项目速览
+## 🌐 在线体验
 
-**English**
+无需在本地启动 Docker Compose，可直接访问部署在 AKS 上的 [MicroservicesDemo 在线演示](https://250669.xyz/)。
 
-- A runnable .NET 9 microservices demo that combines Ocelot gateway routing, Consul service discovery, RabbitMQ async messaging, Redis caching, and full-stack observability.
-- Shows a complete request path from the Next.js admin UI through the gateway and backend services into PostgreSQL, Redis, and RabbitMQ.
-- Uses Jaeger, Grafana, Loki, and Alertmanager screenshots as concrete evidence of trace, metric, log, and alert flows.
+在线演示通过 IdentityServer 提供安全认证，支持登录、创建账号和中英文切换；认证完成后即可进入 Admin Web。
 
-**中文**
+> **邮箱验证提示：** 注册后，验证邮件通常需要 2–5 分钟送达。若收件箱中暂未看到，请检查垃圾邮件或广告邮件目录；由于发信域名注册时间较短，部分邮件服务商可能会暂时将验证邮件归类为垃圾邮件。
 
-- 一个可本地运行的 .NET 9 微服务示例，串联 Ocelot 网关路由、Consul 服务发现、RabbitMQ 异步消息、Redis 缓存与全链路可观测性。
-- 展示从 Next.js 管理台发起请求，经由网关和后端服务，最终访问 PostgreSQL、Redis 与 RabbitMQ 的完整链路。
+在线环境同时提供以下可观测性入口：
+
+- [Grafana Dashboard](https://grafana.250669.xyz/dashboards)：查看应用与基础设施的监控 Dashboard、指标和日志。
+- [Jaeger UI](https://jaeger.250669.xyz/)：查询分布式 Trace，分析请求经过 Admin Web、API Gateway、后端服务及依赖组件的完整调用链路。
+
+## 📖 快速导航
+
+- [在线体验](#-在线体验)
+- [项目亮点](#-项目亮点)
+- [架构](#️-架构图)
+- [快速启动](#-快速启动)
+- [常见问题](#-常见问题)
+- [截图与证据说明](#️-截图与证据说明)
+- [参与贡献](#-参与贡献)
+- [许可证](#-许可证)
+
+## 项目速览
+
+- 一个可本地运行的 .NET 9 微服务示例，串联 Ocelot 网关路由、本地 Consul 服务发现、RabbitMQ 异步消息、Redis 缓存与全链路可观测性；AKS 部署使用 Kubernetes Service DNS，不依赖 Consul。
+- 展示从 Next.js 管理台登录，经 Duende IdentityServer 与 Ocelot 网关访问 PostgreSQL、Redis、RabbitMQ 和 Azure Service Bus 的受保护链路。
+- 提供覆盖 dev、qa、staging、uat、prod 的 AKS 清单与流水线。
 - 通过 Jaeger、Grafana、Loki 与 Alertmanager 截图展示 Trace、Metric、Log 与告警链路。
 
-## ⚙️ Tech Stack / 技术栈
+## ⚙️ 技术栈
 
-**🧩 Backend** &nbsp;
+**🧩 后端** &nbsp;
 ![.NET 9](https://img.shields.io/badge/.NET_9-512BD4?style=flat-square&logo=dotnet&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp&logoColor=white)
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-512BD4?style=flat-square&logo=dotnet&logoColor=white)
@@ -31,9 +48,10 @@
 ![Polly](https://img.shields.io/badge/Polly-0066CC?style=flat-square&logoColor=white)
 ![Scrutor](https://img.shields.io/badge/Scrutor-6B4FBB?style=flat-square&logoColor=white)
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black)
+![Duende IdentityServer](https://img.shields.io/badge/Duende_IdentityServer-6C4AB6?style=flat-square&logoColor=white)
 <br>
 
-**🖥️ Frontend** &nbsp;
+**🖥️ 前端** &nbsp;
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -42,15 +60,17 @@
 ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=flat-square&logo=axios&logoColor=white)
 <br>
 
-**🗄️ Infrastructure** &nbsp;
+**🗄️ 基础设施** &nbsp;
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ_4-FF6600?style=flat-square&logo=rabbitmq&logoColor=white)
 ![Consul](https://img.shields.io/badge/Consul-F24C53?style=flat-square&logo=consul&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Azure Service Bus](https://img.shields.io/badge/Azure_Service_Bus-0078D4?style=flat-square&logo=microsoftazure&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/AKS-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
 <br>
 
-**🔍 Observability** &nbsp;
+**🔍 可观测性** &nbsp;
 ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-000000?style=flat-square&logo=opentelemetry&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat-square&logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white)
@@ -59,81 +79,97 @@
 ![Alertmanager](https://img.shields.io/badge/Alertmanager-E6522C?style=flat-square&logo=prometheus&logoColor=white)
 <br>
 
-**🧪 Testing** &nbsp;
+**🧪 测试** &nbsp;
 ![xUnit](https://img.shields.io/badge/xUnit-512BD4?style=flat-square&logo=dotnet&logoColor=white)
 ![Moq](https://img.shields.io/badge/Moq-555555?style=flat-square&logoColor=white)
 ![FluentAssertions](https://img.shields.io/badge/FluentAssertions-99CC00?style=flat-square&logoColor=white)
 ![AutoFixture](https://img.shields.io/badge/AutoFixture-555555?style=flat-square&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white)
 
----
+## 🔄 CI/CD 状态
 
-## 🔄 CI/CD Status / 持续集成状态
+[![Admin Web Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2Fadmin-web?branchName=dev&label=Admin%20Web)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=2&branchName=dev)
+[![IdentityServer Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2Fidentityserver?branchName=dev&label=IdentityServer)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=9&branchName=dev)
+[![Test Microservice Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2FTestMicroservice?branchName=dev&label=Test%20Microservice)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=5&branchName=dev)
+[![API Gateway Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2Fapigateway?branchName=dev&label=API%20Gateway)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=3&branchName=dev)
+[![Products Microservice Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2FProductsMicroservice?branchName=dev&label=Products%20Microservice)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=1&branchName=dev)
+[![Infrastructure Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2Finfrastructure?branchName=dev&label=Infrastructure)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=4&branchName=dev)
 
-[![CI - Products Microservice](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-products.yml/badge.svg)](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-products.yml)
-[![CI - API Gateway](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-gateway.yml/badge.svg)](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-gateway.yml)
-[![CI - Test Microservice](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-test-microservice.yml/badge.svg)](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-test-microservice.yml)
-[![CI - Frontend](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-frontend.yml/badge.svg)](https://github.com/shaohuamo/MicroservicesDemo/actions/workflows/ci-frontend.yml)
+以上徽章动态展示各流水线在 `dev` 分支上的最新运行状态；点击徽章可进入对应的 Azure Pipeline。应用流水线负责构建镜像、推送至 ACR 并部署到 AKS。平台流水线负责基础设施、Ingress 与集群附加组件。
 
----
+| 类型 | 流水线定义 |
+| --- | --- |
+| 应用 | [Products](aks/pipelines/azure-pipelines-products-microservice.yaml) · [API Gateway](aks/pipelines/azure-pipelines-apigateway.yaml) · [IdentityServer](aks/pipelines/azure-pipelines-identityserver.yaml) · [Test Microservice](aks/pipelines/azure-pipelines-test-microservice.yaml) · [Admin Web](aks/pipelines/azure-pipelines-admin-web.yaml) |
+| 平台 | [Infrastructure](aks/pipelines/azure-pipelines-infrastructure.yaml) · [Ingress](aks/pipelines/azure-pipelines-ingress.yaml) · [Cluster Add-ons](aks/pipelines/azure-pipelines-cluster-addons.yaml) |
 
-## 📖 Quick Navigation / 快速导航
-
-- 🌐 [中文版本](#中文版本) | [English Version](#english-version)
-- 🎨 [Screenshots](#screenshots--项目截图)
-  - [Architecture & Service Discovery](#architecture-and-service-discovery--架构与服务发现)
-  - [Tracing, Metrics & Logs](#tracing-metrics-and-logs--链路追踪指标与日志)
-  - [Messaging & Alerting](#messaging-and-alerting--消息队列与告警)
-- 🤝 [Contributing](CONTRIBUTING.md)
-- 📄 [License](LICENSE)
-
----
-
-## 中文版本
-
-<details open>
-<summary><strong>点击展开 / 收起中文内容</strong></summary>
-
-### ✨ 项目亮点
+## ✨ 项目亮点
 
 | # | 亮点 | 说明 |
 | --- | --- | --- |
-| 1 | **AI 工具链辅助开发** | 在 `.github/` 下维护 agents、skills 与 `mcp-config.json`：例如通过 `dockerhub` MCP Server 配合 agent，辅助完成镜像 build 和 push 的自动化流程；同时沉淀 C# 测试生成与前端 UI 规范等复用能力 |
-| 2 | **Ocelot API Gateway + Consul 服务发现** | 统一接入层负责路由转发；Consul 实现动态服务注册，网关按服务名发现实例，客户端与内部服务解耦 |
+| 1 | **AI 工具链辅助开发** | 在 `.github/` 下维护 agents、skills 与 `mcp-config.json`，同时沉淀 C# 测试生成与前端 UI 规范等复用能力 |
+| 2 | **环境适配的服务发现** | 本地 Docker Compose 使用 Consul 动态注册与发现；AKS 环境使用 Kubernetes Service DNS 与 ClusterIP 路由，不部署或依赖 Consul |
 | 3 | **RabbitMQ 事件驱动通信** | 产品新增事件通过 RabbitMQ 异步发布，Test Service 作为消费者处理；服务间通信不再强耦合 |
 | 4 | **Redis 缓存 + Decorator 模式** | 基于 Scrutor 的装饰器链把缓存层、遥测层与核心业务层分开，读取场景显著减少数据库直连压力 |
 | 5 | **PostgreSQL + EF Core 数据持久化** | 通过 Options 模式管理连接配置，支持指数退避重试，可维护性强 |
 | 6 | **OpenTelemetry 全链路追踪** | 前端到网关再到后端与基础设施的完整链路，Trace、Metrics、Logs 统一通过 OTEL Collector 分发 |
 | 7 | **Clean Architecture + SOLID + 单元测试** | Products 服务三层分层，依赖方向严格内向；xUnit + Moq 覆盖核心服务用例 |
-| 8 | **GitHub Actions CI/CD 流程自动化** | 每个服务均有独立 workflow（`.github/workflows/`）：自动运行单元测试，通过后构建 Docker 镜像并推送至 DockerHub；路径感知触发确保只跑必要的检查，提高 CI 效率 |
+| 8 | **认证授权与安全会话** | Duende IdentityServer + ASP.NET Core Identity 提供 OIDC/OAuth 2.0 登录、注册、邮箱确认和刷新令牌；网关校验访问令牌与 `products-api` scope，Redis 保存令牌拒绝列表 |
+| 9 | **多通道异步消息** | RabbitMQ 负责本地事件演示，Azure Service Bus 承载产品更新主题 |
+| 10 | **容器与 AKS 交付** | Azure Pipelines 构建服务镜像并推送至 Azure Container Registry（ACR），随后使用 `aks/` 中的多环境 Kubernetes 清单部署到 AKS；流水线同时覆盖基础设施、Ingress 与集群附加组件 |
+| 11 | **生产级密钥管理** | Azure DevOps Variable Groups 关联 Azure Key Vault 获取敏感配置，部署流水线将其同步为各环境的 Kubernetes Secrets，应用通过 `secretKeyRef` 注入运行时配置 |
 
-### 🏗️ 架构图
+## 🏗️ 架构图
 
 <p align="center">
   <img src="images/ComponentsDiagram.svg" alt="System Architecture" style="width: 100%; max-width: 900px; height: auto;" />
 </p>
 
-**请求路径**：Browser → Admin Web → API Gateway (Ocelot) → Products API / Test API → PostgreSQL / Redis / RabbitMQ
+**请求路径**：Browser → Admin Web → IdentityServer (OIDC) → API Gateway (Ocelot) → Products API / Test API → PostgreSQL / Redis
+
+**消息路径**：Products API → RabbitMQ / Azure Service Bus → Test API
+
+**Products 与 Test 服务通信**：
+
+- **同步通信（删除产品）**：Products Service 删除产品后，由 Products Infrastructure 通过 HTTP 调用 Test API，删除对应的产品关联信息。
+- **异步通信（新增产品）**：Products Service 将 `products.add` 事件发布到 RabbitMQ，Test API 从绑定队列消费并处理该事件。
+- **异步通信（更新产品）**：Products Service 将 `product.update` 事件发布到 Azure Service Bus Topic，Test API 通过 Subscription 消费并处理该事件。消息进入 Dead-letter Queue（DLQ）时触发告警，由运维人员检查并人工处理 DLQ 中的消息。
 
 **可观测路径**：所有服务 → OTEL Collector → Jaeger (Trace) / Prometheus (Metrics) / Loki (Logs) → Grafana
 
-### ⚙️ 技术栈
+### 🔐 认证与请求链路
+
+`Next.js UI` 与 `BFF` 是同一个 Admin Web 部署中的逻辑组件，并非两个独立服务。BFF 在服务端维护 NextAuth Session 和令牌，因此浏览器无需直接持有 Access Token 或调用 API Gateway。
+
+| 关系 | 说明 |
+| --- | --- |
+| `Next.js UI → BFF` | 浏览器通过同源 HTTPS 调用 Next.js API Route |
+| `BFF → API Gateway` | BFF 从服务端 Session 读取 Access Token，并以 Bearer Token 代理 API 请求 |
+| `Admin Web / Browser ↔ IdentityServer` | 未登录时由 Admin Web 发起 OIDC 登录并重定向浏览器；用户在 IdentityServer 完成注册与邮箱确认、登录；BFF 处理回调、Token 换取、Token 刷新与登出 |
+| `API Gateway ⇢ IdentityServer` | 网关获取并缓存 OIDC Metadata/JWKS，在本地校验 JWT 的签名、Issuer、Audience 与有效期 |
+
+图中的实线表示运行时请求或数据流；虚线表示配置发现、信任或可选依赖关系。API Gateway 通常不会为每个业务请求同步调用 IdentityServer。
+
+> **服务发现边界**：Consul 仅用于本地 Docker Compose 演示与开发；部署到 AKS 后，网关通过 Kubernetes Service DNS 访问后端服务，服务注册、寻址与负载均衡由 Kubernetes 提供。
+
+## ⚙️ 技术选型
 
 | 分类 | 技术 | 选型原因 |
 | --- | --- | --- |
 | Backend | .NET 9, ASP.NET Core, EF Core | 成熟生态，支持 OpenTelemetry 原生集成 |
 | Gateway | Ocelot | 轻量级 .NET API Gateway，负责集中路由，让客户端与内部服务解耦 |
-| Service Discovery | Consul (Steeltoe) | 动态服务注册，支撑网关按服务名发现实例，无需硬编码下游地址 |
+| Service Discovery | Consul (本地), Kubernetes Service DNS (AKS) | 本地演示动态注册与发现；AKS 通过 ClusterIP Service 提供稳定 DNS、寻址与负载均衡 |
 | Architecture | Clean Architecture, SOLID, Decorator, DI | 依赖边界清晰，Scrutor 支持无侵入装饰器链 |
 | Database | PostgreSQL + EF Core | 关系型持久化，Npgsql 原生支持 OTEL |
 | Cache | Redis | 减少重复读压力；通过 Decorator 模式透明叠加在业务层之外 |
-| Messaging | RabbitMQ | 异步事件传播，解耦服务间依赖，生产者与消费者独立演进 |
+| Identity | Duende IdentityServer, ASP.NET Core Identity, Resend | OIDC/OAuth 2.0 登录、用户注册、邮箱确认与 API scope 授权 |
+| Messaging | RabbitMQ, Azure Service Bus | 异步事件传播与消费幂等，生产者与消费者独立演进 |
+| Secrets | Azure Key Vault, Azure DevOps Variable Groups, Kubernetes Secrets | 集中保存敏感配置，并在部署时按环境安全注入 AKS 工作负载 |
 | Observability | OpenTelemetry, OTEL Collector, Prometheus, Grafana, Jaeger, Loki, Alertmanager | 三支柱可观测性，从浏览器到基础设施完整覆盖 |
 | Frontend | Next.js, React, TypeScript, TanStack Query | 接入 OTEL，前端链路也可追踪 |
 | Testing | xUnit, Moq, FluentAssertions, AutoFixture | 轻量可读，符合 .NET 社区主流实践 |
-| Delivery | Docker Compose | 一键启动全栈环境，可重复复现 |
+| Delivery | Docker Compose, AKS, Azure Pipelines | 本地可重复环境与 dev/qa/staging/uat/prod 多环境部署资产 |
 
-### 💡 核心功能
+## 💡 核心功能
 
 **📐 产品管理（Products Service）**
 
@@ -141,10 +177,22 @@
 - 新增产品后通过 RabbitMQ 发布事件，Test Service 异步消费
 - 读取链路经过 Redis 缓存，减少直接数据库访问；更新与删除时同步处理缓存失效
 
-**🚀 服务治理（Gateway + Consul）**
+**🚀 服务治理（Gateway + Consul / Kubernetes DNS）**
 
 - API Gateway 统一对外，客户端无需感知内部服务地址
-- 服务自注册到 Consul，网关按服务名动态发现并路由
+- 本地 Docker Compose 中，服务自注册到 Consul，网关按服务名动态发现并路由
+- AKS 环境不使用 Consul；网关通过 Kubernetes Service DNS 访问 ClusterIP Service
+
+**🔐 身份认证（IdentityServer + Admin Web）**
+
+- Admin Web 使用 OIDC Authorization Code Flow 登录，并维护服务端会话与令牌刷新
+- 支持用户注册、Resend 邮箱确认与 Redis 频率限制；Products 路由要求有效 Bearer Token 和 `products-api` scope
+- 登出时将访问令牌加入 Redis 拒绝列表，网关可配置为校验失败时拒绝访问
+
+**📨 消息可靠性（RabbitMQ + Azure Service Bus）**
+
+- RabbitMQ 演示产品新增事件发布/消费，Redis 记录已处理消息以保证消费幂等
+- Azure Service Bus 承载产品更新事件
 
 **🔍 可观测性（Observability Stack）**
 
@@ -152,16 +200,16 @@
 - Grafana 统一展示指标与日志，可从日志 TraceID 直接跳转至 Jaeger Trace
 - Alertmanager 触发告警并推送至 Slack
 
-### 📁 项目结构
+## 📁 项目结构
 
 ```
 .github/
-  workflows/                     # GitHub Actions 工作流：ci-products、ci-frontend、ci-gateway、ci-test-microservice
   agents/                        # 自定义 agent，例如 C# Expert、Expert React Frontend Engineer
   skills/                        # 自定义 skill，例如 csharp-test-gen、premium-frontend-ui
   mcp-config.json                # MCP Server 配置，例如 filesystem、context7、dockerhub
 src/backend/
   Gateway/ApiGateway/          # Ocelot API Gateway，路由规则见 ocelot.json
+  IdentityServer/              # OIDC/OAuth 2.0、用户注册、邮箱确认与令牌签发
   Services/Products/           # Products 微服务
     ProductsMicroservice.Core/           # 业务逻辑、接口契约、AutoMapper、Polly 策略
     ProductsMicroservice.Infrastructure/ # EF Core、Redis 缓存、RabbitMQ 发布、Scrutor 装饰器
@@ -169,41 +217,49 @@ src/backend/
   Services/Test/               # Test 微服务，演示 RabbitMQ 消费
   BuildingBlocks/CommonService/ # 跨服务共用组件：RabbitMQ 基类、TraceContext 中间件
 src/frontend/admin-web/        # Next.js 管理台，接入 OTEL
+aks/                           # 多环境 Kubernetes 清单与 Azure Pipelines
 configs/                       # 监控、告警、日志、数据库配置
 docker/                        # 本地开发和演示部署的 Compose 配置
-tests/ProductsServiceUnitTests/ # Products 服务单元测试
+tests/                         # Products 与 IdentityServer 单元测试
 ```
 
-### 🚀 快速启动
+## 🚀 快速启动
 
-**⚡️ 环境要求**：Docker Desktop
+**⚡️ 环境要求**：Docker Desktop，以及可用的 Azure Service Bus Namespace（需预先创建 `products.updates` Topic 和 `products.updates.test` Subscription）。若需在宿主机编译或运行测试，还需安装 .NET 9 SDK 和 Node.js 20+。
 
-**📑 本地开发环境**（含 volume 挂载与热重载支持）：
+**📑 本地开发环境**（首次启动先创建本地配置）：
 
-```bash
+```powershell
+if (-not (Test-Path docker/dev/.env)) { Copy-Item docker/dev/.env.example docker/dev/.env }
+# 编辑 docker/dev/.env，替换示例凭据并填写有效的 Service Bus 连接字符串
 docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
 ```
 
-**📦 演示部署环境**（拉取预构建镜像，适合快速演示）：
+`docker/dev/.env` 已被 Git 忽略，请勿提交真实密码、Resend API Token 或 Service Bus 连接字符串。IdentityServer 本地开发端口为 `8485`。
 
-```bash
-cd docker/deploy
-docker compose -f docker-compose.yml up -d
+**📦 演示部署环境**（拉取预构建镜像）：
+
+```powershell
+if (-not (Test-Path docker/deploy/.env)) { Copy-Item docker/deploy/.env.example docker/deploy/.env }
+# 编辑 docker/deploy/.env，并配置真实的 IdentityServer .pfx 签名证书路径和密码
+docker compose --env-file docker/deploy/.env -f docker/deploy/docker-compose.yml up -d
 ```
 
-默认拉取 `latest`。如需固定到某次 CI 产物，可复制 `.env.example` 为 `.env`，修改相应的 `PRODUCTS_IMAGE_TAG`、`APIGATEWAY_IMAGE_TAG`、`TESTMICROSERVICE_IMAGE_TAG`、`ADMINWEB_IMAGE_TAG` 为对应的 `sha-<commit>` tag，然后使用 `--env-file` 启动：
+默认拉取 `latest`。如需固定到某次 CI 产物，请在 `docker/deploy/.env` 中将 `PRODUCTS_IMAGE_TAG`、`APIGATEWAY_IMAGE_TAG`、`IDENTITYSERVER_IMAGE_TAG`、`TESTMICROSERVICE_IMAGE_TAG`、`ADMINWEB_IMAGE_TAG` 改为对应的 `sha-<commit>` tag，然后重新启动：
 
-```bash
-cp .env.example .env
-# 编辑 .env，修改 tag 为指定的 sha
-docker compose -f docker-compose.yml --env-file .env up -d
+```powershell
+docker compose --env-file docker/deploy/.env -f docker/deploy/docker-compose.yml up -d
 ```
+
+> 演示部署使用 Production 配置，必须提供仓库外生成的 IdentityServer `.pfx` 签名证书；不要把证书或密码提交到 Git。
 
 **🌐 常用访问地址**：
 
 | 服务 | 地址 |
 | --- | --- |
 | Admin Web | http://localhost:3000 |
+| IdentityServer（开发 / 演示部署） | http://localhost:8485 / http://localhost:8085 |
+| API Gateway | http://localhost:9080 |
 | Jaeger UI | http://localhost:16686 |
 | Grafana | http://localhost:13000 |
 | Prometheus | http://localhost:9090 |
@@ -218,362 +274,214 @@ docker compose -f docker-compose.yml --env-file .env up -d
 4. 在 Grafana 中查看指标与日志，通过 TraceID 从日志跳转至 Trace
 5. 在 Consul 中确认服务注册，在 RabbitMQ 中查看队列状态
 
-### ❓ 常见问题
+## ❓ 常见问题
 
 1. **Docker Desktop 未启动**
-  - 症状：执行 `docker compose up` 或 `docker ps` 时提示无法连接 Docker daemon，或容器始终无法创建。
-  - 解决方案：先启动 Docker Desktop，确认 Docker Engine 已正常运行后，再重新执行 compose 命令。
+   - 症状：执行 `docker compose up` 或 `docker ps` 时提示无法连接 Docker daemon，或容器始终无法创建。
+   - 解决方案：启动 Docker Desktop，确认 Docker Engine 正常运行后重新执行 compose 命令。
 
 2. **端口占用导致 Container 启动失败**
-  - 症状：启动时出现 `port is already allocated`、`bind for 0.0.0.0:xxxx failed` 等错误。
-  - 解决方案：修改 `docker-compose.yml` 中对应服务的端口映射配置，避开本机已被占用的端口后重新启动。
+   - 症状：启动时出现 `port is already allocated`、`bind for 0.0.0.0:xxxx failed` 等错误。
+   - 解决方案：修改 `docker-compose.yml` 中对应服务的端口映射，避开已占用端口后重新启动。
 
-3. **依赖服务 unstarted 或 unhealthy 导致 Container 启动失败**
-  - 症状：业务容器启动后立即退出，或因为 PostgreSQL、Redis、RabbitMQ、Consul 等依赖未就绪而反复重启。
-  - 解决方案：在 `docker-compose.yml` 中为业务服务添加启动依赖与健康检查，并适当增加健康检查的重试次数、延长超时时间与启动宽限期，确保依赖服务真正 ready 后再启动上层服务。
+3. **依赖服务未启动或不健康**
+   - 症状：业务容器立即退出，或因 PostgreSQL、Redis、RabbitMQ、Consul 等依赖未就绪而反复重启。
+   - 解决方案：配置启动依赖与健康检查，并适当增加重试次数、超时时间和启动宽限期。
 
-4. **`alertmanager.yml` 中未填入正确的 Slack WebHook URL**
-  - 症状：告警规则已触发，但 Slack 中收不到任何通知。
-  - 解决方案：检查 `configs/alertmanager.yml` 中 Slack receiver 配置，确认 WebHook URL 已正确填写且仍然有效，然后重启 Alertmanager。
+4. **Slack Webhook URL 配置不正确**
+   - 症状：告警规则已触发，但 Slack 没有收到通知。
+   - 解决方案：将有效 Webhook URL 写入 Git 忽略的 `configs/secrets/alertmanager-slack-webhook.txt`，然后重启 Alertmanager。
 
-5. **Grafana Dashboard 中的 metric name 与实际 metric name 不一致**
-  - 症状：Dashboard 面板显示 `No data`，但应用和采集链路本身运行正常。
-  - 解决方案：通常是 OpenTelemetry 相关 package 更新后指标名称发生变化。需要对照 Prometheus 中当前实际采集到的 metric name，更新 Grafana dashboard 查询语句。
+5. **Grafana Dashboard 的 metric name 与实际不一致**
+   - 症状：应用和采集链路正常，但 Dashboard 面板显示 `No data`。
+   - 解决方案：在 Prometheus 中确认当前指标名称，并同步更新 Grafana dashboard 查询；OpenTelemetry package 升级可能改变导出的指标名。
 
-6. **RabbitMQ 启动失败：`Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces`**
-  - 症状：RabbitMQ 容器启动时抛出权限错误，导致容器无法正常启动。
-  - 原因：Docker volume 中旧残留的权限不一致，导致 RabbitMQ 容器内 `rabbitmq` 用户无法读写 `.erlang.cookie` 文件。
-  - 解决方案：删除 `rabbitmq_data` volume 后重新启动即可（Docker 会自动以正确权限重建 volume）。
-    - **命令行方式**：
-      ```bash
-      docker compose down
-      docker volume rm <your-compose-project-name>_rabbitmq_data
-      docker compose up
-      ```
-    - **UI 方式**：在 Docker Desktop 的 Volumes 面板中找到 `rabbitmq_data`，点击删除按钮后，再执行 `docker compose up`。
+6. **RabbitMQ 启动时报 `.erlang.cookie: eacces`**
+   - 原因：Docker volume 中残留的权限不一致，容器内 `rabbitmq` 用户无法读写 `.erlang.cookie`。
+   - 解决方案：删除 `rabbitmq_data` volume 后重新启动，Docker 会以正确权限重建 volume。
 
-### ✅ 测试与验证
+   ```powershell
+   docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml down
+   docker volume rm <your-compose-project-name>_rabbitmq_data
+   docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
+   ```
 
-```bash
+## ✅ 测试与验证
+
+```powershell
+dotnet build MicroservicesDemo.sln
 dotnet test tests/ProductsServiceUnitTests/ProductsServiceUnitTests.csproj
+dotnet test tests/IdentityServerUnitTests/IdentityServerUnitTests.csproj
+Set-Location src/frontend/admin-web
+npm ci
+npm run lint
+npm test
+npm run build
 ```
 
-测试覆盖产品新增、查询、更新、删除四个核心服务，使用 Moq 注入依赖，FluentAssertions 断言，AutoFixture 生成测试数据。
+后端测试覆盖产品 CRUD、消息幂等，以及 IdentityServer 的登录、注册、邮箱确认与重发流程；前端使用 ESLint、Vitest 和 Next.js production build 验证。
 
-### 💪 我在这个项目中体现的工程能力
+## 💪 工程能力
 
-- **微服务拆分与分层设计**：独立设计 Admin Web、API Gateway、Products Service、Test Service 的职责边界，Products 服务严格遵循 Clean Architecture，依赖方向只内向不外向
-- **同步与异步通信**：同步链路通过 Ocelot + Consul 路由；异步链路通过 RabbitMQ 事件发布/消费，服务间不直接耦合
-- **缓存策略设计**：基于 Scrutor 的 Decorator 链将 Redis 缓存透明叠加在业务服务之外，更新与删除场景下同步处理缓存失效
-- **可观测性方案搭建**：前后端均接入 OpenTelemetry，OTEL Collector 将 Trace、Metrics、Logs 分发至不同存储；Grafana 提供统一视图，Alertmanager 推送告警
-- **配置管理与服务治理**：通过 Options 模式管理组件配置，Consul 提供动态服务发现，支撑无硬编码地址的服务调用
-- **单元测试与可维护性**：为核心服务编写 xUnit 测试，依赖注入 Mock，断言使用 FluentAssertions，保证逻辑可回归
+- **微服务拆分与分层设计**：明确 Admin Web、API Gateway、Products Service、Test Service 的职责边界；Products 服务严格遵循 Clean Architecture
+- **同步与异步通信**：Ocelot 统一同步路由，本地使用 Consul、AKS 使用 Kubernetes Service DNS；RabbitMQ 与 Azure Service Bus 解耦异步链路
+- **缓存策略设计**：通过 Scrutor Decorator 链透明叠加 Redis 缓存，并处理更新、删除场景下的缓存失效
+- **可观测性方案搭建**：前后端接入 OpenTelemetry，由 OTEL Collector 分发 Trace、Metrics、Logs，Grafana 与 Alertmanager 提供统一观测和告警
+- **配置与密钥管理**：Options 模式管理组件配置，Azure Key Vault、Variable Groups 与 Kubernetes Secrets 管理敏感值
+- **单元测试与可维护性**：使用 xUnit、Moq、FluentAssertions 与 AutoFixture 覆盖核心行为
 
-### 🎯 后续可扩展方向
+## 🎯 后续可扩展方向
 
-- 接入 JWT / OAuth2 认证授权，完善 API 安全层
-- 增加消息重试与死信队列，提升异步链路的容错性
+- 为 RabbitMQ 增加重试策略与 Dead Letter Exchange，补齐本地消息链路容错
+- 引入 Transactional Outbox：在产品数据变更的同一数据库事务中持久化缓存失效事件，由后台任务可靠投递至消息队列，并通过可重试、幂等的消费者删除或重建 Redis 缓存，避免因 Redis 短暂故障或服务重启而永久遗留旧缓存
 - 引入 Saga 模式处理跨服务分布式一致性问题
-- 多实例部署配合 Consul 负载均衡，验证横向扩展能力
-- 接入 Vault 或 Kubernetes Secret 管理生产级配置
-- 建立 CD Pipeline，支持自动化部署至 Kubernetes 集群，集成 GitOps 流程（ArgoCD），实现声明式持续交付
 
-</details>
+## 🖼️ 截图与证据说明
 
----
+以下截图展示管理后台、身份邮件、CI/CD、云端资源、AKS 运行状态，以及网关路由、服务发现、链路追踪、指标监控、日志关联、异步消息与告警链路的实际运行结果。
 
-## English Version
+### 🖥️ 管理后台与身份邮件
 
-<details>
-<summary><strong>Click to expand / collapse English content</strong></summary>
+#### 📦 Products 管理页面
 
-### ✨ Key Highlights
+该页面展示登录后的产品工作区，包括库存数量、库存总价值、平均价格，以及产品新增、编辑和删除入口，证明 Admin Web 已与受保护的 Products API 完成集成。
 
-| # | Highlight | Why it matters |
-| --- | --- | --- |
-| 1 | **AI-Assisted Engineering Workflow** | The `.github/` folder contains custom agents, skills, and `mcp-config.json`; for example, the `dockerhub` MCP server can be combined with agents to support automated image build and push workflows, while reusable skills capture C# test generation and frontend UI best practices |
-| 2 | **Ocelot API Gateway + Consul Service Discovery** | Centralized routing layer; Consul enables dynamic service registration so the gateway resolves instances by name, decoupling clients from internal service addresses |
-| 3 | **RabbitMQ Event-Driven Communication** | Product creation events are published asynchronously; the Test Service consumes them independently, keeping services loosely coupled |
-| 4 | **Redis Caching with Decorator Pattern** | Scrutor-based decorator chain adds caching and telemetry transparently on top of core business logic, significantly reducing direct database reads |
-| 5 | **PostgreSQL + EF Core Persistence** | Connection configuration managed via Options pattern with exponential backoff retry for resilience |
-| 6 | **OpenTelemetry End-to-End Tracing** | Frontend to backend to infrastructure — traces, metrics, and logs unified through OTEL Collector |
-| 7 | **Clean Architecture + SOLID + Unit Tests** | Products service enforces strict inward dependency flow; xUnit + Moq covers all core service behaviors |
-| 8 | **GitHub Actions CI/CD Automation** | Each service has a dedicated workflow (`.github/workflows/`): automatically runs unit tests, builds Docker images on success, and pushes to DockerHub; path-aware triggers ensure only relevant checks run, maximizing CI efficiency |
+![Products Management Page](images/ProductsListPage.png)
 
-### 🏗️ Architecture
+#### ✉️ Resend 邮件投递
 
-<p align="center">
-  <img src="images/ComponentsDiagram.svg" alt="System Architecture" style="width: 100%; max-width: 900px; height: auto;" />
-</p>
+Resend 控制台中的投递记录展示中英文账户确认邮件均已成功送达，验证 IdentityServer 注册与邮箱确认链路可用。
 
-**Request path**: Browser → Admin Web → API Gateway (Ocelot) → Products API / Test API → PostgreSQL / Redis / RabbitMQ
+![Resend Email Delivery](images/ResendService.png)
 
-**Observability path**: All services → OTEL Collector → Jaeger (Traces) / Prometheus (Metrics) / Loki (Logs) → Grafana
+### 🔄 CI/CD 与 Azure 交付证据
 
-### ⚙️ Tech Stack
+#### ✅ Azure Pipelines 运行总览
 
-| Category | Technology | Why chosen |
-| --- | --- | --- |
-| Backend | .NET 9, ASP.NET Core, EF Core | Mature ecosystem with native OpenTelemetry integration |
-| Gateway | Ocelot | Lightweight .NET API Gateway; centralizes routing and decouples clients from internal service addresses |
-| Service Discovery | Consul (Steeltoe) | Dynamic registration and discovery; gateway resolves instances by service name at runtime |
-| Architecture | Clean Architecture, SOLID, Decorator, DI | Clear dependency boundaries; Scrutor enables non-invasive decorator chains |
-| Database | PostgreSQL + EF Core | Relational persistence; Npgsql has first-class OTEL support |
-| Cache | Redis | Reduces repeated read pressure; transparently injected via Decorator pattern above the business layer |
-| Messaging | RabbitMQ | Asynchronous event propagation; decouples producers from consumers so services evolve independently |
-| Observability | OpenTelemetry, OTEL Collector, Prometheus, Grafana, Jaeger, Loki, Alertmanager | Full three-pillar observability from browser to infrastructure |
-| Frontend | Next.js, React, TypeScript, TanStack Query | OTEL-instrumented so frontend spans appear in the same traces |
-| Testing | xUnit, Moq, FluentAssertions, AutoFixture | Idiomatic .NET test stack; readable assertions and data generation |
-| Delivery | Docker Compose | One-command local stack for reproducible demos |
+流水线总览展示 Admin Web、IdentityServer、API Gateway、Products、Test Service、基础设施、Ingress、集群附加组件及消息重处理函数等流水线的成功运行状态。
 
-### 💡 Core Features
+![Azure Pipelines Run Overview](images/AllPipelinesRunResult.png)
 
-**📐 Product Management (Products Service)**
+#### 🧪 Products Microservice 流水线
 
-- Full CRUD exposed through the Ocelot Gateway
-- New products trigger a RabbitMQ event consumed asynchronously by the Test Service
-- Read flows leverage Redis caching; cache is invalidated explicitly on updates and deletes
+Products 流水线依次完成镜像构建与推送、单元测试和 dev 环境部署；截图同时展示测试通过率、代码覆盖率以及按条件控制的后续环境部署阶段。
 
-**🚀 Service Governance (Gateway + Consul)**
+![Products Microservice Pipeline Run Detail](images/ProductsMicroservicePipelineRunDetail.png)
 
-- The API Gateway is the single entry point; clients do not need to know internal service addresses
-- Services self-register with Consul; the gateway discovers instances by service name at runtime
+#### 🏗️ 基础设施流水线
 
-**🔍 Observability Stack**
+基础设施流水线成功完成 dev 环境资源部署，证明 Azure 基础设施定义能够通过独立 Pipeline 重复执行。
 
-- All services instrument with OpenTelemetry; traces, metrics, and logs flow through the OTEL Collector
-- Grafana provides a unified dashboard; logs are correlated to traces via TraceID
-- Alertmanager fires alerts to Slack
+![Infrastructure Pipeline Run Detail](images/InfrastructurePipelineRunDetial.png)
 
-### 📁 Repository Structure
+#### 🔐 Azure DevOps Variable Groups
 
-```
-.github/
-  workflows/                     # GitHub Actions workflows: ci-products, ci-frontend, ci-gateway, ci-test-microservice
-  agents/                        # Custom agents such as C# Expert and Expert React Frontend Engineer
-  skills/                        # Custom skills such as csharp-test-gen and premium-frontend-ui
-  mcp-config.json                # MCP server configuration, including filesystem, context7, and dockerhub
-src/backend/
-  Gateway/ApiGateway/           # Ocelot gateway, routing rules in ocelot.json
-  Services/Products/            # Products microservice
-    ProductsMicroservice.Core/           # Business logic, interfaces, AutoMapper, Polly
-    ProductsMicroservice.Infrastructure/ # EF Core, Redis, RabbitMQ publisher, Scrutor decorators
-    ProductsMicroService.API/            # Controllers, middleware, Consul registration, OTEL setup
-  Services/Test/                # Test microservice — RabbitMQ consumer demo
-  BuildingBlocks/CommonService/  # Shared: RabbitMQ base classes, TraceContext middleware
-src/frontend/admin-web/         # Next.js admin UI with OTEL instrumentation
-configs/                        # Monitoring, alerting, logging, database, exporter config
-docker/                         # Local dev and demo deployment Compose files
-tests/ProductsServiceUnitTests/ # Unit tests for Products services
-```
+Variable Groups 按应用和职责拆分全局配置与 Key Vault 配置，为不同服务的部署流水线提供集中、可复用的环境变量来源。
 
-### 🚀 Quick Start
+![Azure DevOps Variable Groups](images/AllVariableGroups.png)
 
-**⚡️ Prerequisite**: Docker Desktop
+#### 📦 Azure Container Registry
 
-**📑 Local dev environment** (with volume mounts and hot reload support):
+ACR 中已创建 Admin Web、API Gateway、IdentityServer、Products 和 Test Service 镜像仓库，证明应用流水线能够发布各服务的容器镜像。
 
-```bash
-docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
-```
+![Azure Container Registry Repositories](images/AzureContainerRegistry.png)
 
-**📦 Demo deployment** (pull pre-built images, fastest to start):
+#### 🔑 Azure Key Vault
 
-```bash
-cd docker/deploy
-docker compose -f docker-compose.yml up -d
-```
+Key Vault 中的敏感值名称已在截图中遮挡；启用状态证明部署所需密钥由集中式密钥库管理，而非直接写入仓库或流水线定义。
 
-This pulls `latest` by default. To pin a specific CI image, copy `.env.example` to `.env`, modify `PRODUCTS_IMAGE_TAG`, `APIGATEWAY_IMAGE_TAG`, `TESTMICROSERVICE_IMAGE_TAG`, and `ADMINWEB_IMAGE_TAG` to the desired `sha-<commit>` tags, then start with `--env-file`:
+![Azure Key Vault Secrets](images/AzureKeyVault.png)
 
-```bash
-cp .env.example .env
-# Edit .env and change tags to specific sha values
-docker compose -f docker-compose.yml --env-file .env up -d
-```
+### ☸️ AKS 运行状态
 
-**🌐 Key URLs**:
+#### 🚀 dev Namespace Pods
 
-| Service | URL |
-| --- | --- |
-| Admin Web | http://localhost:3000 |
-| Jaeger UI | http://localhost:16686 |
-| Grafana | http://localhost:13000 |
-| Prometheus | http://localhost:9090 |
-| Consul UI | http://localhost:8500 |
-| RabbitMQ Management(Account/Password:guest) | http://localhost:15672 |
+`dev` Namespace 中的前端、网关、身份服务、业务服务、数据组件及可观测性组件均处于 `Running` 且容器已 Ready，展示完整环境在 AKS 中的实际部署状态。
 
-**📄 Recommended demo flow**:
+![AKS dev Namespace Pods](images/AllPods.png)
 
-1. Import [MicroservicesDemo.postman_collection.json](MicroservicesDemo.postman_collection.json) to Postman
-2. Trigger product operations through Admin Web or Postman
-3. Inspect the distributed trace in Jaeger — observe Redis and RabbitMQ child spans
-4. Open Grafana Logs, find a trace ID in a log entry, and jump directly to the Jaeger trace
-5. Check Consul UI for registered services; check RabbitMQ management for queue activity
+#### 🌐 Nginx Ingress Pod
 
-### ❓ FAQ
+AKS 应用路由 Namespace 中的 Nginx Pod 处于 `Running` 和 Ready 状态，为外部域名流量提供 Ingress 入口。
 
-1. **Docker Desktop is not running**
-  - Symptom: `docker compose up` or `docker ps` cannot connect to the Docker daemon, or containers never get created successfully.
-  - Fix: Start Docker Desktop first, make sure Docker Engine is healthy, then rerun the compose command.
+![AKS Nginx Ingress Pod](images/NginxPod.png)
 
-2. **Container startup fails because the required port is already in use**
-  - Symptom: Errors such as `port is already allocated` or `bind for 0.0.0.0:xxxx failed` appear during startup.
-  - Fix: Update the port mappings in `docker-compose.yml` so they do not conflict with ports already used on the host machine, then start the stack again.
+### 🔍 服务发现证据
 
-3. **Container startup fails because dependency services are unstarted or unhealthy**
-  - Symptom: Application containers exit immediately or keep restarting because PostgreSQL, Redis, RabbitMQ, Consul, or other dependencies are not ready yet.
-  - Fix: Add startup dependencies and health checks in `docker-compose.yml`, and increase health-check retries plus timeout or startup grace periods where needed so upstream services only start after dependencies are actually ready.
-
-4. **The correct Slack WebHook URL is not configured in `alertmanager.yml`**
-  - Symptom: Alert rules fire, but no notifications arrive in Slack.
-  - Fix: Verify the Slack receiver configuration in `configs/alertmanager.yml`, provide a valid WebHook URL, and restart Alertmanager.
-
-5. **Metric names in Grafana dashboards do not match the actual metric names**
-  - Symptom: Panels show `No data` even though the application and telemetry pipeline are running.
-  - Fix: This is commonly caused by OpenTelemetry package upgrades that rename exported metrics. Compare the live metric names in Prometheus and update the Grafana dashboard queries accordingly.
-
-6. **RabbitMQ fails to start with `Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces`**
-  - Symptom: RabbitMQ container exits at startup with a permission error.
-  - Root cause: Stale permissions in the Docker volume prevent the `rabbitmq` user inside the container from reading/writing `.erlang.cookie`.
-  - Fix: Delete the `rabbitmq_data` volume and restart — Docker will recreate it with correct permissions.
-    - **Command-line approach**:
-      ```bash
-      docker compose down
-      docker volume rm <your-compose-project-name>_rabbitmq_data
-      docker compose up
-      ```
-    - **UI approach**: Navigate to the Volumes panel in Docker Desktop, find `rabbitmq_data`, click delete, then run `docker compose up`.
-
-### ✅ Testing and Verification
-
-```bash
-dotnet test tests/ProductsServiceUnitTests/ProductsServiceUnitTests.csproj
-```
-
-Covers the four core Products service behaviors (add, get, update, delete) using Moq for dependency injection, FluentAssertions for readable assertions, and AutoFixture for test data generation.
-
-### 💪 Engineering Competencies Demonstrated
-
-- **Microservice decomposition and layered design** — independently designed responsibility boundaries across Admin Web, API Gateway, Products Service, and Test Service; Products service enforces strict Clean Architecture with inward-only dependencies
-- **Synchronous and asynchronous communication** — sync requests flow through Ocelot + Consul routing; async events flow through RabbitMQ publish/consume, eliminating direct service-to-service coupling
-- **Caching strategy design** — Scrutor decorator chain adds Redis caching non-invasively above the business layer; cache invalidation is handled explicitly on update and delete flows
-- **Observability pipeline setup** — both frontend and backend emit OpenTelemetry signals; OTEL Collector routes traces, metrics, and logs to separate backends; Grafana, Jaeger, and Alertmanager provide unified visibility
-- **Configuration management and service governance** — strongly-typed Options pattern for all component configuration; Consul-based discovery removes hardcoded downstream addresses
-- **Unit testing and maintainability** — xUnit tests for all core service behaviors, Moq-injected dependencies, FluentAssertions for readable verification
-
-### 🎯 Future Extensions
-
-- Add JWT / OAuth2 authentication and authorization
-- Implement dead-letter queues and retry policies for async resilience
-- Introduce the Saga pattern for distributed transaction consistency
-- Demonstrate horizontal scaling with multi-instance deployment and Consul load balancing
-- Integrate Vault or Kubernetes Secrets for production-grade configuration management
-- Build a CD pipeline with automated Kubernetes deployment and GitOps integration (ArgoCD) for declarative continuous delivery
-
-</details>
-
----
-
-## Screenshots / 项目截图
-
-These screenshots are intended as evidence points for routing, discovery, tracing, metrics, logs, asynchronous messaging, and alerting across the stack.
-
-下面的截图不是简单的界面展示，而是用来证明网关路由、服务发现、链路追踪、指标监控、日志关联、异步消息与告警链路已经贯通的证据。
-
-<details open>
-<summary><strong>Architecture and Service Discovery / 架构与服务发现</strong></summary>
-
-**Evidence to look for:** The architecture diagram makes the service topology explicit, and the Consul screenshot confirms that the gateway can resolve live service instances through registration and discovery instead of hardcoded endpoints.
-
-**看点：** 架构图直接展示了系统拓扑，而 Consul 截图则证明网关并不是依赖硬编码地址，而是通过注册与发现机制解析在线服务实例。
-
-### 📐 Components Diagram
-
-![ComponentsDiagram](images/ComponentsDiagram.svg)
-
-### 🔍 Consul Service Discovery
+**看点：** Consul 截图证明本地 Docker Compose 环境已实现动态注册与发现；AKS 部署则使用 Kubernetes Service DNS。
 
 ![Consul](images/Consul.png)
 
-</details>
+### 🔭 链路追踪、指标与日志
 
-<details open>
-<summary><strong>Tracing, Metrics, and Logs / 链路追踪、指标与日志</strong></summary>
+**看点：** Jaeger 截图证明请求穿过网关、API、Redis 及 RabbitMQ 相关 Span；Grafana 与日志跳转链路证明指标和日志可围绕同一个分布式 Trace 上下文联动排查。
 
-**Evidence to look for:** The Jaeger traces show request propagation through the gateway, APIs, Redis, and RabbitMQ-related spans, while Grafana and log-to-trace correlation demonstrate that metrics and logs can be investigated alongside the same distributed trace context.
+#### 📊 Jaeger POST 链路
 
-**看点：** Jaeger 截图证明请求确实穿过了网关、API、Redis 以及 RabbitMQ 相关 Span；Grafana 与日志跳转链路则进一步证明指标和日志可以围绕同一个分布式 Trace 上下文联动排查。
+红框区域展示 Jaeger 自动捕获 Test.Api 对 `products.add.queue` 的消息处理过程；即使没有显式日志，`Simulated Delay: 3s` Span 也能呈现长尾延迟。
 
+![Jaeger POST Flow](images/JaegerTracePostFlow.png)
 
-### 📊 Jaeger Trace - Post Flow
+#### 📊 Jaeger GET 链路
 
-**Evidence to look for:** As highlighted in red in the screenshot, Jaeger automatically captures and visualizes the message processing flow in the Test.Api service for the `products.add.queue` queue. Even without explicit log statements, the `Simulated Delay: 3s` span demonstrates the tracing system's precision in detecting tail latency patterns.
+![Jaeger GET Flow](images/JaegerTraceGetFlow.png)
 
-**看点：** 如图中红标所示，系统通过 Jaeger 自动捕获并可视化了 Test.Api 服务中 `products.add.queue` 消息的处理过程。即使是在没有任何显式日志打印的情况下，我们通过 Simulated Delay: 3s 验证了链路追踪对长尾延迟（Tail Latency）的精准感知能力。
+#### 📊 Jaeger DELETE 链路
 
-![JaegerTracePostFlow](images/JaegerTracePostFlow.png)
+![Jaeger DELETE Flow](images/JaegerTraceDeleteFlow.png)
 
-### 📊 Jaeger Trace - Get Flow
+#### 🔗 Jaeger Trace 关联日志
 
-![JaegerTraceGetFlow](images/JaegerTraceGetFlow.png)
+该截图展示从 Jaeger Trace 直接定位日志条目，连接分布式链路与应用日志以辅助根因分析。
 
-### 📊 Jaeger Trace - Delete Flow
+![Jaeger Trace to Log](images/JaegerTraceToLog.png)
 
-![JaegerTraceDeleteFlow](images/JaegerTraceDeleteFlow.png)
+#### 🔄 日志跳转 Jaeger Trace
 
-### 🔗 Jaeger Trace to Log Correlation
+该截图展示反向关联：从日志条目通过 TraceID 跳转至对应的 Jaeger Trace。
 
-**Evidence to look for:** This screenshot shows how a Jaeger trace can be correlated directly to a log entry, enabling root cause analysis by linking distributed traces with application logs.
+![Log to Jaeger Trace](images/LogToJaegerTrace.png)
 
-**看点：** 该截图展示了如何从 Jaeger Trace 直接跳转到日志条目，实现分布式链路与应用日志的联动排查。
+#### 📈 Jaeger Monitor
 
-![JaegerTraceToLog](images/JaegerTraceToLog.png)
+![Jaeger Monitor](images/JaegerMonitor.png)
 
-### 🔄 Log to Jaeger Trace
+#### 📊 Grafana OTEL 指标
 
-**Evidence to look for:** This screenshot demonstrates the reverse direction — from a log entry, you can jump directly to the corresponding Jaeger trace using the TraceID, enabling quick context switching during troubleshooting.
+![Grafana OTEL Metrics](images/GrafanaOTELMetrics.png)
 
-**看点：** 该截图展示了反向的关联流程——从日志条目出发，通过 TraceID 直接跳转到对应的 Jaeger Trace，让排查问题时快速切换上下文。
-![LogToJaegerTrace](images/LogToJaegerTrace.png)
+### 📨 消息队列与告警
 
-### 📈 Jaeger Monitor
+**看点：** RabbitMQ Exchange 与 Queue 截图证明产品新增事件已被异步路由和缓冲；Azure Service Bus 截图展示产品更新消息进入 DLQ；Slack 截图证明 RabbitMQ 与 Service Bus 的异常信号可转化为可执行通知。
 
-![JaegerMonitor](images/JaegerMonitor.png)
+#### 🔄 RabbitMQ Exchange
 
-### 📊 Grafana OTEL Metrics
+![RabbitMQ Exchange](images/RabbitMQ_Exchange.png)
 
-![GrafanaOTELMetrics](images/GrafanaOTELMetrics.png)
+#### 📦 RabbitMQ Queue
 
-</details>
+![RabbitMQ Queue](images/RabbitMQ_Queue.png)
 
-<details open>
-<summary><strong>Messaging and Alerting / 消息队列与告警</strong></summary>
+#### 📢 RabbitMQ Slack 告警消息
 
-**Evidence to look for:** The RabbitMQ exchange and queue screenshots verify that product-related events are routed and buffered asynchronously, and the Slack alert screenshot shows that infrastructure signals can be turned into actionable notifications through Alertmanager.
+![Slack Alert Message](images/SlackAlertMessageFromRabbitMQ.png)
 
-**看点：** RabbitMQ 的 Exchange 与 Queue 截图证明Product相关事件已经被异步路由和缓冲，而 Slack 告警截图则说明基础设施信号可以通过 Alertmanager 转化为可执行通知。
+#### 📥 Azure Service Bus Dead-letter Queue
 
-### 🔄 RabbitMQ Exchange
+该截图展示进入 Azure Service Bus Subscription DLQ 的产品更新消息，运维人员可据此检查并人工处理死信。
 
-![RabbitMQ_Exchange](images/RabbitMQ_Exchange.png)
+![Azure Service Bus Dead-letter Queue](images/AzureServiceBus_DeadLetter.png)
 
-### 📦 RabbitMQ Queue
+#### 📢 Azure Service Bus Slack 告警消息
 
-![RabbitMQ_Queue](images/RabbitMQ_Queue.png)
+该截图展示 Azure Service Bus DLQ 出现消息后触发的 Slack 告警。
 
-### 📢 Slack Alert Message
+![Azure Service Bus Slack Alert Message](images/SlackAlertMessageFromAzureServiceBus.png)
 
-![SlackAlertMessage](images/SlackAlertMessage.png)
+## 🤝 参与贡献
 
-</details>
+欢迎贡献！提交前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)，了解分支策略、提交信息格式、代码质量要求与 PR 指南。修改文档时，请同步更新 [英文 README](README.en.md)。
 
----
+## 📄 许可证
 
-## 🤝 Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, commit message format, code quality requirements, and PR guidelines before submitting.
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
+本项目采用 [MIT License](LICENSE)。

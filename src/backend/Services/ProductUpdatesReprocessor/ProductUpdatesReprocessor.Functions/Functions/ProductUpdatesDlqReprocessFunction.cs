@@ -21,7 +21,10 @@ public class ProductUpdatesDlqReprocessFunction
     [Function("ProductUpdatesDlqReprocessFunction")]
     public async Task RunAsync(
         [ServiceBusTrigger(
+            // Resolved from the ProductsUpdatesDeadLetterPath application setting
+            // (local.settings.json locally or Function App settings in Azure).
             "%ProductsUpdatesDeadLetterPath%",
+            // The name of the application setting that contains the Service Bus connection string.
             Connection = "ServiceBusConnectionString",
             AutoCompleteMessages = false)]
         ServiceBusReceivedMessage deadLetterMessage,

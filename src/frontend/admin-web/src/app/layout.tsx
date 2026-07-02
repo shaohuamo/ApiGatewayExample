@@ -4,7 +4,6 @@ import { QueryProvider } from "@/providers/query-provider";
 import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
 import { LanguageSelect } from "@/components/layout/language-select";
-import { OtelInitializer } from "@/components/otel-initializer";
 import { auth } from "@/auth";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { getRequestLocale } from "@/lib/i18n/server";
@@ -33,7 +32,6 @@ export default async function RootLayout({
       className="h-full antialiased"
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--text)]">
-        <OtelInitializer />
         <I18nProvider locale={locale}>
           <QueryProvider>
             <div className="app-shell relative min-h-screen lg:flex">

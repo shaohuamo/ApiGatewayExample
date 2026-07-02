@@ -126,6 +126,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rabbitmq", "rabbitmq", "{A1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1000030-0000-0000-0000-000000000030}"
+	ProjectSection(SolutionItems) = preProject
+		src\frontend\admin-web\src\instrumentation-client.ts = src\frontend\admin-web\src\instrumentation-client.ts
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{A1000031-0000-0000-0000-000000000031}"
 	ProjectSection(SolutionItems) = preProject
@@ -147,9 +150,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "products", "products", "{A1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{A1000034-0000-0000-0000-000000000034}"
-	ProjectSection(SolutionItems) = preProject
-		src\frontend\admin-web\src\components\otel-initializer.tsx = src\frontend\admin-web\src\components\otel-initializer.tsx
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "layout", "layout", "{A1000035-0000-0000-0000-000000000035}"
 	ProjectSection(SolutionItems) = preProject

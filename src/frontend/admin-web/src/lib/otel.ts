@@ -38,7 +38,7 @@ export function initOpenTelemetry() {
           ignoreUrls: [/\/otel\//, /\/_next\//, /[?&]_rsc=/],
         },
         "@opentelemetry/instrumentation-user-interaction": {
-          eventNames: ["click"],
+          enabled: false,
         },
       }),
     ],

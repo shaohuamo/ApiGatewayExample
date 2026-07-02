@@ -225,31 +225,14 @@ npm run test
 npm run test:watch
 ```
 
-### README Quality Gate
+### Bilingual README Quality Gate
 
-A pre-commit hook runs `scripts/check-readme.sh` automatically whenever `README.md` is staged. You can also run it manually at any time:
+`README.md` is the default Chinese document and `README.en.md` is the complete English version. When shared project information changes, update both files in the same pull request and verify that:
 
-```bash
-bash scripts/check-readme.sh README.md
-```
-
-The script checks for:
-
-| Check | Failure mode |
-|-------|-------------|
-| Known typos (e.g. `Folw` → `Flow`) | **Auto-fixed** — commit continues |
-| `###` headings missing icons (when neighbours have icons) | ❌ Blocks commit |
-| Images without `Evidence to look for` / `看点` captions | ❌ Blocks commit |
-| Incorrect screenshot order in Tracing section | ❌ Blocks commit |
-
-If the hook blocks your commit, fix the issues reported, then:
-
-```bash
-git add README.md
-git commit
-```
-
-To extend the typo dictionary, add entries to the `TYPO_KEYS` / `TYPO_VALS` arrays in `scripts/check-readme.sh`.
+- The project snapshot, technology stack, CI/CD status, architecture, quick start, FAQ, screenshots, contributing guidance, and license remain aligned.
+- Commands, configuration keys, paths, badges, and image resources remain identical where translation is unnecessary.
+- Headings, prose, tables, and screenshot captions do not mix Chinese and English sentences within one language file.
+- The language links at the top of both files work.
 
 ---
 
@@ -304,7 +287,7 @@ The `.env.example` file documents all available environment variables. See [dock
 ## Submitting Issues
 
 1. **Search** [existing issues](../../issues) — your problem may already be reported or solved.
-2. **Check** the [FAQ section in README.md](README.md#-常见问题) for common startup problems.
+2. **Check** the [FAQ section in README.en.md](README.en.md#-faq) for common startup problems.
 3. **Reproduce** the issue with the latest version from `master`.
 
 When filing an issue, include:
@@ -324,7 +307,7 @@ When filing an issue, include:
 - [ ] `dotnet build MicroservicesDemo.sln` succeeds with no warnings in changed files.
 - [ ] `dotnet test tests/ProductsServiceUnitTests/...` passes.
 - [ ] `npm run lint` and `npm run test` pass (if frontend files changed).
-- [ ] `bash scripts/check-readme.sh README.md` passes (if README changed).
+- [ ] `README.md` and `README.en.md` are both updated when shared documentation changes.
 - [ ] New behaviour is covered by tests (or a test gap is clearly explained).
 - [ ] Commit messages follow Conventional Commits format.
 
