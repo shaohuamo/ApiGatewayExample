@@ -99,7 +99,7 @@
 
 | 类型 | 流水线定义 |
 | --- | --- |
-| 应用 | [Products](aks/pipelines/azure-pipelines-products-microservice.yaml) · [API Gateway](aks/pipelines/azure-pipelines-apigateway.yaml) · [IdentityServer](aks/pipelines/azure-pipelines-identityserver.yaml) · [Test Microservice](aks/pipelines/azure-pipelines-test-microservice.yaml) · [Admin Web](aks/pipelines/azure-pipelines-admin-web.yaml) |
+| 应用 | [Products Microservice](aks/pipelines/azure-pipelines-products-microservice.yaml) · [API Gateway](aks/pipelines/azure-pipelines-apigateway.yaml) · [IdentityServer](aks/pipelines/azure-pipelines-identityserver.yaml) · [Test Microservice](aks/pipelines/azure-pipelines-test-microservice.yaml) · [Admin Web](aks/pipelines/azure-pipelines-admin-web.yaml) |
 | 平台 | [Infrastructure](aks/pipelines/azure-pipelines-infrastructure.yaml) · [Ingress](aks/pipelines/azure-pipelines-ingress.yaml) · [Cluster Add-ons](aks/pipelines/azure-pipelines-cluster-addons.yaml) |
 
 ## ✨ 项目亮点
@@ -414,7 +414,24 @@ AKS 应用路由 Namespace 中的 Nginx Pod 处于 `Running` 和 Ready 状态，
 
 ### 🔭 链路追踪、指标与日志
 
-**看点：** Jaeger 截图证明请求穿过网关、API、Redis 及 RabbitMQ 相关 Span；Grafana 与日志跳转链路证明指标和日志可围绕同一个分布式 Trace 上下文联动排查。
+**看点：** Jaeger 截图证明 OIDC 登录、令牌签发以及业务请求已经接入分布式追踪，并展示请求穿过网关、API、Redis 及 RabbitMQ 相关 Span；Grafana 与日志跳转链路证明指标和日志可围绕同一个分布式 Trace 上下文联动排查。
+
+#### 🔐 IdentityServer OIDC 登录流程
+
+该截图展示一次登录操作产生的四段认证 Trace：`POST /Account/Login` 验证用户并建立登录会话，授权回调继续原始 Authorize 请求，Discovery 请求获取 OIDC 元数据，最后由 BFF 调用 Token Endpoint。浏览器前端通道与 BFF 后端通道经过重定向和独立 HTTP 请求，因此在 Jaeger 中显示为多条 Trace。
+
+![IdentityServer OIDC Login Flow](images/JaegerIdentityServerLoginFlow.png)
+
+#### 🎫 Authorization Code Token Exchange
+
+Token Endpoint Trace 展示 BFF 使用一次性 Authorization Code 换取 Token 的内部过程：IdentityServer 读取并删除授权码、验证 Client 与 Scope，随后创建 Access Token、Refresh Token 和 Identity Token，并使用签名凭据生成 JWT。授权码兑换后立即删除，可防止同一授权码被重复使用。
+
+<details>
+<summary>展开查看完整 Token Exchange Trace</summary>
+
+![IdentityServer Authorization Code Token Exchange](images/JaegerIdentityServerTokenExchange.png)
+
+</details>
 
 #### 📊 Jaeger POST 链路
 
