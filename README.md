@@ -319,7 +319,7 @@ npm test
 npm run build
 ```
 
-后端测试覆盖产品 CRUD、消息幂等，以及 IdentityServer 的登录、注册、邮箱确认与重发流程；前端使用 ESLint、Vitest 和 Next.js production build 验证。
+后端测试覆盖产品 CRUD、消息幂等、API Controller、异常处理中间件、AutoMapper 映射、Redis 缓存装饰器与 OpenTelemetry 装饰器，以及 IdentityServer 的登录、注册、邮箱确认与重发流程；前端使用 ESLint、Vitest 和 Next.js production build 验证。
 
 ## 💪 工程能力
 

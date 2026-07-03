@@ -32,7 +32,7 @@ The online environment also exposes these observability endpoints:
 
 - A runnable .NET 9 microservices demo that combines Ocelot gateway routing, local Consul service discovery, RabbitMQ async messaging, Redis caching, and full-stack observability; AKS deployments use Kubernetes Service DNS instead of Consul.
 - Shows a secured request path from the Next.js admin UI through Duende IdentityServer and the Ocelot gateway into PostgreSQL, Redis, RabbitMQ, and Azure Service Bus.
-- Includes an Azure Functions isolated worker for dead-letter reprocessing and AKS manifests/pipelines for dev, qa, staging, uat, and prod environments.
+- Includes AKS manifests and pipelines for dev, qa, staging, uat, and prod environments.
 - Uses Jaeger, Grafana, Loki, and Alertmanager screenshots as concrete evidence of trace, metric, log, and alert flows.
 
 ## ⚙️ Tech Stack
@@ -67,7 +67,6 @@ The online environment also exposes these observability endpoints:
 ![Consul](https://img.shields.io/badge/Consul-F24C53?style=flat-square&logo=consul&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![Azure Service Bus](https://img.shields.io/badge/Azure_Service_Bus-0078D4?style=flat-square&logo=microsoftazure&logoColor=white)
-![Azure Functions](https://img.shields.io/badge/Azure_Functions-0062AD?style=flat-square&logo=azurefunctions&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/AKS-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
 <br>
 
@@ -94,14 +93,13 @@ The online environment also exposes these observability endpoints:
 [![Test Microservice Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2FTestMicroservice?branchName=dev&label=Test%20Microservice)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=5&branchName=dev)
 [![API Gateway Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2Fapigateway?branchName=dev&label=API%20Gateway)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=3&branchName=dev)
 [![Products Microservice Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2FProductsMicroservice?branchName=dev&label=Products%20Microservice)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=1&branchName=dev)
-[![Product Updates Reprocessor Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2Fproduct-updates-reprocessor-azure-function?branchName=dev&label=DLQ%20Reprocessor)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=8&branchName=dev)
 [![Infrastructure Build Status](https://dev.azure.com/lambdazb/MicroservicesDemo/_apis/build/status%2Finfrastructure?branchName=dev&label=Infrastructure)](https://dev.azure.com/lambdazb/MicroservicesDemo/_build/latest?definitionId=4&branchName=dev)
 
-The badges above dynamically show the latest `dev` branch run for each pipeline; select a badge to open the corresponding Azure Pipeline. Application pipelines build images, push them to ACR, and deploy to AKS; the Azure Functions worker is deployed as a ZIP package. Platform pipelines manage infrastructure, ingress, and cluster add-ons.
+The badges above dynamically show the latest `dev` branch run for each pipeline; select a badge to open the corresponding Azure Pipeline. Application pipelines build images, push them to ACR, and deploy to AKS. Platform pipelines manage infrastructure, ingress, and cluster add-ons.
 
 | Type | Pipeline definitions |
 | --- | --- |
-| Applications | [Products Microservice](aks/pipelines/azure-pipelines-products-microservice.yaml) · [API Gateway](aks/pipelines/azure-pipelines-apigateway.yaml) · [IdentityServer](aks/pipelines/azure-pipelines-identityserver.yaml) · [Test Microservice](aks/pipelines/azure-pipelines-test-microservice.yaml) · [Admin Web](aks/pipelines/azure-pipelines-admin-web.yaml) · [Product Updates Reprocessor](aks/pipelines/azure-pipelines-product-updates-reprocessor-function.yaml) |
+| Applications | [Products Microservice](aks/pipelines/azure-pipelines-products-microservice.yaml) · [API Gateway](aks/pipelines/azure-pipelines-apigateway.yaml) · [IdentityServer](aks/pipelines/azure-pipelines-identityserver.yaml) · [Test Microservice](aks/pipelines/azure-pipelines-test-microservice.yaml) · [Admin Web](aks/pipelines/azure-pipelines-admin-web.yaml) |
 | Platform | [Infrastructure](aks/pipelines/azure-pipelines-infrastructure.yaml) · [Ingress](aks/pipelines/azure-pipelines-ingress.yaml) · [Cluster Add-ons](aks/pipelines/azure-pipelines-cluster-addons.yaml) |
 
 ## ✨ Key Highlights
@@ -116,7 +114,7 @@ The badges above dynamically show the latest `dev` branch run for each pipeline;
 | 6 | **OpenTelemetry End-to-End Tracing** | Frontend, backend, and infrastructure signals flow through the OTEL Collector |
 | 7 | **Clean Architecture + SOLID + Unit Tests** | The Products service enforces inward dependencies and covers core behavior with xUnit and Moq |
 | 8 | **Authentication and Secure Sessions** | Duende IdentityServer and ASP.NET Core Identity provide OIDC/OAuth 2.0 login, registration, email confirmation, refresh tokens, scope validation, and a Redis-backed token denylist |
-| 9 | **Multi-Channel Messaging and DLQ Recovery** | RabbitMQ supports local events; Azure Service Bus and an isolated Azure Functions worker support product updates and dead-letter reprocessing |
+| 9 | **Multi-Channel Asynchronous Messaging** | RabbitMQ supports local event demonstrations, while Azure Service Bus carries product-update topics |
 | 10 | **Container and AKS Delivery** | Azure Pipelines build and push images to ACR, then deploy multi-environment Kubernetes manifests to AKS |
 | 11 | **Production-Grade Secret Management** | Azure DevOps Variable Groups retrieve values from Azure Key Vault and deploy environment-specific Kubernetes Secrets |
 
@@ -128,12 +126,13 @@ The badges above dynamically show the latest `dev` branch run for each pipeline;
 
 **Request path**: Browser → Admin Web → IdentityServer (OIDC) → API Gateway (Ocelot) → Products API / Test API → PostgreSQL / Redis
 
-**Message path**: Products API → RabbitMQ / Azure Service Bus → Test API; Service Bus DLQ → Azure Functions → reprocessing topic
+**Message path**: Products API → RabbitMQ / Azure Service Bus → Test API
 
 **Products-to-Test service communication**:
 
-- **Synchronous**: Products Infrastructure calls Test API directly over HTTPS.
-- **Asynchronous**: Products Infrastructure publishes messages to RabbitMQ, which delivers them to Test API for consumption.
+- **Synchronous (product deletion)**: After Products Service deletes a product, Products Infrastructure calls Test API over HTTP to delete the related product information.
+- **Asynchronous (product creation)**: Products Service publishes the `products.add` event to RabbitMQ, and Test API consumes it from the bound queue.
+- **Asynchronous (product update)**: Products Service publishes the `product.update` event to an Azure Service Bus topic, and Test API consumes it through a subscription. Messages entering the Dead-letter Queue (DLQ) trigger an alert for operators to inspect and handle manually.
 
 **Observability path**: All services → OTEL Collector → Jaeger (Traces) / Prometheus (Metrics) / Loki (Logs) → Grafana
 
@@ -163,8 +162,7 @@ Solid lines represent runtime requests or data flows; dashed lines represent dis
 | Database | PostgreSQL + EF Core | Relational persistence with Npgsql telemetry support |
 | Cache | Redis | Reduces repeated reads and composes transparently through decorators |
 | Identity | Duende IdentityServer, ASP.NET Core Identity, Resend | OIDC/OAuth 2.0 login, registration, email confirmation, and API scope authorization |
-| Messaging | RabbitMQ, Azure Service Bus | Asynchronous events, idempotent consumption, and dead-letter recovery |
-| Serverless | Azure Functions (.NET isolated) | Transactionally forwards Service Bus dead letters to a reprocessing topic |
+| Messaging | RabbitMQ, Azure Service Bus | Asynchronous event propagation and idempotent consumption allow producers and consumers to evolve independently |
 | Secrets | Azure Key Vault, Azure DevOps Variable Groups, Kubernetes Secrets | Secure, environment-specific injection into AKS workloads |
 | Observability | OpenTelemetry, OTEL Collector, Prometheus, Grafana, Jaeger, Loki, Alertmanager | Three-pillar observability from browser to infrastructure |
 | Frontend | Next.js, React, TypeScript, TanStack Query | Frontend spans participate in distributed traces |
@@ -194,7 +192,7 @@ Solid lines represent runtime requests or data flows; dashed lines represent dis
 **📨 Messaging Reliability (RabbitMQ + Azure Service Bus)**
 
 - RabbitMQ demonstrates product-created event publishing and idempotent consumption
-- Azure Service Bus carries product updates; Azure Functions forwards dead letters transactionally to a reprocessing topic
+- Azure Service Bus carries product-update events
 
 **🔍 Observability Stack**
 
@@ -204,25 +202,30 @@ Solid lines represent runtime requests or data flows; dashed lines represent dis
 
 ## 📁 Repository Structure
 
-```text
-.github/                       # Custom agents, skills, and MCP configuration
+```
+.github/
+  agents/                       # Custom agents, such as C# Expert and Expert React Frontend Engineer
+  skills/                       # Custom skills, such as csharp-test-gen and premium-frontend-ui
+  mcp-config.json               # MCP Server configuration, such as filesystem, context7, and dockerhub
 src/backend/
-  Gateway/ApiGateway/          # Ocelot API Gateway
-  IdentityServer/              # OIDC/OAuth 2.0 identity provider
-  Services/Products/           # Clean Architecture Products service
-  Services/Test/               # RabbitMQ consumer demo
-  Services/ProductUpdatesReprocessor/ # Azure Functions DLQ reprocessor
+  Gateway/ApiGateway/           # Ocelot API Gateway; routing rules are in ocelot.json
+  IdentityServer/               # OIDC/OAuth 2.0, registration, email confirmation, and token issuance
+  Services/Products/            # Products microservice
+    ProductsMicroservice.Core/           # Business logic, contracts, AutoMapper, and Polly policies
+    ProductsMicroservice.Infrastructure/ # EF Core, Redis caching, RabbitMQ publishing, and Scrutor decorators
+    ProductsMicroService.API/            # Controllers, middleware, Consul registration, and OTEL configuration
+  Services/Test/                # Test microservice demonstrating RabbitMQ consumption
   BuildingBlocks/CommonService/ # Shared cross-cutting components
-src/frontend/admin-web/        # Next.js admin UI
-aks/                           # Kubernetes manifests and Azure Pipelines
-configs/                       # Observability and infrastructure configuration
-docker/                        # Local and demo Compose environments
-tests/                         # Products and IdentityServer unit tests
+src/frontend/admin-web/         # Next.js admin UI with OTEL integration
+aks/                            # Multi-environment Kubernetes manifests and Azure Pipelines
+configs/                        # Monitoring, alerting, logging, and database configuration
+docker/                         # Local development and demo Compose environments
+tests/                          # Products and IdentityServer unit tests
 ```
 
 ## 🚀 Quick Start
 
-**⚡️ Prerequisites**: Docker Desktop and an Azure Service Bus namespace with the `products.updates` topic, `products.updates.test` subscription, and `products.updates.Reprocess` topic already created. Install the .NET 9 SDK and Node.js 20+ as well if you want to build or test on the host.
+**⚡️ Prerequisites**: Docker Desktop and an Azure Service Bus namespace with the `products.updates` topic and `products.updates.test` subscription already created. Install the .NET 9 SDK and Node.js 20+ as well if you want to build or test on the host.
 
 **📑 Local development** (create local configuration before the first start):
 
@@ -297,13 +300,12 @@ docker compose --env-file docker/deploy/.env -f docker/deploy/docker-compose.yml
   - Symptom: RabbitMQ container exits at startup with a permission error.
   - Root cause: Stale permissions in the Docker volume prevent the `rabbitmq` user inside the container from reading/writing `.erlang.cookie`.
   - Fix: Delete the `rabbitmq_data` volume and restart — Docker will recreate it with correct permissions.
-    - **Command-line approach**:
-      ```powershell
-      docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml down
-      docker volume rm <your-compose-project-name>_rabbitmq_data
-      docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
-      ```
-    - **UI approach**: Navigate to the Volumes panel in Docker Desktop, find `rabbitmq_data`, click delete, then run `docker compose up`.
+
+    ```powershell
+    docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml down
+    docker volume rm <your-compose-project-name>_rabbitmq_data
+    docker compose --env-file docker/dev/.env -f docker/dev/docker-compose.yml -f docker/dev/docker-compose.override.yml up
+    ```
 
 ## ✅ Testing and Verification
 
@@ -318,7 +320,7 @@ npm test
 npm run build
 ```
 
-Backend tests cover product CRUD, message idempotency, and IdentityServer login, registration, email confirmation, and resend flows. The frontend is checked with ESLint, Vitest, and a production Next.js build.
+Backend tests cover product CRUD, message idempotency, API controllers, exception-handling middleware, AutoMapper mappings, Redis caching decorators, OpenTelemetry decorators, and IdentityServer login, registration, email confirmation, and resend flows. The frontend is checked with ESLint, Vitest, and a production Next.js build.
 
 ## 💪 Engineering Competencies Demonstrated
 
