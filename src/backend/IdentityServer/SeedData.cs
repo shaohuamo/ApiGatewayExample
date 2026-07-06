@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Duende.IdentityServer.EntityFramework.DbContexts;
 using IdentityModel;
 using IdentityServer.Data;
 using IdentityServer.Models;
@@ -42,6 +43,9 @@ public class SeedData
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             context.Database.Migrate();
+
+            var persistedGrantContext = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
+            persistedGrantContext.Database.Migrate();
 
             if (!seedUserOptions.Enabled)
             {

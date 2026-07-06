@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using CommonService.Health;
 using CommonService.RabbitMQ;
 using CommonService.ServiceBus;
 using Microsoft.Extensions.Configuration;
@@ -21,13 +22,14 @@ using System.Text.Json;
 
 namespace ProductsMicroservice.Infrastructure.HostedServices
 {
-    public class AppWarmupService : IHostedService
+    public class AppWarmupService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<AppWarmupService> _logger;
         private readonly CacheOptions _cacheOptions;
         private readonly IConfiguration _configuration;
         private readonly ServiceBusOptions _serviceBusOptions;
+        private readonly IStartupReadinessState _readinessState;
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         //Telemetry
@@ -44,16 +46,18 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
             ILogger<AppWarmupService> logger,
             IOptions<CacheOptions> cacheOptions,
             IConfiguration configuration,
-            IOptions<ServiceBusOptions> serviceBusOptions)
+            IOptions<ServiceBusOptions> serviceBusOptions,
+            IStartupReadinessState readinessState)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
             _cacheOptions = cacheOptions.Value;
             _configuration = configuration;
             _serviceBusOptions = serviceBusOptions.Value;
+            _readinessState = readinessState;
         }
 
-        public async Task StartAsync(CancellationToken ct)
+        protected override async Task ExecuteAsync(CancellationToken ct)
         {
             ServiceStartTime.Record(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
@@ -65,13 +69,18 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
             string status = "success";
             try
             {
-                //Warmup logic
-                await PreheatDatabaseAsync(ct);
+                await PreheatDatabaseUntilReadyAsync(ct);
                 await PreheatCacheAsync(ct);
-                await PreheatMessageBrokersAsync(ct);
+                await PreheatMessageBrokersUntilReadyAsync(ct);
 
                 sw.Stop();
                 _logger.LogInformation("GlobalWarmup successful, Total Elapsed: {Elapsed}ms", sw.ElapsedMilliseconds);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                sw.Stop();
+                status = "cancelled";
+                _logger.LogInformation("GlobalWarmup cancelled, Total Elapsed: {Elapsed}ms", sw.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {
@@ -80,12 +89,41 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
                 _logger.LogCritical(ex, "GlobalWarmup failed, error occur during GlobalWarmup，Elapsed: {Elapsed}ms", 
                     sw.ElapsedMilliseconds);
                 status = "error";
-                throw;
             }
             finally
             {
 
                 WarmupDuration.Record(sw.Elapsed.TotalSeconds,new KeyValuePair<string, object?>("status", status));
+            }
+        }
+
+        private async Task PreheatDatabaseUntilReadyAsync(CancellationToken ct)
+        {
+            var attempt = 0;
+
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    attempt++;
+                    await PreheatDatabaseAsync(ct);
+                    _readinessState.MarkReady("Products database warmup completed.");
+                    return;
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _readinessState.MarkNotReady("Products database warmup is still retrying.");
+                    var delay = CalculateRetryDelay(attempt);
+                    _logger.LogWarning(ex,
+                        "Database warmup attempt {Attempt} failed. Retrying in {DelaySeconds:n1}s.",
+                        attempt,
+                        delay.TotalSeconds);
+                    await Task.Delay(delay, ct);
+                }
             }
         }
 
@@ -193,6 +231,34 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
             }
         }
 
+        private async Task PreheatMessageBrokersUntilReadyAsync(CancellationToken ct)
+        {
+            var attempt = 0;
+
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    attempt++;
+                    await PreheatMessageBrokersAsync(ct);
+                    return;
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    var delay = CalculateRetryDelay(attempt);
+                    _logger.LogWarning(ex,
+                        "Message brokers warmup attempt {Attempt} failed. Retrying in {DelaySeconds:n1}s.",
+                        attempt,
+                        delay.TotalSeconds);
+                    await Task.Delay(delay, ct);
+                }
+            }
+        }
+
         private async Task PreheatMessageBrokersAsync(CancellationToken ct)
         {
             using var activity = ActivitySource.StartActivity("MessageBrokersWarmup");
@@ -292,6 +358,12 @@ namespace ProductsMicroservice.Infrastructure.HostedServices
             }
         }
 
-        public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
+        private static TimeSpan CalculateRetryDelay(int attempt)
+        {
+            var exponentialSeconds = Math.Min(Math.Pow(2, Math.Max(attempt - 1, 0)), 30);
+            var jitterSeconds = Random.Shared.NextDouble();
+
+            return TimeSpan.FromSeconds(exponentialSeconds + jitterSeconds);
+        }
     }
 }

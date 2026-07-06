@@ -122,13 +122,7 @@ internal static class HostingExtensions
         builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
             var postgresOptions = serviceProvider.GetRequiredService<IOptions<PostgresOptions>>().Value;
-            var connectionStringTemplate = builder.Configuration.GetConnectionString("PostgresConnection")!;
-            var connectionString = connectionStringTemplate
-                .Replace("$POSTGRES_HOST", postgresOptions.Host)
-                .Replace("$POSTGRES_PASSWORD", postgresOptions.Password)
-                .Replace("$POSTGRES_DATABASE", postgresOptions.Database)
-                .Replace("$POSTGRES_PORT", postgresOptions.Port)
-                .Replace("$POSTGRES_USER", postgresOptions.User);
+            var connectionString = BuildPostgresConnectionString(builder.Configuration, postgresOptions);
 
             options.UseNpgsql(connectionString, npgsqlOptions =>
             {
@@ -176,6 +170,13 @@ internal static class HostingExtensions
         builder.Services.AddSingleton<IEmailVerificationRateLimiter, RedisEmailVerificationRateLimiter>();
         builder.Services.AddTransient<IIdentityEmailSender, ResendIdentityEmailSender>();
 
+        var identityServerMigrationsAssembly = typeof(Program).Assembly.GetName().Name;
+        var operationalStorePostgresOptions =
+            builder.Configuration.GetSection(PostgresOptions.SectionName).Get<PostgresOptions>() ?? new PostgresOptions();
+        var operationalStoreConnectionString = BuildPostgresConnectionString(
+            builder.Configuration,
+            operationalStorePostgresOptions);
+
         var identityServerBuilder = builder.Services
             .AddIdentityServer(options =>
             {
@@ -192,6 +193,17 @@ internal static class HostingExtensions
                 {
                     options.IssuerUri = issuerUri;
                 }
+            })
+            .AddOperationalStore(options =>
+            {
+                options.ConfigureDbContext = dbContextBuilder =>
+                    dbContextBuilder.UseNpgsql(operationalStoreConnectionString, npgsqlOptions =>
+                    {
+                        npgsqlOptions.MigrationsAssembly(identityServerMigrationsAssembly);
+                    });
+
+                options.EnableTokenCleanup = true;
+                options.TokenCleanupInterval = 3600;
             });
 
         ConfigureSigningCredential(identityServerBuilder, builder)
@@ -253,6 +265,17 @@ internal static class HostingExtensions
         }
 
         return identityServerBuilder.AddSigningCredential(certificate);
+    }
+
+    private static string BuildPostgresConnectionString(IConfiguration configuration, PostgresOptions postgresOptions)
+    {
+        var connectionStringTemplate = configuration.GetConnectionString("PostgresConnection")!;
+        return connectionStringTemplate
+            .Replace("$POSTGRES_HOST", postgresOptions.Host)
+            .Replace("$POSTGRES_PASSWORD", postgresOptions.Password)
+            .Replace("$POSTGRES_DATABASE", postgresOptions.Database)
+            .Replace("$POSTGRES_PORT", postgresOptions.Port)
+            .Replace("$POSTGRES_USER", postgresOptions.User);
     }
 
     public static WebApplication ConfigurePipeline(this WebApplication app)

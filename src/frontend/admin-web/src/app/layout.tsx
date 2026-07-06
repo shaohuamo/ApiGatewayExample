@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
 import { LanguageSelect } from "@/components/layout/language-select";
 import { auth } from "@/auth";
+import { SessionExpiredRedirect } from "@/components/auth/session-expired-redirect";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { getRequestLocale } from "@/lib/i18n/server";
 import { translate } from "@/lib/i18n/dictionaries";
@@ -34,6 +35,7 @@ export default async function RootLayout({
       <body className="min-h-full bg-[var(--bg)] text-[var(--text)]">
         <I18nProvider locale={locale}>
           <QueryProvider>
+            <SessionExpiredRedirect hasSessionError={Boolean(session?.error)} />
             <div className="app-shell relative min-h-screen lg:flex">
               <Sidebar />
               <main className="relative z-10 flex-1 overflow-auto bg-[var(--bg-elevated)]">
