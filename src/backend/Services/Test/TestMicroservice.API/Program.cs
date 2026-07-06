@@ -1,13 +1,17 @@
+using CommonService.Health;
 using CommonService.Idempotency;
 using CommonService.Middlewares;
 using CommonService.RabbitMQ;
 using CommonService.ServiceBus;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Steeltoe.Discovery.Consul;
 using TestMicroservice.API.Diagnostics;
+using TestMicroservice.API.Health;
 using TestMicroservice.API.RabbitMQ;
 using TestMicroservice.API.ServiceBus;
 
@@ -76,7 +80,10 @@ builder.Services.Configure<ServiceBusOptions>(
     builder.Configuration.GetSection(ServiceBusOptions.SectionName));
 
 // Add health checks for Kubernetes probes
-builder.Services.AddHealthChecks();
+builder.Services.AddSingleton<IStartupReadinessState, StartupReadinessState>();
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"])
+    .AddCheck<StartupReadinessHealthCheck>("startup_dependencies", tags: ["ready"]);
 
 var app = builder.Build();
 
@@ -84,6 +91,14 @@ app.TraceContextMiddleware();
 
 // Map health check endpoint for Kubernetes readiness/liveness probes
 app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("live")
+});
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("ready")
+});
 
 app.MapControllers();
 

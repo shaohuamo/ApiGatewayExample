@@ -108,6 +108,7 @@ function buildProxyHeaders(request: NextRequest, accessToken?: string) {
   headers.delete("host");
   headers.delete("content-length");
   headers.delete("connection");
+  headers.delete("cookie");
   headers.delete("client-id");
 
   if (accessToken) {

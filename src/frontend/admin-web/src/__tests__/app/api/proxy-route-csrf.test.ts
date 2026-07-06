@@ -89,4 +89,34 @@ describe("admin API proxy CSRF protection", () => {
       }),
     );
   });
+
+  it("does not forward browser cookies to the gateway", async () => {
+    vi.stubEnv("API_GATEWAY_INTERNAL_URL", "http://apigateway");
+    vi.stubEnv("FRONTEND_PUBLIC_URL", "https://250669.xyz");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify([{ productId: "p1" }]), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    const response = await POST(
+      createProxyRequest({
+        headers: {
+          referer: "https://250669.xyz/products",
+          cookie: "authjs.session-token=secret; MicroservicesDemo.Culture=c%3Den",
+        },
+        body: JSON.stringify({ productName: "Coffee" }),
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    const [, init] = fetchMock.mock.calls[0];
+    const headers = init?.headers as Headers;
+    expect(headers.get("cookie")).toBeNull();
+    expect(headers.get("authorization")).toBe("Bearer access-token");
+  });
 });

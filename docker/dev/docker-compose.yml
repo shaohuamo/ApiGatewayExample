@@ -159,6 +159,7 @@ services:
    ports:
     - "15432:5432"
    volumes:
+    - postgres_data:/var/lib/postgresql/data
     - ../../configs/postgres/init:/docker-entrypoint-initdb.d
     - ../../configs/postgres/conf/postgresql.conf:/etc/postgresql/postgresql.conf
    command: postgres -c config_file=/etc/postgresql/postgresql.conf
@@ -450,6 +451,7 @@ networks:
     driver: bridge
 volumes:
   rabbitmq_data:
+  postgres_data:
   prometheus_data:
   loki_storage:
   identityserver_dataprotection:
